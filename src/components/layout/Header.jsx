@@ -18,24 +18,25 @@ const Header = () => {
       className="border-bottom shadow-sm"
     >
       <Container>
-        <Navbar.Brand href="#home" className="d-flex align-items-center gap-2">
-          <Ticket className="me-2 icon-ticketti" />
+        <Navbar.Brand href="#home" className="d-flex gap-2">
+          <Ticket className="icon-ticketti me-2 " />
           <span className="fw-bold fs-4">Ticketti</span>
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="main-navbar" />
         <Navbar.Collapse id="main-navbar">
-          <Nav className="me-auto">
+          <Nav className="m-auto">
             {navLinks.map((link) => (
               <Nav.Link key={link.name} href={link.href}>
                 {link.name}
               </Nav.Link>
             ))}
           </Nav>
-
-          <div className="d-none d-md-block">
-            <Button className="btn btn-primary">Acceso</Button>
-          </div>
         </Navbar.Collapse>
+        <div className="d-none d-md-block">
+          <Button as="a" variant="primary">
+            Acceso
+          </Button>
+        </div>
       </Container>
     </Navbar>
   );
