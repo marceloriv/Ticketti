@@ -1,0 +1,75 @@
+/* Colores y estilos de marca de Ticketti */
+
+:root {
+  --ticketti-primary: #5ad4e6;
+  --ticketti-primary-hover: #4ac3d5;
+  --ticketti-primary-light: rgba(90, 212, 230, 0.1);
+  --ticketti-primary-shadow: rgba(90, 212, 230, 0.25);
+}
+
+/* Estilos hover del botón con color de marca */
+.btn-ticketti {
+  background-color: var(--ticketti-primary);
+  border-color: var(--ticketti-primary);
+  color: #000;
+}
+
+.btn-ticketti:hover {
+  background-color: var(--ticketti-primary-hover);
+  border-color: var(--ticketti-primary-hover);
+  color: #000;
+}
+
+.btn-outline-ticketti {
+  border-color: var(--ticketti-primary);
+  color: var(--ticketti-primary);
+}
+
+.btn-outline-ticketti:hover,
+.btn-outline-ticketti.active {
+  background-color: var(--ticketti-primary);
+  border-color: var(--ticketti-primary);
+  color: #000;
+}
+
+/* Estado activo de la pastilla de filtro */
+.filter-pill.active {
+  outline: 2px solid var(--ticketti-primary);
+  outline-offset: 2px;
+}
+
+/* Sombra hover de la tarjeta */
+.card-ticketti {
+  transition: all 0.3s ease;
+}
+
+.card-ticketti:hover {
+  box-shadow: 0 8px 25px var(--ticketti-primary-shadow);
+  transform: translateY(-4px);
+}
+
+/* Color del trazo del ícono */
+.icon-ticketti {
+  stroke: var(--ticketti-primary);
+}
+
+/* Estilos de foco del formulario */
+.form-control-ticketti:focus {
+  border-color: var(--ticketti-primary);
+  box-shadow: 0 0 0 0.2rem var(--ticketti-primary-shadow);
+}
+
+/* Indicadores del carrusel */
+.carousel-indicators [data-bs-target] {
+  background-color: var(--ticketti-primary);
+}
+
+/* Hover de enlaces */
+.link-ticketti {
+  color: inherit;
+  transition: color 0.3s ease;
+}
+
+.link-ticketti:hover {
+  color: var(--ticketti-primary);
+}
