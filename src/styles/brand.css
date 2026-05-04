@@ -73,3 +73,8 @@
 .link-ticketti:hover {
   color: var(--ticketti-primary);
 }
+
+.btn-primary {
+  background-color: var(--ticketti-primary);
+  border-color: var(--ticketti-primary);
+}
