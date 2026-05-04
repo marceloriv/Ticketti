@@ -7,6 +7,9 @@
   --ticketti-primary-shadow: rgba(90, 212, 230, 0.25);
 }
 
+
+
+
 /* Estilos hover del botón con color de marca */
 .btn-ticketti {
   background-color: var(--ticketti-primary);
@@ -77,4 +80,78 @@
 .btn-primary {
   background-color: var(--ticketti-primary);
   border-color: var(--ticketti-primary);
+}
+
+ /*Estilos específicos para el botón de acceso en el header*/
+
+
+.header-login .btn {
+  --bs-btn-bg: var(--ticketti-primary);
+  --bs-btn-border-color: var(--ticketti-primary);
+  --bs-btn-color: #000;
+
+  --bs-btn-hover-bg: var(--ticketti-primary-hover);
+  --bs-btn-hover-border-color: var(--ticketti-primary-hover);
+  --bs-btn-hover-color: #000;
+
+  --bs-btn-active-bg: var(--ticketti-primary-hover);
+  --bs-btn-active-border-color: var(--ticketti-primary-hover);
+  --bs-btn-active-color: #000;
+
+  --bs-btn-focus-shadow-rgb: 90, 212, 230;
+}
+
+
+:root {
+  --ticketti-prussian-blue: #1C4EA7;
+  --ticketti-midnight-green: #024D60;
+  --ticketti-light-sea-green: #2CACAD;
+  --ticketti-sky-blue: #75E2E0;
+  --ticketti-water: #D9F5F0;
+
+  --ticketti-primary: #1C4EA7;
+  --ticketti-secondary: #024D60;
+  --ticketti-accent: #2CACAD;
+  --ticketti-light: #75E2E0;
+  --ticketti-background: #D9F5F0;
+}
+
+
+/* Estilos generales de la aplicación todo el fondo 
+
+opciones
+
+#016d9f
+#6f88c4
+#849d9a
+*/
+
+.App {
+  min-height: 100vh;
+  background-color: #6f88c4;
+}
+
+
+.registro-card {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  border-radius: 20px !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.registro-card .card-body {
+  background: transparent !important;
+}
+
+
+
+.registro-image {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto 1.5rem;
+  border-radius: 1rem;
+  object-fit: cover;
 }

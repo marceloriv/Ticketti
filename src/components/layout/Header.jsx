@@ -6,10 +6,10 @@ import '@styles/brand.css';
 
 const Header = () => {
   const navLinks = [
-    { name: 'Inicio', href: '#home' },
-    { name: 'Eventos', href: '#events' },
-    { name: 'Sobre Nosotros', href: '#about' },
-    { name: 'Contacto', href: '#contact' },
+    { name: 'Inicio', href: '#/home' },
+    { name: 'Eventos', href: '#/events' },
+    { name: 'Sobre Nosotros', href: '#/about' },
+    { name: 'Contacto', href: '#/contact' },
     { name: 'Login', href: '#/login' }
   ];
 
@@ -21,7 +21,7 @@ const Header = () => {
       className="border-bottom shadow-sm"
     >
       <Container>
-        <Navbar.Brand href="#home" className="d-flex align-items-center gap-2">
+        <Navbar.Brand href="#/home" className="d-flex align-items-center gap-2">
           <Ticket className="me-2" />
           <span className="fw-bold fs-4">Ticketti</span>
         </Navbar.Brand>
@@ -35,11 +35,8 @@ const Header = () => {
             ))}
           </Nav>
 
-          <div className="d-none d-md-block">
-
-            <Link to="/login" className="btn btn-ticketti shadow ">Acceso</Link>
-
-            
+          <div className="header-login">
+            <Link to="/login" className="btn btn-ticketti shadow">Acceso</Link>
           </div>
         </Navbar.Collapse>
       </Container>
