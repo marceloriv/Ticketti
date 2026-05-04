@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Ticket } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import '@styles/brand.css';
 
 const Header = () => {
@@ -9,6 +10,7 @@ const Header = () => {
     { name: 'Eventos', href: '#events' },
     { name: 'Sobre Nosotros', href: '#about' },
     { name: 'Contacto', href: '#contact' },
+    { name: 'Login', href: '#/login' }
   ];
 
   return (
@@ -34,7 +36,10 @@ const Header = () => {
           </Nav>
 
           <div className="d-none d-md-block">
-            <Button className="btn btn-ticketti shadow">Acceso</Button>
+
+            <Link to="/login" className="btn btn-ticketti shadow ">Acceso</Link>
+
+            
           </div>
         </Navbar.Collapse>
       </Container>
