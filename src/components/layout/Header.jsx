@@ -1,7 +1,6 @@
 import React from 'react';
 import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Ticket } from 'lucide-react';
-import '@styles/brand.css';
 
 const Header = () => {
   const navLinks = [
@@ -20,7 +19,7 @@ const Header = () => {
     >
       <Container>
         <Navbar.Brand href="#home" className="d-flex align-items-center gap-2">
-          <Ticket className="me-2" />
+          <Ticket className="me-2 icon-ticketti" />
           <span className="fw-bold fs-4">Ticketti</span>
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="main-navbar" />
@@ -34,7 +33,7 @@ const Header = () => {
           </Nav>
 
           <div className="d-none d-md-block">
-            <Button className="btn btn-ticketti shadow">Acceso</Button>
+            <Button className="btn btn-primary">Acceso</Button>
           </div>
         </Navbar.Collapse>
       </Container>
