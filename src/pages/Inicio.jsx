@@ -3,7 +3,6 @@ import {
   Container,
   Row,
   Col,
-  Carousel,
   Form,
   Button,
   Spinner,
@@ -14,6 +13,7 @@ import { Search, Calendar, MapPin } from 'lucide-react';
 import Header from '@components/layout/Header';
 import Footer from '@components/layout/Footer';
 import ProductCard from '@components/layout/ProductCard';
+import CommonCarousel from '@components/common/Carousel';
 import api from '@services/api';
 
 const BRAND_COLOR = '#5ad4e6';
@@ -29,21 +29,21 @@ const CATEGORIAS = [
 const HERO_SLIDES = [
   {
     id: 1,
-    imagen: '/assets/hero.png',
+    imagen: '/public/Tour-Press-Photo-1-28ad2aa10b.webp',
     titulo: 'Mejores Eventos',
     subtitulo:
       'Descubre los eventos más emocionantes de la ciudad. Conciertos, festivales, teatro y mucho más te esperan.',
   },
   {
     id: 2,
-    imagen: '/assets/hero.png',
+    imagen: '/public/dia_de_la_astronomia.jpg',
     titulo: 'Experiencias Únicas',
     subtitulo:
       'Vive momentos inolvidables con Ticketti. Encuentra tus eventos favoritos y asegura tus entradas.',
   },
   {
     id: 3,
-    imagen: '/assets/hero.png',
+    imagen: '/public/listicle_1686140315148_74ycs_1040x500.jpg',
     titulo: 'Cultura y Entretenimiento',
     subtitulo:
       'Desde eventos íntimos hasta grandes producciones, tenemos algo para todos los gustos.',
@@ -119,50 +119,7 @@ const Inicio = () => {
 
       <main className="flex-grow-1">
         <section id="hero" className="position-relative">
-          <Carousel
-            indicators={true}
-            controls={true}
-            interval={5000}
-            className="hero-carousel"
-          >
-            {HERO_SLIDES.map((slide) => (
-              <Carousel.Item key={slide.id}>
-                <div
-                  className="hero-slide"
-                  style={{
-                    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)), url(${slide.imagen})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    height: '60vh',
-                    minHeight: '400px',
-                  }}
-                >
-                  <Container className="h-100 d-flex flex-column justify-content-center align-items-center text-center text-white py-5">
-                    <h1 className="display-4 fw-bold mb-3">{slide.titulo}</h1>
-                    <p
-                      className="lead mb-4 max-w-600"
-                      style={{ maxWidth: '600px' }}
-                    >
-                      {slide.subtitulo}
-                    </p>
-                    <Button
-                      variant="light"
-                      size="lg"
-                      href="#eventos"
-                      className="fw-semibold px-4 py-2"
-                      style={{
-                        '--bs-btn-hover-bg': BRAND_COLOR,
-                        '--bs-btn-hover-color': '#000',
-                        '--bs-btn-hover-border-color': BRAND_COLOR,
-                      }}
-                    >
-                      Explorar
-                    </Button>
-                  </Container>
-                </div>
-              </Carousel.Item>
-            ))}
-          </Carousel>
+          <CommonCarousel slides={HERO_SLIDES} brandColor={BRAND_COLOR} />
         </section>
 
         <section id="buscador" className="py-4 bg-light">
