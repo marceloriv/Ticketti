@@ -26,8 +26,8 @@ const Header = () => {
           <span className="fw-bold fs-4">Ticketti</span>
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="main-navbar" />
-        <Navbar.Collapse id="main-navbar">
-          <Nav className="me-auto">
+        <Navbar.Collapse id="main-navbar" className="mt-1">
+          <Nav className="m-auto">
             {navLinks.map((link) => (
               <Nav.Link key={link.name} href={link.href}>
                 {link.name}
