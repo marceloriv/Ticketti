@@ -22,8 +22,8 @@ const Header = () => {
           <Ticket className="icon-ticketti me-2 " />
           <span className="fw-bold fs-4">Ticketti</span>
         </Navbar.Brand>
-        <Navbar.Toggle aria-controls="main-navbar" />
-        <Navbar.Collapse id="main-navbar">
+        <Navbar.Toggle aria-controls="main-navbar"/>
+        <Navbar.Collapse id="main-navbar" className='mt-1' >
           <Nav className="m-auto">
             {navLinks.map((link) => (
               <Nav.Link key={link.name} href={link.href}>
@@ -31,12 +31,12 @@ const Header = () => {
               </Nav.Link>
             ))}
           </Nav>
-        </Navbar.Collapse>
-        <div className="d-none d-md-block">
+        <div className=''>
           <Button as="a" variant="primary">
             Acceso
           </Button>
         </div>
+        </Navbar.Collapse>
       </Container>
     </Navbar>
   );
