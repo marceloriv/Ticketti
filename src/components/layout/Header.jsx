@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Ticket } from 'lucide-react';
+import '@styles/brand.css';
 
 const Header = () => {
   const navLinks = [
@@ -33,7 +34,7 @@ const Header = () => {
           </Nav>
 
           <div className="d-none d-md-block">
-            <Button variant="primary shadow">Acceso</Button>
+            <Button className="btn btn-ticketti shadow">Acceso</Button>
           </div>
         </Navbar.Collapse>
       </Container>
