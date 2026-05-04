@@ -1,12 +1,8 @@
 import './App.css';
-import Header from './components/layout/Header';
-/* The following line can be included in a src/App.scss */
+import Inicio from '@pages/Inicio';
 
 function App() {
-  return (
-    <>
-      <Header />
-    </>
-  );
+  return <Inicio />;
 }
+
 export default App;
