@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Ticket } from 'lucide-react';
 
@@ -22,8 +23,8 @@ const Header = () => {
           <Ticket className="icon-ticketti me-2 " />
           <span className="fw-bold fs-4">Ticketti</span>
         </Navbar.Brand>
-        <Navbar.Toggle aria-controls="main-navbar"/>
-        <Navbar.Collapse id="main-navbar" className='mt-1' >
+        <Navbar.Toggle aria-controls="main-navbar" />
+        <Navbar.Collapse id="main-navbar" className="mt-1">
           <Nav className="m-auto">
             {navLinks.map((link) => (
               <Nav.Link key={link.name} href={link.href}>
@@ -31,11 +32,11 @@ const Header = () => {
               </Nav.Link>
             ))}
           </Nav>
-        <div className=''>
-          <Button as="a" variant="primary">
-            Acceso
-          </Button>
-        </div>
+          <div className="">
+            <Button as={Link} to="/login" variant="primary">
+              Acceso
+            </Button>
+          </div>
         </Navbar.Collapse>
       </Container>
     </Navbar>

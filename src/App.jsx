@@ -1,8 +1,8 @@
 import './App.css';
-import Inicio from '@pages/Inicio';
+import AppRoutes from './routes/AppRoutes';
 
 function App() {
-  return <Inicio />;
+  return <AppRoutes />;
 }
 
 export default App;
