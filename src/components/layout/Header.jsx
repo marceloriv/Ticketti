@@ -1,7 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Ticket } from 'lucide-react';
-import '@styles/brand.css';
 
 const Header = () => {
   const navLinks = [
@@ -19,22 +19,23 @@ const Header = () => {
       className="border-bottom shadow-sm"
     >
       <Container>
-        <Navbar.Brand href="#home" className="d-flex align-items-center gap-2">
-          <Ticket className="me-2" />
+        <Navbar.Brand href="#home" className="d-flex gap-2">
+          <Ticket className="icon-ticketti me-2 " />
           <span className="fw-bold fs-4">Ticketti</span>
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="main-navbar" />
-        <Navbar.Collapse id="main-navbar">
-          <Nav className="me-auto">
+        <Navbar.Collapse id="main-navbar" className="mt-1">
+          <Nav className="m-auto">
             {navLinks.map((link) => (
               <Nav.Link key={link.name} href={link.href}>
                 {link.name}
               </Nav.Link>
             ))}
           </Nav>
-
-          <div className="d-none d-md-block">
-            <Button className="btn btn-ticketti shadow">Acceso</Button>
+          <div className="">
+            <Button as={Link} to="/login" variant="primary">
+              Acceso
+            </Button>
           </div>
         </Navbar.Collapse>
       </Container>

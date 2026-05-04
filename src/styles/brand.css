@@ -75,6 +75,17 @@
 }
 
 .btn-primary {
-  background-color: var(--ticketti-primary);
-  border-color: var(--ticketti-primary);
+  --bs-btn-bg: var(--ticketti-primary);
+  --bs-btn-border-color: var(--ticketti-primary);
+  --bs-btn-color: #000;
+
+  --bs-btn-hover-bg: var(--ticketti-primary-hover);
+  --bs-btn-hover-border-color: var(--ticketti-primary-hover);
+  --bs-btn-hover-color: #000;
+
+  --bs-btn-active-bg: var(--ticketti-primary-hover);
+  --bs-btn-active-border-color: var(--ticketti-primary-hover);
+  --bs-btn-active-color: #000;
+
+  --bs-btn-focus-shadow-rgb: 90, 212, 230;
 }
