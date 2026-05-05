@@ -10,7 +10,7 @@ const Header = () => {
     { name: 'Eventos', to: '/events' },
     { name: 'Sobre Nosotros', to: '/about' },
     { name: 'Contacto', to: '/contact' },
-    { name: 'Login', to: '/login' }
+    { name: 'Login', to: '/login' },
   ];
 
   return (
@@ -21,7 +21,11 @@ const Header = () => {
       className="border-bottom shadow-sm"
     >
       <Container>
-        <Navbar.Brand as={Link} to="/home" className="d-flex align-items-center gap-2">
+        <Navbar.Brand
+          as={Link}
+          to="/home"
+          className="d-flex align-items-center gap-2"
+        >
           <Ticket className="me-2" />
           <span className="fw-bold fs-4">Ticketti</span>
         </Navbar.Brand>
@@ -31,11 +35,7 @@ const Header = () => {
         <Navbar.Collapse id="main-navbar" className="mt-1">
           <Nav className="m-auto">
             {navLinks.map((link) => (
-              <Nav.Link
-                key={link.name}
-                as={NavLink}
-                to={link.to}
-              >
+              <Nav.Link key={link.name} as={NavLink} to={link.to}>
                 {link.name}
               </Nav.Link>
             ))}
