@@ -31,21 +31,21 @@ const CATEGORIAS = [
 const HERO_SLIDES = [
   {
     id: 1,
-    imagen: '/public/Tour-Press-Photo-1-28ad2aa10b.webp',
+    imagen: '/public/img/Tour-Press-Photo-1-28ad2aa10b.webp',
     titulo: 'Mejores Eventos',
     subtitulo:
       'Descubre los eventos más emocionantes de la ciudad. Conciertos, festivales, teatro y mucho más te esperan.',
   },
   {
     id: 2,
-    imagen: '/public/dia_de_la_astronomia.jpg',
+    imagen: '/public/img/dia_de_la_astronomia.jpg',
     titulo: 'Experiencias Únicas',
     subtitulo:
       'Vive momentos inolvidables con Ticketti. Encuentra tus eventos favoritos y asegura tus entradas.',
   },
   {
     id: 3,
-    imagen: '/public/listicle_1686140315148_74ycs_1040x500.jpg',
+    imagen: '/public/img/listicle_1686140315148_74ycs_1040x500.jpg',
     titulo: 'Cultura y Entretenimiento',
     subtitulo:
       'Desde eventos íntimos hasta grandes producciones, tenemos algo para todos los gustos.',
@@ -64,7 +64,7 @@ const Inicio = () => {
     setCargando(true);
     setError(null);
     try {
-      const response = await api.get('/api/v0/Eventos/listarEventos');
+      const response = await api.get('/Eventos/listarEventos');
       const datos = response.data || [];
       setEventos(datos);
       setEventosFiltrados(datos);
