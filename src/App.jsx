@@ -1,23 +1,13 @@
-import './App.css';
-import Inicio from '@pages/Inicio';
-import Login from '@pages/Login';
-import Registro from '@pages/Registro';
+import AppRoutes from './routes/AppRoutes';
+import './styles/brand.css';
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 function App() {
   return (
-    <BrowserRouter>
     <div className="App">
-      <Routes>
-        <Route path="/" element={<Inicio />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/registro" element={<Registro />} />
-      </Routes>
+      <AppRoutes />
     </div>
-
-    </BrowserRouter>
-  )
+  );
 }
 
 export default App;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
-import '../app.css';
+import '../styles/brand.css';
 
 
 export default function Registro() {
@@ -10,8 +10,6 @@ export default function Registro() {
 
 
     <Container className="containerRegistro py-5">
-
-
       <Row className="justify-content-center">
         <Col md={10} lg={4} className="mx-auto">
           <Card className="registro-card shadow">
@@ -64,9 +62,11 @@ export default function Registro() {
                   <Form.Check type="checkbox" label="Acepto los términos" />
                 </Form.Group>
 
-                <Button variant="primary" type="submit" className="w-100">
-                  Registrarse
-                </Button>
+                <div className="text-center">
+                  <Button variant="primary" type="submit" className="btn">
+                    Registrarse
+                  </Button>
+                </div>
 
                 
               </Form>
