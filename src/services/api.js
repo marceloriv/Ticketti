@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -34,7 +34,7 @@ api.interceptors.response.use(
         case 401:
           console.error('Sesión expirada o no autorizada');
           localStorage.removeItem('token');
-          window.location.href = '/login';
+          globalThis.location.href = '/login';
           break;
         case 403:
           console.error('Acceso prohibido');
