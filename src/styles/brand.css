@@ -175,7 +175,7 @@ opciones
 
 
 
-
+/* se reutiliza el color del botón de future para registro y login*/
 .registro-card .btn {
   --bs-btn-bg: var(--ticketti-primary);
   --bs-btn-border-color: var(--ticketti-primary);
@@ -192,6 +192,7 @@ opciones
   --bs-btn-focus-shadow-rgb: 90, 212, 230;
 }
 
+/* Reutilizamos los mismos estilos para el botón de login */
 
 .login-card .btn {
   --bs-btn-bg: var(--ticketti-primary);
