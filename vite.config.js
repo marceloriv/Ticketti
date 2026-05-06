@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import babel from "@rolldown/plugin-babel";
-import path from "path";
+import path from "node:path";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -21,12 +21,12 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/api/v1": {
-        target: "http://localhost:8222",
+      '/auth': {
+        target: "http://localhost:8081",
         changeOrigin: true,
         secure: false,
       },
-      '/auth': {
+      "/api/v1": {
         target: "http://localhost:8222",
         changeOrigin: true,
         secure: false,
