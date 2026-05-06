@@ -1,8 +1,8 @@
 import React from 'react';
-import { Navbar, Nav, Container } from 'react-bootstrap';
+import { Navbar, Nav, Container, Button, Badge, Stack } from 'react-bootstrap';
 import { Ticket } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
-import '@styles/brand.css';
+// import '@styles/brand.css';
 
 const Header = () => {
   const navLinks = [
@@ -40,12 +40,16 @@ const Header = () => {
               </Nav.Link>
             ))}
           </Nav>
-
-          <div className="header-login">
-            <Link to="/login" className="btn btn-ticketti shadow">
+          <Stack direction="horizontal" gap={3}>
+            <Button as={Link} to={'/login'} className="primary">
               Acceso
-            </Link>
-          </div>
+            </Button>
+            {/* Contador on respecto a carrito  */}
+            <Button className="btn">
+              Carrito <Badge bg="info">5</Badge>
+              <span className="visually-hidden">Conttador carrito </span>
+            </Button>
+          </Stack>
         </Navbar.Collapse>
       </Container>
     </Navbar>
