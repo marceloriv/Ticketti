@@ -10,6 +10,7 @@ const Header = () => {
     { name: 'Eventos', to: '/events' },
     { name: 'Sobre Nosotros', to: '/about' },
     { name: 'Contacto', to: '/contact' },
+    { name: 'Login', to: '/login' },
   ];
 
   return (
@@ -48,6 +49,10 @@ const Header = () => {
               Acceso
             </Button>
             {/* Contador on respecto a carrito  */}
+            <Button className="btn">
+              Carrito <Badge bg="info">5</Badge>
+              <span className="visually-hidden">Conttador carrito </span>
+            </Button>
           </Stack>
         </Navbar.Collapse>
       </Container>
