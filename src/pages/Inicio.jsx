@@ -21,13 +21,11 @@ import api from '@services/api';
 const BRAND_COLOR = '#5ad4e6';
 
 const CATEGORIAS = [
-  { id: 'todo', nombre: 'Todo' },
-  { id: 'conciertos', nombre: 'Conciertos' },
-  { id: 'festivales', nombre: 'Festivales' },
-  { id: 'teatro', nombre: 'Teatro' },
-  { id: 'deportes', nombre: 'Deportes' },
+  { id: 'todo', nombre: 'Todo', generos: [] },
+  { id: 'conciertos', nombre: 'Conciertos', generos: ['ROCK', 'JAZZ', 'POP', 'KPOP', 'METAL', 'RAP', 'RNB', 'INDIE', 'REGGAETOM'] },
+  { id: 'festivales', nombre: 'Festivales Culturales', generos: ['GASTRONOMIA', 'ARTE', 'ARTESANIA', 'FOLCLORE'] },
+  { id: 'cinemovil', nombre: 'Cine Móvil', generos: ['TERROR', 'COMEDIA', 'DRAMA', 'ACCION', 'ROMANCE', 'PARODIA'] },
 ];
-
 const HERO_SLIDES = [
   {
     id: 1,
@@ -85,27 +83,25 @@ const Inicio = () => {
   }, [cargarEventos]);
 
   useEffect(() => {
-    let filtrados = eventos;
+  let filtrados = eventos;
 
-    if (categoriaActiva !== 'todo') {
-      filtrados = filtrados.filter(
-        (evento) =>
-          evento.categoria?.toLowerCase() === categoriaActiva.toLowerCase(),
-      );
-    }
+  if (categoriaActiva !== 'todo') {
+    const categoriaSeleccionada = CATEGORIAS.find(c => c.id === categoriaActiva);
+    filtrados = filtrados.filter(evento =>
+      categoriaSeleccionada.generos.includes(evento.genero)
+    );
+  }
 
-    if (busqueda.trim()) {
-      const termino = busqueda.toLowerCase();
-      filtrados = filtrados.filter(
-        (evento) =>
-          evento.nombre?.toLowerCase().includes(termino) ||
-          evento.artista?.toLowerCase().includes(termino) ||
-          evento.ubicacion?.toLowerCase().includes(termino),
-      );
-    }
+  if (busqueda.trim()) {
+    const termino = busqueda.toLowerCase();
+    filtrados = filtrados.filter(evento =>
+      evento.nombre?.toLowerCase().includes(termino) ||
+      evento.recinto?.ubicacion?.toLowerCase().includes(termino)
+    );
+  }
 
-    setEventosFiltrados(filtrados);
-  }, [categoriaActiva, busqueda, eventos]);
+  setEventosFiltrados(filtrados);
+}, [categoriaActiva, busqueda, eventos]);
 
   const handleBusquedaChange = (e) => {
     setBusqueda(e.target.value);
@@ -140,7 +136,7 @@ const Inicio = () => {
                   </InputGroup.Text>
                   <Form.Control
                     type="text"
-                    placeholder="Buscar eventos por nombre, artista o ubicación..."
+                    placeholder="Buscar eventos por nombre, genero o ubicación..."
                     value={busqueda}
                     onChange={handleBusquedaChange}
                     className="shadow-sm"
@@ -225,12 +221,11 @@ const Inicio = () => {
                     <ProductCard
                       evento={{
                         id: evento.id,
-                        imagen: evento.imagen || '/assets/hero.png',
+                        imagen: evento.imagenUrl || '/assets/hero.png',
                         titulo: evento.nombre || 'Evento sin nombre',
                         fecha: evento.fecha,
-                        ubicacion:
-                          evento.ubicacion || 'Ubicación por confirmar',
-                        precio: evento.precio || 0,
+                        ubicacion: evento.recinto?.ubicacion || 'Ubicación por confirmar',
+                        precio: evento.precioEntrada || 0,
                       }}
                     />
                   </Col>
