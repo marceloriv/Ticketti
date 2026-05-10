@@ -39,6 +39,10 @@ const Header = () => {
                 {link.name}
               </Nav.Link>
             ))}
+            <Navbar className="btn">
+              Carrito <Badge bg="info">5</Badge>
+              <span className="visually-hidden">Conttador carrito </span>
+            </Navbar>
           </Nav>
           <Stack direction="horizontal" gap={3}>
             <Button as={Link} to={'/login'} className="primary">
