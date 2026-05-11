@@ -1,32 +1,32 @@
-import React from 'react';
 import { Navbar, Nav, Container, Button, Badge, Stack } from 'react-bootstrap';
-import { Ticket } from 'lucide-react';
+import { Ticket, LogOut, User } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
-// import '@styles/brand.css';
+import { useAuth } from '@hooks/useAuth';
+
+const BRAND_COLOR = '#5ad4e6';
 
 const Header = () => {
-  const navLinks = [
+  // CORRECCIÓN: agregar esOrganizador al destructuring
+  const { usuario, logout, esAdmin, esCliente, esOrganizador } = useAuth();
+
+  const navLinksPublicos = [
     { name: 'Inicio', to: '/home' },
     { name: 'Eventos', to: '/events' },
-    { name: 'Sobre Nosotros', to: '/about' },
-    { name: 'Contacto', to: '/contact' },
-    { name: 'Login', to: '/login' },
   ];
 
+  const navLinksRol = usuario ? [
+    ...(esAdmin()       ? [{ name: 'Panel Admin',       to: '/admin'       }] : []),
+    ...(esOrganizador() ? [{ name: 'Panel Organizador', to: '/organizador' }] : []),
+    ...(esCliente()     ? [{ name: 'Mi Perfil',         to: '/perfil'      }] : []),
+  ] : [];
+
+  const navLinks = [...navLinksPublicos, ...navLinksRol];
+
   return (
-    <Navbar
-      bg="light"
-      expand="md"
-      sticky="top"
-      className="border-bottom shadow-sm"
-    >
+    <Navbar bg="light" expand="md" sticky="top" className="border-bottom shadow-sm">
       <Container>
-        <Navbar.Brand
-          as={Link}
-          to="/home"
-          className="d-flex align-items-center gap-2"
-        >
-          <Ticket className="me-2" />
+        <Navbar.Brand as={Link} to="/home" className="d-flex align-items-center gap-2">
+          <Ticket size={28} style={{ color: BRAND_COLOR }} />
           <span className="fw-bold fs-4">Ticketti</span>
         </Navbar.Brand>
 
@@ -39,20 +39,40 @@ const Header = () => {
                 {link.name}
               </Nav.Link>
             ))}
-            <Navbar className="btn">
-              Carrito <Badge bg="info">5</Badge>
-              <span className="visually-hidden">Conttador carrito </span>
-            </Navbar>
           </Nav>
+
           <Stack direction="horizontal" gap={3}>
-            <Button as={Link} to={'/login'} className="primary">
-              Acceso
-            </Button>
-            {/* Contador on respecto a carrito  */}
-            <Button className="btn">
-              Carrito <Badge bg="info">5</Badge>
-              <span className="visually-hidden">Conttador carrito </span>
-            </Button>
+            {usuario ? (
+              <>
+                <span className="text-muted small d-flex align-items-center gap-1">
+                  <User size={16} />
+                  {usuario.nombre || 'Usuario'}
+                </span>
+
+                {esCliente() && (
+                  <Button variant="outline-secondary" size="sm" as={Link} to="/carrito">
+                    Carrito <Badge bg="info">0</Badge>
+                  </Button>
+                )}
+
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={logout}
+                  className="d-flex align-items-center gap-1"
+                >
+                  <LogOut size={16} /> Salir
+                </Button>
+              </>
+            ) : (
+              <Button
+                as={Link}
+                to="/login"
+                style={{ backgroundColor: BRAND_COLOR, borderColor: BRAND_COLOR, color: '#000' }}
+              >
+                Acceso
+              </Button>
+            )}
           </Stack>
         </Navbar.Collapse>
       </Container>
