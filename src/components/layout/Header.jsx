@@ -10,7 +10,6 @@ const Header = () => {
     { name: 'Eventos', to: '/events' },
     { name: 'Sobre Nosotros', to: '/about' },
     { name: 'Contacto', to: '/contact' },
-    { name: 'Login', to: '/login' }
   ];
 
   return (
