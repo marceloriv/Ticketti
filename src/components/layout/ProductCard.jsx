@@ -62,7 +62,7 @@ const ProductCard = ({ evento, onComprar }) => {
       >
         <Card.Img
           variant="top"
-          src={imagen}
+        src={imagen}
           alt={titulo}
           className="w-100 h-100"
           style={{
