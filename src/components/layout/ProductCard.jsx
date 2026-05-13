@@ -1,5 +1,6 @@
 import { Card, Button } from 'react-bootstrap';
 import { Calendar, MapPin, Ticket } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const BRAND_COLOR = '#5ad4e6';
 
@@ -29,6 +30,7 @@ const formatDate = (dateString) => {
 };
 
 const ProductCard = ({ evento, onComprar }) => {
+  const navigate = useNavigate();
   const { imagen, titulo, fecha, ubicacion, precio, id } = evento;
 
   const handleComprar = () => {
@@ -40,6 +42,7 @@ const ProductCard = ({ evento, onComprar }) => {
   return (
     <Card
       className="h-100 border-0 shadow-sm"
+      onClick={() => navigate(`/evento/${id}`)}
       style={{
         transition: 'all 0.3s ease',
         cursor: 'pointer',
