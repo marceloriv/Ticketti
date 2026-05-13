@@ -68,8 +68,11 @@ const Inicio = () => {
       const datos = response.data || [];
       setEventos(datos);
       setEventosFiltrados(datos);
-    } catch {
-      setError('No se pudieron cargar los eventos. Intenta más tarde.');
+    } catch (err) {
+      console.error('Error al cargar eventos:', err);
+      setError(
+        'No se pudieron cargar los eventos. Por favor, intenta más tarde.',
+      );
       setEventos([]);
       setEventosFiltrados([]);
     } finally {
