@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Container, Table, Badge, Spinner,
-  Alert, Button
+  Container,
+  Table,
+  Badge,
+  Spinner,
+  Alert,
+  Button,
 } from 'react-bootstrap';
 import { Mail, RefreshCw } from 'lucide-react';
 import Header from '@components/layout/Header';
@@ -27,8 +31,11 @@ const ESTADO_VARIANT = {
 const formatFecha = (fecha) => {
   if (!fecha) return '—';
   return new Intl.DateTimeFormat('es-CL', {
-    day: 'numeric', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   }).format(new Date(fecha));
 };
 
@@ -44,7 +51,9 @@ const HistorialNotificaciones = () => {
       if (!token) return null;
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload.userId || payload.sub || null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   };
 
   const cargar = useCallback(async () => {
@@ -57,9 +66,7 @@ const HistorialNotificaciones = () => {
     setCargando(true);
     setError(null);
     try {
-      const response = await api.get(
-        `/notificaciones/historial/${idUsuario}`
-      );
+      const response = await api.get(`/notificaciones/historial/${idUsuario}`);
       setNotificaciones(response.data || []);
     } catch {
       setError('No se pudo cargar el historial de notificaciones.');
@@ -68,7 +75,9 @@ const HistorialNotificaciones = () => {
     }
   }, []);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
 
   return (
     <div className="d-flex flex-column min-vh-100">
@@ -111,7 +120,7 @@ const HistorialNotificaciones = () => {
                 </tr>
               </thead>
               <tbody>
-                {notificaciones.map(n => (
+                {notificaciones.map((n) => (
                   <tr key={n.idNotificacion}>
                     <td>
                       <Badge

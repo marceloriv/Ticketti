@@ -1,14 +1,12 @@
-import React from 'react';
-import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import { Button, Card, Col, Container, Row } from 'react-bootstrap';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
-import { useNavigate, Link } from 'react-router-dom';
-import '../styles/brand.css';
+import { Link } from 'react-router-dom';
 
 const BRAND_COLOR = '#5ad4e6';
 
 export default function Login() {
-  const navigate = useNavigate();
+
 
   return (
     <Container className="loginContainer py-5">
@@ -23,7 +21,7 @@ export default function Login() {
                 label="Correo Electrónico"
                 className="mb-3"
               >
-              <Form.Control type="email" placeholder="name@example.com" />
+                <Form.Control type="email" placeholder="name@example.com" />
               </FloatingLabel>
 
               <FloatingLabel
@@ -39,8 +37,7 @@ export default function Login() {
               </div>
 
               <p className="text-center mt-3">
-                ¿No tienes cuenta?{' '}
-                <Link to="/registro">Regístrate aquí</Link>
+                ¿No tienes cuenta? <Link to="/registro">Regístrate aquí</Link>
               </p>
             </Card.Body>
           </Card>

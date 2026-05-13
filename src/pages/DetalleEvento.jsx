@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Badge, Button, Spinner, Alert } from 'react-bootstrap';
+import {
+  Container,
+  Row,
+  Col,
+  Badge,
+  Button,
+  Spinner,
+  Alert,
+} from 'react-bootstrap';
 import { Calendar, MapPin, Ticket, Users } from 'lucide-react';
 import Header from '@components/layout/Header';
 import Footer from '@components/layout/Footer';
@@ -11,14 +19,18 @@ const BRAND_COLOR = '#5ad4e6';
 const formatPrice = (price) => {
   if (!price) return 'Gratis';
   return new Intl.NumberFormat('es-CL', {
-    style: 'currency', currency: 'CLP', minimumFractionDigits: 0,
+    style: 'currency',
+    currency: 'CLP',
+    minimumFractionDigits: 0,
   }).format(price);
 };
 
 const formatDate = (dateString) => {
   if (!dateString) return 'Fecha por confirmar';
   return new Intl.DateTimeFormat('es-CL', {
-    day: 'numeric', month: 'numeric', year: 'numeric'
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
   }).format(new Date(dateString));
 };
 
@@ -32,9 +44,9 @@ const DetalleEvento = () => {
   useEffect(() => {
     const cargarEvento = async () => {
       try {
-        const response = await api.get(`/Eventos/buscarEvento/${id}`);
+        const response = await api.get(`/eventos/buscarEvento/${id}`);
         setEvento(response.data);
-      } catch (err) {
+      } catch {
         setError('No se pudo cargar el evento.');
       } finally {
         setCargando(false);
@@ -43,33 +55,39 @@ const DetalleEvento = () => {
     cargarEvento();
   }, [id]);
 
-  if (cargando) return (
-    <div className="d-flex flex-column min-vh-100">
-      <Header />
-      <div className="text-center py-5">
-        <Spinner animation="border" style={{ color: BRAND_COLOR }} />
+  if (cargando)
+    return (
+      <div className="d-flex flex-column min-vh-100">
+        <Header />
+        <div className="text-center py-5">
+          <Spinner animation="border" style={{ color: BRAND_COLOR }} />
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
-  );
+    );
 
-  if (error) return (
-    <div className="d-flex flex-column min-vh-100">
-      <Header />
-      <Container className="py-5">
-        <Alert variant="danger">{error}</Alert>
-      </Container>
-      <Footer />
-    </div>
-  );
+  if (error)
+    return (
+      <div className="d-flex flex-column min-vh-100">
+        <Header />
+        <Container className="py-5">
+          <Alert variant="danger">{error}</Alert>
+        </Container>
+        <Footer />
+      </div>
+    );
 
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
       <main className="flex-grow-1 py-5">
         <Container>
-          <Button variant="link" onClick={() => navigate(-1)} className="mb-4 p-0"
-            style={{ color: BRAND_COLOR }}>
+          <Button
+            variant="link"
+            onClick={() => navigate(-1)}
+            className="mb-4 p-0"
+            style={{ color: BRAND_COLOR }}
+          >
             Inicio
           </Button>
 
@@ -84,7 +102,9 @@ const DetalleEvento = () => {
             </Col>
 
             <Col md={6} className="mt-4 mt-md-0">
-              <Badge bg="info" className="mb-3">{evento.genero}</Badge>
+              <Badge bg="info" className="mb-3">
+                {evento.genero}
+              </Badge>
               <h1 className="fw-bold mb-3">{evento.nombre}</h1>
               <p className="text-muted mb-4">{evento.descripcion}</p>
 
@@ -95,7 +115,9 @@ const DetalleEvento = () => {
 
               <div className="mb-2 d-flex align-items-center gap-2">
                 <MapPin size={18} style={{ stroke: BRAND_COLOR }} />
-                <span>{evento.recinto?.nombre} — {evento.recinto?.ubicacion}</span>
+                <span>
+                  {evento.recinto?.nombre} — {evento.recinto?.ubicacion}
+                </span>
               </div>
 
               <div className="mb-4 d-flex align-items-center gap-2">
@@ -103,10 +125,19 @@ const DetalleEvento = () => {
                 <span>{evento.stock} entradas disponibles</span>
               </div>
 
-              <h3 className="fw-bold mb-4">{formatPrice(evento.precioEntrada)}</h3>
+              <h3 className="fw-bold mb-4">
+                {formatPrice(evento.precioEntrada)}
+              </h3>
 
-              <Button size="lg" className="d-flex align-items-center gap-2"
-                style={{ backgroundColor: BRAND_COLOR, borderColor: BRAND_COLOR, color: '#000' }}>
+              <Button
+                size="lg"
+                className="d-flex align-items-center gap-2"
+                style={{
+                  backgroundColor: BRAND_COLOR,
+                  borderColor: BRAND_COLOR,
+                  color: '#000',
+                }}
+              >
                 <Ticket size={20} />
                 Comprar entrada
               </Button>

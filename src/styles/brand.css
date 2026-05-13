@@ -7,9 +7,6 @@
   --ticketti-primary-shadow: rgba(90, 212, 230, 0.25);
 }
 
-
-
-
 /* Estilos hover del botón con color de marca */
 .btn-ticketti {
   background-color: var(--ticketti-primary);
@@ -93,8 +90,7 @@
   --bs-btn-focus-shadow-rgb: 90, 212, 230;
 }
 
- /*Estilos específicos para el botón de acceso en el header*/
-
+/*Estilos específicos para el botón de acceso en el header*/
 
 .header-login .btn {
   --bs-btn-bg: var(--ticketti-primary);
@@ -112,11 +108,7 @@
   --bs-btn-focus-shadow-rgb: 90, 212, 230;
 }
 
-
-
-
-
-/* Estilos generales de la aplicación todo el fondo 
+/* Estilos generales de la aplicación todo el fondo
 
 opciones
 
@@ -129,7 +121,6 @@ opciones
   min-height: 100vh;
   background-color: #6f88c4;
 }
-
 
 /* Estilos para la tarjeta de registro*/
 
@@ -146,8 +137,6 @@ opciones
   background: transparent !important;
 }
 
-
-
 .registro-image {
   display: block;
   width: 100%;
@@ -156,7 +145,6 @@ opciones
   border-radius: 1rem;
   object-fit: cover;
 }
-
 
 /*Estilos para la tarjeta de login*/
 
@@ -172,8 +160,6 @@ opciones
 .login-card .card-body {
   background: transparent !important;
 }
-
-
 
 /* se reutiliza el color del botón de future para registro y login*/
 .registro-card .btn {
@@ -209,5 +195,3 @@ opciones
 
   --bs-btn-focus-shadow-rgb: 90, 212, 230;
 }
-
-

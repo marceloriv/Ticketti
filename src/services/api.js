@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -21,7 +21,10 @@ const esRutaPublica = (config) => {
   }
 
   // Listado/busqueda pública de eventos.
-  if (metodo === 'get' && (url.startsWith('/Eventos/') || url.startsWith('/eventos/'))) {
+  if (
+    metodo === 'get' &&
+    (url.startsWith('/Eventos/') || url.startsWith('/eventos/'))
+  ) {
     return true;
   }
 
@@ -42,7 +45,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  },
+  }
 );
 
 api.interceptors.response.use(
@@ -79,7 +82,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  },
+  }
 );
 
 export default api;

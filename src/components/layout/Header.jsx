@@ -1,27 +1,32 @@
-import { Navbar, Nav, Container, Button, Badge, Stack } from 'react-bootstrap';
-import { Ticket, LogOut, User } from 'lucide-react';
-import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '@hooks/useAuth';
-
-const BRAND_COLOR = '#5ad4e6';
+import { LogOut, Ticket, User } from 'lucide-react';
+import { Badge, Button, Container, Nav, Navbar, Stack } from 'react-bootstrap';
+import { Link, NavLink } from 'react-router-dom';
 
 const Header = () => {
-  // CORRECCIÓN: agregar esOrganizador al destructuring
-  const { usuario, logout, esAdmin, esCliente, esOrganizador } = useAuth();
+  const { usuario, logout } = useAuth();
 
   const navLinksPublicos = [
     { name: 'Inicio', to: '/home' },
     { name: 'Eventos', to: '/events' },
     { name: 'Sobre Nosotros', to: '/about' },
     { name: 'Contacto', to: '/contact' },
-    { name: 'Login', to: '/login' }
   ];
 
   return (
-    <Navbar bg="light" expand="md" sticky="top" className="border-bottom shadow-sm">
+    <Navbar
+      bg="light"
+      expand="md"
+      sticky="top"
+      className="border-bottom shadow-sm"
+    >
       <Container>
-        <Navbar.Brand as={Link} to="/home" className="d-flex align-items-center gap-2">
-          <Ticket size={28} style={{ color: BRAND_COLOR }} />
+        <Navbar.Brand
+          as={Link}
+          to="/home"
+          className="d-flex align-items-center gap-2"
+        >
+          <Ticket size={28} />
           <span className="fw-bold fs-4">Ticketti</span>
         </Navbar.Brand>
 
@@ -44,8 +49,13 @@ const Header = () => {
                   {usuario.nombre || 'Usuario'}
                 </span>
 
-                {esCliente() && (
-                  <Button variant="outline-secondary" size="sm" as={Link} to="/carrito">
+                {usuario?.rol === 'CLIENTE' && (
+                  <Button
+                    variant="outline-secondary"
+                    size="sm"
+                    as={Link}
+                    to="/carrito"
+                  >
                     Carrito <Badge bg="info">0</Badge>
                   </Button>
                 )}
@@ -60,11 +70,7 @@ const Header = () => {
                 </Button>
               </>
             ) : (
-              <Button
-                as={Link}
-                to="/login"
-                style={{ backgroundColor: BRAND_COLOR, borderColor: BRAND_COLOR, color: '#000' }}
-              >
+              <Button as={Link} to="/login">
                 Acceso
               </Button>
             )}

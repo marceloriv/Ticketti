@@ -1,12 +1,14 @@
-import AppRoutes from './routes/AppRoutes';
-import './styles/brand.css';
-
+import { AuthProvider } from '@contexts/auth';
+import AppRoutes from '@routes/AppRoutes';
+import '@styles/brand.css';
 
 function App() {
   return (
-    <div className="App">
-      <AppRoutes />
-    </div>
+    <AuthProvider>
+      <div className="App">
+        <AppRoutes />
+      </div>
+    </AuthProvider>
   );
 }
 

@@ -3,7 +3,6 @@ import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import '../styles/brand.css';
 
 const initialFormData = {
   nombre: '',
@@ -32,8 +31,8 @@ const getRegistroErrorMessage = (error) => {
       } catch {
         return listMatch[0]
           .replace(/^\[|\]$/g, '')
-          .replace(/\",\"/g, '\n')
-          .replace(/\"/g, '')
+          .replace(/","/g, '\n')
+          .replace(/"/g, '')
           .replace(/^"|"$/g, '');
       }
     }
@@ -62,10 +61,14 @@ export default function Registro() {
     setCargando(true);
 
     try {
-      await api.post('/usuarios', {
-        ...formData,
-        rol: 'CLIENTE',
-      }, { skipAuth: true });
+      await api.post(
+        '/usuarios',
+        {
+          ...formData,
+          rol: 'CLIENTE',
+        },
+        { skipAuth: true }
+      );
 
       setMensaje({
         tipo: 'success',

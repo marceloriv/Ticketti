@@ -1,7 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Container, Row, Col, Card, Button, Badge,
-  Spinner, Alert, Modal, Form, Table, Tabs, Tab
+  Container,
+  Row,
+  Col,
+  Card,
+  Button,
+  Badge,
+  Spinner,
+  Alert,
+  Modal,
+  Form,
+  Table,
+  Tabs,
+  Tab,
 } from 'react-bootstrap';
 import { Heart, Building2, Plus, TrendingUp, Eye } from 'lucide-react';
 import Header from '@components/layout/Header';
@@ -26,9 +37,17 @@ const Donaciones = () => {
   const [cargandoDetalle, setCargandoDetalle] = useState(false);
 
   const [form, setForm] = useState({
-    nombre: '', rut: '', direccion: '', telefono: '',
-    email: '', banco: '', tipoCuenta: '', numeroCuenta: '',
-    titularCuenta: '', rutTitular: '', metodoPagoPreferido: 'TRANSFERENCIA',
+    nombre: '',
+    rut: '',
+    direccion: '',
+    telefono: '',
+    email: '',
+    banco: '',
+    tipoCuenta: '',
+    numeroCuenta: '',
+    titularCuenta: '',
+    rutTitular: '',
+    metodoPagoPreferido: 'TRANSFERENCIA',
   });
   const [showCrear, setShowCrear] = useState(false);
   const [guardando, setGuardando] = useState(false);
@@ -47,7 +66,9 @@ const Donaciones = () => {
     }
   }, []);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
 
   const verDetalle = async (org) => {
     setOrgSeleccionada(org);
@@ -80,9 +101,17 @@ const Donaciones = () => {
       setMensajeExito('Organización creada exitosamente.');
       setShowCrear(false);
       setForm({
-        nombre: '', rut: '', direccion: '', telefono: '',
-        email: '', banco: '', tipoCuenta: '', numeroCuenta: '',
-        titularCuenta: '', rutTitular: '', metodoPagoPreferido: 'TRANSFERENCIA',
+        nombre: '',
+        rut: '',
+        direccion: '',
+        telefono: '',
+        email: '',
+        banco: '',
+        tipoCuenta: '',
+        numeroCuenta: '',
+        titularCuenta: '',
+        rutTitular: '',
+        metodoPagoPreferido: 'TRANSFERENCIA',
       });
       cargar();
       setTimeout(() => setMensajeExito(''), 4000);
@@ -106,7 +135,11 @@ const Donaciones = () => {
             <Button
               onClick={() => setShowCrear(true)}
               className="d-flex align-items-center gap-2"
-              style={{ backgroundColor: BRAND_COLOR, borderColor: BRAND_COLOR, color: '#000' }}
+              style={{
+                backgroundColor: BRAND_COLOR,
+                borderColor: BRAND_COLOR,
+                color: '#000',
+              }}
             >
               <Plus size={18} /> Nueva organización
             </Button>
@@ -128,15 +161,24 @@ const Donaciones = () => {
           <Row xs={1} md={2} lg={3} className="g-4">
             {organizaciones.map((org) => (
               <Col key={org.idOrganizacion}>
-                <Card className="h-100 border-0 shadow-sm"
+                <Card
+                  className="h-100 border-0 shadow-sm"
                   style={{ transition: 'all 0.3s ease' }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = `0 8px 25px rgba(90,212,230,0.25)`; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = `0 8px 25px rgba(90,212,230,0.25)`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = '';
+                    e.currentTarget.style.boxShadow = '';
+                  }}
                 >
                   <Card.Body className="p-4">
                     <div className="d-flex align-items-center gap-2 mb-3">
                       <Building2 size={22} style={{ color: BRAND_COLOR }} />
-                      <Card.Title className="fw-bold mb-0 fs-6">{org.nombre}</Card.Title>
+                      <Card.Title className="fw-bold mb-0 fs-6">
+                        {org.nombre}
+                      </Card.Title>
                     </div>
                     <p className="text-muted small mb-1">RUT: {org.rut}</p>
                     <p className="text-muted small mb-1">{org.email}</p>
@@ -167,7 +209,12 @@ const Donaciones = () => {
       </main>
 
       {/* Modal detalle organización */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
+      <Modal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        size="lg"
+        centered
+      >
         <Modal.Header closeButton>
           <Modal.Title className="d-flex align-items-center gap-2">
             <Building2 size={22} style={{ color: BRAND_COLOR }} />
@@ -183,7 +230,9 @@ const Donaciones = () => {
             <Tabs defaultActiveKey="causas" className="mb-3">
               <Tab eventKey="causas" title="Causas Sociales">
                 {causas.length === 0 ? (
-                  <Alert variant="info">Esta organización no tiene causas activas.</Alert>
+                  <Alert variant="info">
+                    Esta organización no tiene causas activas.
+                  </Alert>
                 ) : (
                   <Table hover size="sm">
                     <thead>
@@ -194,18 +243,27 @@ const Donaciones = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {causas.map(c => (
+                      {causas.map((c) => (
                         <tr key={c.idCausa}>
                           <td>{c.nombre}</td>
                           <td>
-                            <Badge bg={c.estado === 'ACTIVA' ? 'success' : 'secondary'}>
+                            <Badge
+                              bg={
+                                c.estado === 'ACTIVA' ? 'success' : 'secondary'
+                              }
+                            >
                               {c.estado}
                             </Badge>
                           </td>
-                          <td>{c.objetivoMonto
-                            ? new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(c.objetivoMonto)
-                            : '—'
-                          }</td>
+                          <td>
+                            {c.objetivoMonto
+                              ? new Intl.NumberFormat('es-CL', {
+                                  style: 'currency',
+                                  currency: 'CLP',
+                                  minimumFractionDigits: 0,
+                                }).format(c.objetivoMonto)
+                              : '—'}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -214,14 +272,23 @@ const Donaciones = () => {
               </Tab>
               <Tab eventKey="total" title="Monto Recaudado">
                 <div className="text-center py-4">
-                  <TrendingUp size={48} style={{ color: BRAND_COLOR }} className="mb-3" />
+                  <TrendingUp
+                    size={48}
+                    style={{ color: BRAND_COLOR }}
+                    className="mb-3"
+                  />
                   <h3 className="fw-bold">
                     {total !== null
-                      ? new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(total)
-                      : '—'
-                    }
+                      ? new Intl.NumberFormat('es-CL', {
+                          style: 'currency',
+                          currency: 'CLP',
+                          minimumFractionDigits: 0,
+                        }).format(total)
+                      : '—'}
                   </h3>
-                  <p className="text-muted">Total recaudado (donaciones aprobadas)</p>
+                  <p className="text-muted">
+                    Total recaudado (donaciones aprobadas)
+                  </p>
                 </div>
               </Tab>
             </Tabs>
@@ -230,7 +297,12 @@ const Donaciones = () => {
       </Modal>
 
       {/* Modal crear organización */}
-      <Modal show={showCrear} onHide={() => setShowCrear(false)} size="lg" centered>
+      <Modal
+        show={showCrear}
+        onHide={() => setShowCrear(false)}
+        size="lg"
+        centered
+      >
         <Modal.Header closeButton>
           <Modal.Title>Nueva Organización</Modal.Title>
         </Modal.Header>
@@ -240,15 +312,24 @@ const Donaciones = () => {
               {[
                 { name: 'nombre', label: 'Nombre', required: true },
                 { name: 'rut', label: 'RUT', required: true },
-                { name: 'email', label: 'Email', required: true, type: 'email' },
+                {
+                  name: 'email',
+                  label: 'Email',
+                  required: true,
+                  type: 'email',
+                },
                 { name: 'telefono', label: 'Teléfono', required: true },
                 { name: 'direccion', label: 'Dirección', required: true },
                 { name: 'banco', label: 'Banco', required: true },
                 { name: 'tipoCuenta', label: 'Tipo de Cuenta', required: true },
                 { name: 'numeroCuenta', label: 'N° Cuenta', required: true },
-                { name: 'titularCuenta', label: 'Titular Cuenta', required: true },
+                {
+                  name: 'titularCuenta',
+                  label: 'Titular Cuenta',
+                  required: true,
+                },
                 { name: 'rutTitular', label: 'RUT Titular', required: true },
-              ].map(f => (
+              ].map((f) => (
                 <Col md={6} key={f.name}>
                   <Form.Group>
                     <Form.Label className="fw-semibold">{f.label}</Form.Label>
@@ -264,8 +345,14 @@ const Donaciones = () => {
               ))}
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label className="fw-semibold">Método de Pago</Form.Label>
-                  <Form.Select name="metodoPagoPreferido" value={form.metodoPagoPreferido} onChange={handleFormChange}>
+                  <Form.Label className="fw-semibold">
+                    Método de Pago
+                  </Form.Label>
+                  <Form.Select
+                    name="metodoPagoPreferido"
+                    value={form.metodoPagoPreferido}
+                    onChange={handleFormChange}
+                  >
                     <option value="TRANSFERENCIA">Transferencia</option>
                     <option value="DEPOSITO">Depósito</option>
                   </Form.Select>
@@ -273,13 +360,20 @@ const Donaciones = () => {
               </Col>
             </Row>
             <div className="d-flex justify-content-end gap-2 mt-4">
-              <Button variant="outline-secondary" onClick={() => setShowCrear(false)}>
+              <Button
+                variant="outline-secondary"
+                onClick={() => setShowCrear(false)}
+              >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={guardando}
-                style={{ backgroundColor: BRAND_COLOR, borderColor: BRAND_COLOR, color: '#000' }}
+                style={{
+                  backgroundColor: BRAND_COLOR,
+                  borderColor: BRAND_COLOR,
+                  color: '#000',
+                }}
               >
                 {guardando ? <Spinner size="sm" /> : 'Guardar'}
               </Button>

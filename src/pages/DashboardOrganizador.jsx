@@ -1,15 +1,21 @@
-import { Container, Row, Col, Card, Nav, Tab, Button } from 'react-bootstrap';
-import { Calendar, TrendingUp, Plus, BarChart2 } from 'lucide-react';
-import Header from '@components/layout/Header';
 import Footer from '@components/layout/Footer';
+import Header from '@components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
+import { BarChart2, Calendar, Plus, TrendingUp } from 'lucide-react';
+import { Button, Card, Col, Container, Nav, Row, Tab } from 'react-bootstrap';
 
 const BRAND_COLOR = '#5ad4e6';
 
 // Placeholder visible para el equipo
 const Placeholder = ({ ms, descripcion, altura = 200 }) => (
-  <div className="d-flex flex-column align-items-center justify-content-center text-center rounded"
-    style={{ height: altura, border: '2px dashed #dee2e6', background: '#fafafa' }}>
+  <div
+    className="d-flex flex-column align-items-center justify-content-center text-center rounded"
+    style={{
+      height: altura,
+      border: '2px dashed #dee2e6',
+      background: '#fafafa',
+    }}
+  >
     <p className="text-muted fw-semibold mb-1">🔧 Pendiente — {ms}</p>
     <p className="text-muted small mb-0">{descripcion}</p>
   </div>
@@ -32,7 +38,11 @@ const DashboardOrganizador = () => {
             </div>
             {/* MSEventos: conectar botón con modal/página de crear evento */}
             <Button
-              style={{ backgroundColor: BRAND_COLOR, borderColor: BRAND_COLOR, color: '#000' }}
+              style={{
+                backgroundColor: BRAND_COLOR,
+                borderColor: BRAND_COLOR,
+                color: '#000',
+              }}
               className="d-flex align-items-center gap-2"
             >
               <Plus size={18} /> Crear evento
@@ -44,12 +54,24 @@ const DashboardOrganizador = () => {
             <Col xs={6} md={3}>
               <Card className="border-0 shadow-sm h-100">
                 <Card.Body className="d-flex align-items-center gap-3 p-4">
-                  <div style={{ background: `${BRAND_COLOR}20`, borderRadius: '50%', width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div
+                    style={{
+                      background: `${BRAND_COLOR}20`,
+                      borderRadius: '50%',
+                      width: 48,
+                      height: 48,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
                     <Calendar size={22} style={{ color: BRAND_COLOR }} />
                   </div>
                   <div>
                     <p className="text-muted small mb-1">Mis eventos</p>
-                    <p className="text-muted small fst-italic mb-0">Pendiente MSEventos</p>
+                    <p className="text-muted small fst-italic mb-0">
+                      Pendiente MSEventos
+                    </p>
                   </div>
                 </Card.Body>
               </Card>
@@ -57,12 +79,24 @@ const DashboardOrganizador = () => {
             <Col xs={6} md={3}>
               <Card className="border-0 shadow-sm h-100">
                 <Card.Body className="d-flex align-items-center gap-3 p-4">
-                  <div style={{ background: '#28a74520', borderRadius: '50%', width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div
+                    style={{
+                      background: '#28a74520',
+                      borderRadius: '50%',
+                      width: 48,
+                      height: 48,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
                     <TrendingUp size={22} style={{ color: '#28a745' }} />
                   </div>
                   <div>
                     <p className="text-muted small mb-1">Entradas vendidas</p>
-                    <p className="text-muted small fst-italic mb-0">Pendiente MSCarrito</p>
+                    <p className="text-muted small fst-italic mb-0">
+                      Pendiente MSCarrito
+                    </p>
                   </div>
                 </Card.Body>
               </Card>
@@ -70,12 +104,24 @@ const DashboardOrganizador = () => {
             <Col xs={6} md={3}>
               <Card className="border-0 shadow-sm h-100">
                 <Card.Body className="d-flex align-items-center gap-3 p-4">
-                  <div style={{ background: '#ffc10720', borderRadius: '50%', width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div
+                    style={{
+                      background: '#ffc10720',
+                      borderRadius: '50%',
+                      width: 48,
+                      height: 48,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
                     <BarChart2 size={22} style={{ color: '#ffc107' }} />
                   </div>
                   <div>
                     <p className="text-muted small mb-1">Ingresos</p>
-                    <p className="text-muted small fst-italic mb-0">Pendiente MSCarrito</p>
+                    <p className="text-muted small fst-italic mb-0">
+                      Pendiente MSCarrito
+                    </p>
                   </div>
                 </Card.Body>
               </Card>
@@ -83,12 +129,26 @@ const DashboardOrganizador = () => {
             <Col xs={6} md={3}>
               <Card className="border-0 shadow-sm h-100">
                 <Card.Body className="d-flex align-items-center gap-3 p-4">
-                  <div style={{ background: '#e83e8c20', borderRadius: '50%', width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div
+                    style={{
+                      background: '#e83e8c20',
+                      borderRadius: '50%',
+                      width: 48,
+                      height: 48,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
                     <TrendingUp size={22} style={{ color: '#e83e8c' }} />
                   </div>
                   <div>
-                    <p className="text-muted small mb-1">Donaciones generadas</p>
-                    <p className="text-muted small fst-italic mb-0">Pendiente MSDonaciones</p>
+                    <p className="text-muted small mb-1">
+                      Donaciones generadas
+                    </p>
+                    <p className="text-muted small fst-italic mb-0">
+                      Pendiente MSDonaciones
+                    </p>
                   </div>
                 </Card.Body>
               </Card>
@@ -100,9 +160,15 @@ const DashboardOrganizador = () => {
             <Card className="border-0 shadow-sm">
               <Card.Header className="bg-white border-bottom">
                 <Nav variant="tabs" className="border-0">
-                  <Nav.Item><Nav.Link eventKey="eventos">Mis Eventos</Nav.Link></Nav.Item>
-                  <Nav.Item><Nav.Link eventKey="ventas">Ventas por Evento</Nav.Link></Nav.Item>
-                  <Nav.Item><Nav.Link eventKey="reportes">Reportes</Nav.Link></Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="eventos">Mis Eventos</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="ventas">Ventas por Evento</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="reportes">Reportes</Nav.Link>
+                  </Nav.Item>
                 </Nav>
               </Card.Header>
               <Card.Body>
@@ -110,7 +176,7 @@ const DashboardOrganizador = () => {
                   <Tab.Pane eventKey="eventos">
                     <Placeholder
                       ms="MSEventos"
-                      descripcion="Listar eventos del organizador — GET /api/v1/Eventos/listarEventos?organizadorId={id}"
+                      descripcion="Listar eventos del organizador — GET /api/v1/eventos/listarEventos?organizadorId={id}"
                       altura={250}
                     />
                   </Tab.Pane>

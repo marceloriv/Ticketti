@@ -1,17 +1,13 @@
-import { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
-import api from '../services/api';
+import { useEffect, useState } from 'react';
+import api from '../../services/api';
+import { AuthContext } from './AuthContext';
 
+const TOKEN_KEY = 'token'; // Clave para almacenar el token en localStorage
+const USER_KEY = 'user'; // Clave para almacenar datos del usuario
 
-// se crea un contexto de autenticación para manejar los estados del login, registro y token
-const AuthContext = createContext(null);
-
-//hook peronalizado para que cualquier componente pueda acceder a las funciones y estados 
-export const useAuth = () => useContext(AuthContext);
-
-const TOKEN_KEY = 'token'; // clave para almacenar el token en localStorage
-const authApi = axios.create({ 
-  baseURL: '/auth', 
+const authApi = axios.create({
+  baseURL: '/auth',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -19,35 +15,54 @@ const authApi = axios.create({
   },
 });
 
-// se crea esta funcion para envolver la apk
+// Se crea esta función para envolver la app
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(null); // estado 
-  
+  const [token, setToken] = useState(null);
+  const [usuario, setUsuario] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Cargar token y usuario guardados al montar el componente
   useEffect(() => {
     const tokenGuardado = localStorage.getItem(TOKEN_KEY);
-    if (tokenGuardado) setToken(tokenGuardado);
+    const usuarioGuardado = localStorage.getItem(USER_KEY);
+
+    if (tokenGuardado) {
+      setToken(tokenGuardado);
+    }
+
+    if (usuarioGuardado) {
+      try {
+        setUsuario(JSON.parse(usuarioGuardado));
+      } catch (e) {
+        console.error('Error al parsear usuario guardado:', e);
+        localStorage.removeItem(USER_KEY);
+      }
+    }
+
+    setLoading(false);
   }, []);
-  // función asíncona para registrar un nuevo usuario 
+
+  // Función asíncrona para registrar un nuevo usuario
   const register = async (form) => {
-    //objeto coon datos para envialo al backend 
     const datosRegistro = {
       nombre: form.nombre || form.username || '',
       correo: form.correo || form.email || form.username || '',
       contrasena: form.contrasena || form.password || '',
       direccion: form.direccion || '',
       telefono: form.telefono || '',
-      rol: 'CLIENTE',
+      rol: form.rol || 'CLIENTE',
     };
 
     try {
       const resp = await api.post('/usuarios', datosRegistro, { skipAuth: true });
-      return resp.data;// si responde bien se devuelve la data
+      return resp.data;
     } catch (err) {
       const msg = err.response?.data?.mensaje || err.response?.data?.message || 'Error al registrar usuario';
       throw new Error(msg);
     }
   };
-  // función asíncona para iniciar sesión 
+
+  // Función asíncrona para iniciar sesión
   const login = async (credentials) => {
     const payload = {
       correo: credentials.correo || credentials.email || credentials.username || '',
@@ -57,21 +72,35 @@ export function AuthProvider({ children }) {
     try {
       const resp = await authApi.post('/login', payload);
       const data = resp.data;
-      if (!data || !data.token) throw new Error(data?.mensaje || data?.message || 'Token no recibido');
+
+      if (!data || !data.token) {
+        throw new Error(data?.mensaje || data?.message || 'Token no recibido');
+      }
+
+      const usuarioData = data.usuario || { rol: 'CLIENTE' };
+
       localStorage.setItem(TOKEN_KEY, data.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(usuarioData));
+
       setToken(data.token);
+      setUsuario(usuarioData);
+
       return data.token;
     } catch (err) {
       const msg = err.response?.data?.mensaje || err.response?.data?.message || 'Error al iniciar sesión';
       throw new Error(msg);
     }
   };
-// funcion para cerrar sesión 
+
+  // Función para cerrar sesión
   const logout = () => {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
     setToken(null);
+    setUsuario(null);
   };
 
+  // Función para realizar requests autenticados
   const authFetch = async (url, options = {}) => {
     const tokenActual = localStorage.getItem(TOKEN_KEY);
     const headers = { ...(options.headers || {}) };
@@ -81,18 +110,16 @@ export function AuthProvider({ children }) {
 
   const isAuthenticated = !!token;
 
-  return (
-    <AuthContext.Provider
-      value={{
-        token,
-        register,
-        login,
-        logout,
-        authFetch,
-        isAuthenticated,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = {
+    token,
+    usuario,
+    register,
+    login,
+    logout,
+    authFetch,
+    isAuthenticated,
+    loading,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
