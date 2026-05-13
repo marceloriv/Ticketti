@@ -11,6 +11,7 @@ export const ROUTES = {
   REGISTRO: '/registro',
   EVENTO_DETALLE: (id) => `/evento/${id}`,
   DONACIONES: '/donaciones',
+  NOSOTROS: '/nosotros',
 
   // Cliente autenticado
   PERFIL: '/perfil',

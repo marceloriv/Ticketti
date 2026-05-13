@@ -9,7 +9,7 @@ const Header = () => {
   const navLinksPublicos = [
     { name: 'Inicio', to: '/home' },
     { name: 'Eventos', to: '/events' },
-    { name: 'Sobre Nosotros', to: '/about' },
+    { name: 'Sobre Nosotros', to: '/nosotros' },
     { name: 'Contacto', to: '/contact' },
   ];
 

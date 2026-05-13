@@ -8,6 +8,7 @@ import DetalleEvento from '@pages/DetalleEvento';
 import Donaciones from '@pages/Donaciones';
 import Inicio from '@pages/Inicio';
 import Login from '@pages/Login';
+import Nosotros from '@pages/Nosotros';
 import Registro from '@pages/Registro';
 
 // Importar páginas protegidas
@@ -21,7 +22,10 @@ export default function AppRoutes() {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: '100vh' }}
+      >
         <div className="spinner-border" role="status">
           <span className="visually-hidden">Cargando...</span>
         </div>
@@ -36,21 +40,31 @@ export default function AppRoutes() {
       <Route path={ROUTES.INICIO} element={<Inicio />} />
       <Route
         path={ROUTES.LOGIN}
-        element={isAuthenticated ? <Navigate to={ROUTES.HOME} replace /> : <Login />}
+        element={
+          isAuthenticated ? <Navigate to={ROUTES.HOME} replace /> : <Login />
+        }
       />
       <Route
         path={ROUTES.REGISTRO}
-        element={isAuthenticated ? <Navigate to={ROUTES.HOME} replace /> : <Registro />}
+        element={
+          isAuthenticated ? <Navigate to={ROUTES.HOME} replace /> : <Registro />
+        }
       />
 
       {/* ========== RUTAS PÚBLICAS - EVENTOS ========== */}
       <Route path="/evento/:id" element={<DetalleEvento />} />
       <Route path={ROUTES.DONACIONES} element={<Donaciones />} />
+      <Route path="/nosotros" element={<Nosotros />} />
 
       {/* ========== RUTAS PROTEGIDAS - CLIENTE ========== */}
       <Route
         path={ROUTES.PERFIL}
-        element={<ProtectedRoute element={<PerfilCliente />} requiredRole={ROLES.CLIENTE} />}
+        element={
+          <ProtectedRoute
+            element={<PerfilCliente />}
+            requiredRole={ROLES.CLIENTE}
+          />
+        }
       />
       <Route
         path={ROUTES.NOTIFICACIONES}
@@ -60,13 +74,23 @@ export default function AppRoutes() {
       {/* ========== RUTAS PROTEGIDAS - ADMIN ========== */}
       <Route
         path={ROUTES.ADMIN_DASHBOARD}
-        element={<ProtectedRoute element={<DashboardAdmin />} requiredRole={ROLES.ADMIN} />}
+        element={
+          <ProtectedRoute
+            element={<DashboardAdmin />}
+            requiredRole={ROLES.ADMIN}
+          />
+        }
       />
 
       {/* ========== RUTAS PROTEGIDAS - ORGANIZADOR ========== */}
       <Route
         path={ROUTES.ORGANIZADOR_DASHBOARD}
-        element={<ProtectedRoute element={<DashboardOrganizador />} requiredRole={ROLES.ORGANIZADOR} />}
+        element={
+          <ProtectedRoute
+            element={<DashboardOrganizador />}
+            requiredRole={ROLES.ORGANIZADOR}
+          />
+        }
       />
 
       {/* ========== RUTA 404 - NO ENCONTRADO ========== */}
