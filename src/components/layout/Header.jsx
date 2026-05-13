@@ -70,7 +70,7 @@ const Header = () => {
                 </Button>
               </>
             ) : (
-              <Button as={Link} to="/login">
+              <Button as={Link} to="/login" className='btn-primary'>
                 Acceso
               </Button>
             )}
