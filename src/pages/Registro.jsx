@@ -1,14 +1,91 @@
-import React from 'react';
-import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
+import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 import '../styles/brand.css';
 
+const initialFormData = {
+  nombre: '',
+  correo: '',
+  contrasena: '',
+  confirmarContrasena: '',
+  aceptaTerminos: false,
+  direccion: '',
+  telefono: '',
+};
+
+const getRegistroErrorMessage = (error) => {
+  const raw = error.response?.data?.mensaje || error.response?.data?.message;
+  if (!raw || typeof raw !== 'string') {
+    return 'Error en el registro. Intenta nuevamente.';
+  }
+
+  if (raw.includes('ApiGateway error calling')) {
+    const listMatch = raw.match(/\[[\s\S]*\]/);
+    if (listMatch?.[0]) {
+      try {
+        const parsed = JSON.parse(listMatch[0]);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.join('\n');
+        }
+      } catch {
+        return listMatch[0]
+          .replace(/^\[|\]$/g, '')
+          .replace(/\",\"/g, '\n')
+          .replace(/\"/g, '')
+          .replace(/^"|"$/g, '');
+      }
+    }
+  }
+
+  return raw;
+};
 
 export default function Registro() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState(initialFormData);
+  const [mensaje, setMensaje] = useState({ tipo: null, texto: '' });
+  const [cargando, setCargando] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMensaje({ tipo: null, texto: '' });
+    setCargando(true);
+
+    try {
+      await api.post('/usuarios', {
+        ...formData,
+        rol: 'CLIENTE',
+      }, { skipAuth: true });
+
+      setMensaje({
+        tipo: 'success',
+        texto: '¡Registro exitoso! Redirigiendo a login...',
+      });
+
+      setFormData(initialFormData);
+
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+    } catch (error) {
+      const mensajeError = getRegistroErrorMessage(error);
+      setMensaje({ tipo: 'danger', texto: mensajeError });
+    } finally {
+      setCargando(false);
+    }
+  };
+
   return (
-
-
-
     <Container className="containerRegistro py-5">
       <Row className="justify-content-center">
         <Col md={10} lg={4} className="mx-auto">
@@ -16,59 +93,100 @@ export default function Registro() {
             <Card.Body>
               <h2 className="text-center mb-4">Registro</h2>
 
-              <Form>
-                <Row className="mb-3">
-                  <Form.Group as={Col} controlId="formGridEmail">
-                    <Form.Label>Nombre de usuario</Form.Label>
-                    <Form.Control type="text" placeholder="Ingresa tu nombre de usuario" />
-                  </Form.Group>
+              {mensaje.texto && (
+                <Alert variant={mensaje.tipo} className="mb-4">
+                  {mensaje.texto}
+                </Alert>
+              )}
 
+              <Form onSubmit={handleSubmit}>
+                <Row className="mb-3">
+                  <Form.Group as={Col} controlId="formGridNombre">
+                    <Form.Label>Nombre de usuario</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Ingresa tu nombre de usuario"
+                      name="nombre"
+                      value={formData.nombre}
+                      onChange={handleChange}
+                    />
+                  </Form.Group>
                 </Row>
+
                 <Row className="mb-3">
                   <Form.Group as={Col} controlId="formGridEmail">
                     <Form.Label>Email</Form.Label>
-                    <Form.Control type="email" placeholder="Ingresa tu correo" />
+                    <Form.Control
+                      type="email"
+                      placeholder="Ingresa tu correo"
+                      name="correo"
+                      value={formData.correo}
+                      onChange={handleChange}
+                    />
                   </Form.Group>
-
                 </Row>
 
                 <Row className="mb-3">
                   <Form.Group as={Col} controlId="formGridPassword">
                     <Form.Label>Contraseña</Form.Label>
-                    <Form.Control type="password" placeholder="Contraseña" />
+                    <Form.Control
+                      type="password"
+                      placeholder="Contraseña"
+                      name="contrasena"
+                      value={formData.contrasena}
+                      onChange={handleChange}
+                    />
                   </Form.Group>
-
                 </Row>
 
-                  <Form.Group as={Col} controlId="formGridPassword">
-                    <Form.Label>Confirmar Contraseña</Form.Label>
-                    <Form.Control type="password" placeholder="Confirmar Contraseña" />
-                  </Form.Group>
-
+                <Form.Group as={Col} controlId="formGridPassword">
+                  <Form.Label>Confirmar Contraseña</Form.Label>
+                  <Form.Control
+                    type="password"
+                    placeholder="Confirmar Contraseña"
+                    name="confirmarContrasena"
+                    value={formData.confirmarContrasena}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
 
                 <Form.Group className="mb-3" controlId="formGridAddress1">
                   <Form.Label>Dirección</Form.Label>
-                  <Form.Control placeholder="Ej: Calle 123" />
+                  <Form.Control
+                    placeholder="Ej: Calle 123"
+                    name="direccion"
+                    value={formData.direccion}
+                    onChange={handleChange}
+                  />
                 </Form.Group>
 
-
-                <Form.Group as={Col} controlId="formGridPassword">
-                    <Form.Label>Teléfono</Form.Label>
-                    <Form.Control type="tel" placeholder="Ingresa tu teléfono" />
+                <Form.Group className="mb-3" controlId="formGridTelefono">
+                  <Form.Label>Teléfono</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    placeholder="Ingresa tu teléfono"
+                    name="telefono"
+                    value={formData.telefono}
+                    onChange={handleChange}
+                  />
                 </Form.Group>
 
-            
                 <Form.Group className="mb-3" controlId="formGridCheckbox">
-                  <Form.Check type="checkbox" label="Acepto los términos" />
+                  <Form.Check
+                    type="checkbox"
+                    label="Acepto los términos"
+                    name="aceptaTerminos"
+                    checked={formData.aceptaTerminos}
+                    onChange={handleChange}
+                  />
                 </Form.Group>
 
                 <div className="text-center">
                   <Button variant="primary" type="submit" className="btn">
                     Registrarse
+                    {cargando && ' ...'}
                   </Button>
                 </div>
-
-                
               </Form>
             </Card.Body>
           </Card>

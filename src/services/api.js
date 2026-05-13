@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -30,6 +30,10 @@ const esRutaPublica = (config) => {
 
 api.interceptors.request.use(
   (config) => {
+    if (config.skipAuth) {
+      return config;
+    }
+
     const token = localStorage.getItem('token');
     if (token && !esRutaPublica(config)) {
       config.headers.Authorization = `Bearer ${token}`;

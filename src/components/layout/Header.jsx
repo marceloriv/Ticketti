@@ -12,15 +12,10 @@ const Header = () => {
   const navLinksPublicos = [
     { name: 'Inicio', to: '/home' },
     { name: 'Eventos', to: '/events' },
+    { name: 'Sobre Nosotros', to: '/about' },
+    { name: 'Contacto', to: '/contact' },
+    { name: 'Login', to: '/login' }
   ];
-
-  const navLinksRol = usuario ? [
-    ...(esAdmin()       ? [{ name: 'Panel Admin',       to: '/admin'       }] : []),
-    ...(esOrganizador() ? [{ name: 'Panel Organizador', to: '/organizador' }] : []),
-    ...(esCliente()     ? [{ name: 'Mi Perfil',         to: '/perfil'      }] : []),
-  ] : [];
-
-  const navLinks = [...navLinksPublicos, ...navLinksRol];
 
   return (
     <Navbar bg="light" expand="md" sticky="top" className="border-bottom shadow-sm">
@@ -34,7 +29,7 @@ const Header = () => {
 
         <Navbar.Collapse id="main-navbar" className="mt-1">
           <Nav className="m-auto">
-            {navLinks.map((link) => (
+            {navLinksPublicos.map((link) => (
               <Nav.Link key={link.name} as={NavLink} to={link.to}>
                 {link.name}
               </Nav.Link>
