@@ -1,12 +1,52 @@
-import { Button, Card, Col, Container, Row } from 'react-bootstrap';
+import { useAuth } from '@hooks/useAuth';
+import { useEffect, useState } from 'react';
+import {
+  Alert,
+  Button,
+  Card,
+  Col,
+  Container,
+  Row,
+  Spinner,
+} from 'react-bootstrap';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const BRAND_COLOR = '#5ad4e6';
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
+  // Redirigir si ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/home');
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      await login({
+        email,
+        password,
+      });
+      navigate('/home');
+    } catch (err) {
+      setError(err.message || 'Error al iniciar sesión');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Container className="loginContainer py-5">
@@ -16,25 +56,65 @@ export default function Login() {
             <Card.Body>
               <h2 className="text-center mb-4">Iniciar Sesión</h2>
 
-              <FloatingLabel
-                controlId="floatingInput"
-                label="Correo Electrónico"
-                className="mb-3"
-              >
-                <Form.Control type="email" placeholder="name@example.com" />
-              </FloatingLabel>
+              {error && (
+                <Alert variant="danger" className="mb-3">
+                  {error}
+                </Alert>
+              )}
 
-              <FloatingLabel
-                controlId="floatingPassword"
-                label="Contraseña"
-                className="mb-3"
-              >
-                <Form.Control type="password" placeholder="Contraseña" />
-              </FloatingLabel>
+              <Form onSubmit={handleLogin}>
+                <FloatingLabel
+                  controlId="floatingInput"
+                  label="Correo Electrónico"
+                  className="mb-3"
+                >
+                  <Form.Control
+                    type="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </FloatingLabel>
 
-              <div className="text-center">
-                <Button className="btn btn-ticketti">Ingresar</Button>
-              </div>
+                <FloatingLabel
+                  controlId="floatingPassword"
+                  label="Contraseña"
+                  className="mb-3"
+                >
+                  <Form.Control
+                    type="password"
+                    placeholder="Contraseña"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </FloatingLabel>
+
+                <div className="text-center">
+                  <Button
+                    className="btn btn-ticketti"
+                    type="submit"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Spinner
+                          as="span"
+                          animation="border"
+                          size="sm"
+                          role="status"
+                          aria-hidden="true"
+                          className="me-2"
+                        />
+                        Ingresando...
+                      </>
+                    ) : (
+                      'Ingresar'
+                    )}
+                  </Button>
+                </div>
+              </Form>
 
               <p className="text-center mt-3">
                 ¿No tienes cuenta? <Link to="/registro">Regístrate aquí</Link>
