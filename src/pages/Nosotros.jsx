@@ -15,7 +15,7 @@ const Nosotros = () => {
         'Creemos en los eventos como espacios de encuentro, colaboración y fortalecimiento de vínculos entre personas y organizaciones.',
     },
     {
-      icono: '🌱',
+      icono: '🌍',
       titulo: 'Impacto social',
       descripcion:
         'Promovemos actividades que generen valor para la comunidad, apoyando iniciativas con propósito social y cultural.',
