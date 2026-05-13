@@ -208,7 +208,7 @@ const Inicio = () => {
                     <ProductCard
                       evento={{
                         id: evento.id,
-                        imagen: evento.imagen || '/assets/hero.png',
+                        imagen: evento.imagenUrl || '/assets/hero.png',
                         titulo: evento.nombre || 'Evento sin nombre',
                         fecha: evento.fecha,
                         ubicacion:
