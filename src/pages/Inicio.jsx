@@ -1,7 +1,7 @@
 import CommonCarousel from '@components/common/Carousel';
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
-import ProductCard from '@components/layout/ProductCard';
+import ProductCard from '@components/common/ProductCard';
 import api from '@services/api';
 import { getCausasActivas, getOrganizaciones } from '@services/donacionesApi';
 import { Building2, Heart, Search } from 'lucide-react';
