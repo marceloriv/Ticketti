@@ -17,8 +17,7 @@ import Footer from '@components/layout/Footer';
 import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
 import api from '@services/api';
-
-const BRAND_COLOR = '#5ad4e6';
+import { COLOR_MARCA } from '@utils/constantes';
 
 const formatearMoneda = (price) => {
   if (!price) return 'Gratis';
@@ -110,7 +109,7 @@ const DetalleEvento = () => {
       <div className="d-flex flex-column min-vh-100">
         <Header />
         <div className="text-center py-5">
-          <Spinner animation="border" style={{ color: BRAND_COLOR }} />
+          <Spinner animation="border" style={{ color: COLOR_MARCA }} />
         </div>
         <Footer />
       </div>
@@ -136,7 +135,7 @@ const DetalleEvento = () => {
             variant="link"
             onClick={() => navigate(-1)}
             className="mb-4 p-0"
-            style={{ color: BRAND_COLOR }}
+            style={{ color: COLOR_MARCA }}
           >
             ← Volver
           </Button>
@@ -159,19 +158,19 @@ const DetalleEvento = () => {
               <p className="text-muted mb-4">{evento.descripcion}</p>
 
               <div className="mb-2 d-flex align-items-center gap-2">
-                <Calendar size={18} style={{ stroke: BRAND_COLOR }} />
+                <Calendar size={18} style={{ stroke: COLOR_MARCA }} />
                 <span>{formatearFecha(evento.fecha)}</span>
               </div>
 
               <div className="mb-2 d-flex align-items-center gap-2">
-                <MapPin size={18} style={{ stroke: BRAND_COLOR }} />
+                <MapPin size={18} style={{ stroke: COLOR_MARCA }} />
                 <span>
                   {evento.recinto?.nombre} — {evento.recinto?.ubicacion}
                 </span>
               </div>
 
               <div className="mb-2 d-flex align-items-center gap-2">
-                <Users size={18} style={{ stroke: BRAND_COLOR }} />
+                <Users size={18} style={{ stroke: COLOR_MARCA }} />
                 <span>{evento.stock} entradas disponibles</span>
               </div>
 
@@ -181,8 +180,8 @@ const DetalleEvento = () => {
                 size="lg"
                 className="d-flex align-items-center gap-2 mb-3"
                 style={{
-                  backgroundColor: BRAND_COLOR,
-                  borderColor: BRAND_COLOR,
+                  backgroundColor: COLOR_MARCA,
+                  borderColor: COLOR_MARCA,
                   color: '#000',
                   width: '100%',
                   justifyContent: 'center',
@@ -205,7 +204,7 @@ const DetalleEvento = () => {
 
       {/* ── Modal de selección de cantidad ── */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton style={{ borderBottomColor: BRAND_COLOR }}>
+        <Modal.Header closeButton style={{ borderBottomColor: COLOR_MARCA }}>
           <Modal.Title className="fw-bold">Selecciona tu cantidad</Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -250,7 +249,7 @@ const DetalleEvento = () => {
             Cancelar
           </Button>
           <Button
-            style={{ backgroundColor: BRAND_COLOR, borderColor: BRAND_COLOR }}
+            style={{ backgroundColor: COLOR_MARCA, borderColor: COLOR_MARCA }}
             onClick={manejarAgregarAlCarrito}
             disabled={loadingCarrito || cantidad < 1 || cantidad > 4}
           >

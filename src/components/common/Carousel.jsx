@@ -1,9 +1,10 @@
 import React from 'react';
 import { Carousel as RBCarousel, Container, Button } from 'react-bootstrap';
+import { COLOR_MARCA } from '@utils/constantes';
 
 export default function CommonCarousel({
   slides = [],
-  brandColor = '#5ad4e6',
+  brandColor = COLOR_MARCA,
 }) {
   return (
     <RBCarousel

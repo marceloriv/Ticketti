@@ -16,8 +16,7 @@ import {
   Row,
   Spinner,
 } from 'react-bootstrap';
-
-const BRAND_COLOR = '#5ad4e6';
+import { COLOR_MARCA } from '@utils/constantes';
 
 const CATEGORIAS = [
   { id: 'todo', nombre: 'Todo', generos: [] },
@@ -130,7 +129,7 @@ const Inicio = () => {
       <main className="flex-grow-1">
         {/* HERO - Eventos */}
         <section id="hero" className="position-relative">
-          <CommonCarousel slides={HERO_SLIDES} brandColor={BRAND_COLOR} />
+          <CommonCarousel slides={HERO_SLIDES} brandColor={COLOR_MARCA} />
         </section>
 
         {/* BUSCADOR — EVENTOS */}
@@ -142,8 +141,8 @@ const Inicio = () => {
                   <InputGroup.Text
                     style={{
                       backgroundColor: 'transparent',
-                      borderColor: BRAND_COLOR,
-                      color: BRAND_COLOR,
+                      borderColor: COLOR_MARCA,
+                      color: COLOR_MARCA,
                     }}
                   >
                     <Search size={18} />
@@ -153,7 +152,7 @@ const Inicio = () => {
                     placeholder="Buscar eventos por nombre, genero o ubicación..."
                     value={busqueda}
                     onChange={(e) => setBusqueda(e.target.value)}
-                    style={{ borderColor: BRAND_COLOR }}
+                    style={{ borderColor: COLOR_MARCA }}
                   />
                 </InputGroup>
                 <div className="d-flex flex-wrap justify-content-center gap-2">
@@ -164,13 +163,13 @@ const Inicio = () => {
                       onClick={() => setCategoriaActiva(cat.id)}
                       className="rounded-pill px-4"
                       style={{
-                        borderColor: BRAND_COLOR,
+                        borderColor: COLOR_MARCA,
                         backgroundColor:
                           categoriaActiva === cat.id
-                            ? BRAND_COLOR
+                            ? COLOR_MARCA
                             : 'transparent',
                         color:
-                          categoriaActiva === cat.id ? '#000' : BRAND_COLOR,
+                          categoriaActiva === cat.id ? '#000' : COLOR_MARCA,
                       }}
                     >
                       {cat.nombre}
@@ -188,7 +187,7 @@ const Inicio = () => {
             <h2 className="text-center mb-4 fw-bold">Eventos Destacados</h2>
             {cargando && (
               <div className="text-center py-5">
-                <Spinner animation="border" style={{ color: BRAND_COLOR }} />
+                <Spinner animation="border" style={{ color: COLOR_MARCA }} />
               </div>
             )}
             {error && (
@@ -231,7 +230,7 @@ const Inicio = () => {
           >
             <Container>
               <div className="d-flex align-items-center gap-2 mb-3">
-                <Heart size={28} style={{ color: BRAND_COLOR }} />
+                <Heart size={28} style={{ color: COLOR_MARCA }} />
                 <h2 className="fw-bold mb-0">Apoya una causa</h2>
               </div>
               <p className="text-muted mb-4">
@@ -245,7 +244,7 @@ const Inicio = () => {
                       className="p-4 rounded shadow-sm h-100 d-flex flex-column"
                       style={{
                         background: '#fff',
-                        borderLeft: `4px solid ${BRAND_COLOR}`,
+                        borderLeft: `4px solid ${COLOR_MARCA}`,
                         transition: 'transform 0.2s',
                       }}
                       onMouseEnter={(e) =>
@@ -256,7 +255,7 @@ const Inicio = () => {
                       }
                     >
                       <div className="d-flex align-items-center gap-2 mb-2">
-                        <Heart size={18} style={{ color: BRAND_COLOR }} />
+                        <Heart size={18} style={{ color: COLOR_MARCA }} />
                         <span className="fw-bold">{c.nombre}</span>
                       </div>
                       {c.descripcion && (
@@ -281,7 +280,7 @@ const Inicio = () => {
           <section id="organizaciones" className="py-5">
             <Container>
               <div className="d-flex align-items-center gap-2 mb-3">
-                <Building2 size={28} style={{ color: BRAND_COLOR }} />
+                <Building2 size={28} style={{ color: COLOR_MARCA }} />
                 <h2 className="fw-bold mb-0">Organizaciones aliadas</h2>
               </div>
               <p className="text-muted mb-4">
@@ -309,14 +308,14 @@ const Inicio = () => {
                           width: 44,
                           height: 44,
                           borderRadius: '50%',
-                          background: `${BRAND_COLOR}20`,
+                          background: `${COLOR_MARCA}20`,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           marginBottom: 8,
                         }}
                       >
-                        <Building2 size={20} style={{ color: BRAND_COLOR }} />
+                        <Building2 size={20} style={{ color: COLOR_MARCA }} />
                       </div>
                       <p className="fw-semibold small mb-0">{o.nombre}</p>
                     </div>

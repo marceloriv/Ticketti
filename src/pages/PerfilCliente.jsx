@@ -16,8 +16,7 @@ import Footer from '@components/layout/Footer';
 import { useAuth } from '@hooks/useAuth';
 import { Link } from 'react-router-dom';
 import api from '@services/api';
-
-const BRAND_COLOR = '#5ad4e6';
+import { COLOR_MARCA } from '@utils/constantes';
 
 const estadoLabelMap = {
   CREADO: 'Creado',
@@ -105,7 +104,7 @@ const PerfilCliente = () => {
             <Card.Body className="d-flex align-items-center gap-4 p-4">
               <div
                 style={{
-                  background: `${BRAND_COLOR}20`,
+                  background: `${COLOR_MARCA}20`,
                   borderRadius: '50%',
                   width: 72,
                   height: 72,
@@ -115,13 +114,13 @@ const PerfilCliente = () => {
                   flexShrink: 0,
                 }}
               >
-                <User size={36} style={{ color: BRAND_COLOR }} />
+                <User size={36} style={{ color: COLOR_MARCA }} />
               </div>
               <div>
                 <h4 className="fw-bold mb-1">
                   {usuario?.nombre || 'Mi perfil'}
                 </h4>
-                <Badge style={{ background: BRAND_COLOR, color: '#000' }}>
+                <Badge style={{ background: COLOR_MARCA, color: '#000' }}>
                   CLIENTE
                 </Badge>
               </div>
@@ -185,7 +184,7 @@ const PerfilCliente = () => {
                     {error && <Alert variant="danger">{error}</Alert>}
                     {cargando ? (
                       <div className="text-center py-4">
-                        <Spinner style={{ color: BRAND_COLOR }} />
+                        <Spinner style={{ color: COLOR_MARCA }} />
                       </div>
                     ) : notificaciones.length === 0 ? (
                       <Alert variant="info">
@@ -209,7 +208,7 @@ const PerfilCliente = () => {
                                   bg="light"
                                   text="dark"
                                   style={{
-                                    borderLeft: `3px solid ${BRAND_COLOR}`,
+                                    borderLeft: `3px solid ${COLOR_MARCA}`,
                                   }}
                                 >
                                   {TIPO_LABELS[n.tipo] || n.tipo}
@@ -296,7 +295,7 @@ function MisComprasTab({ usuarioId }) {
   if (cargando)
     return (
       <div className="text-center py-4">
-        <Spinner style={{ color: BRAND_COLOR }} />
+        <Spinner style={{ color: COLOR_MARCA }} />
       </div>
     );
 

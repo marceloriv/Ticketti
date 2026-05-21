@@ -12,8 +12,7 @@ import {
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
 import { Link, useNavigate } from 'react-router-dom';
-
-const BRAND_COLOR = '#5ad4e6';
+import { COLOR_MARCA } from '@utils/constantes';
 
 export default function Login() {
   const navigate = useNavigate();

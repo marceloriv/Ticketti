@@ -16,10 +16,7 @@ import { Card, Button } from 'react-bootstrap';
 import { Calendar, MapPin, Ticket } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useCallback } from 'react';
-
-// ── Constantes ─────────────────────────────────────────────────────────
-const BRAND_COLOR    = '#5ad4e6';
-const BRAND_HOVER    = '#4ac3d5';
+import { COLOR_MARCA } from '@utils/constantes';
 const IMG_HEIGHT     = '200px';
 const IMG_PLACEHOLDER = '/assets/hero.png';
 
@@ -171,7 +168,7 @@ const ProductCard = ({
           <Calendar
             size={16}
             className="me-2 product-card__icon"
-            style={{ stroke: BRAND_COLOR }}
+            style={{ stroke: COLOR_MARCA }}
             aria-hidden="true"
           />
           <small data-testid="product-card-date">{formatDate(fecha)}</small>
@@ -181,7 +178,7 @@ const ProductCard = ({
           <MapPin
             size={16}
             className="me-2 product-card__icon"
-            style={{ stroke: BRAND_COLOR }}
+            style={{ stroke: COLOR_MARCA }}
             aria-hidden="true"
           />
           <small className="text-truncate" data-testid="product-card-location">
@@ -205,8 +202,8 @@ const ProductCard = ({
             onClick={handleComprar}
             className="d-flex align-items-center gap-2 product-card__buy"
             style={{
-              backgroundColor: BRAND_COLOR,
-              borderColor: BRAND_COLOR,
+              backgroundColor: COLOR_MARCA,
+              borderColor: COLOR_MARCA,
               color: '#000',
             }}
             data-testid="product-card-buy-btn"

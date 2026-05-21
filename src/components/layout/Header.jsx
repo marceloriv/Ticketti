@@ -3,7 +3,7 @@ import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
 import { LogOut, Ticket, User, ShoppingCart } from 'lucide-react';
 import { Badge, Button, Container, Nav, Navbar, Stack } from 'react-bootstrap';
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback } from 'react';
 
 const Header = () => {
   const { usuario, logout, carritoId, establecerCarritoId } = useAuth();
