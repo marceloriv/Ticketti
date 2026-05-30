@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@hooks/useAuth';
-import { LogOut, Ticket, User } from 'lucide-react';
+import { useCarrito } from '@hooks/useCarrito';
+import { LogOut, Ticket, User, ShoppingCart } from 'lucide-react';
 import { Badge, Button, Container, Nav, Navbar, Stack } from 'react-bootstrap';
 import { useEffect, useCallback } from 'react';
 
@@ -59,7 +60,7 @@ const Header = () => {
     { name: 'Inicio', to: '/home' },
     { name: 'Eventos', to: '/events' },
     { name: 'Sobre Ticketti', to: '/nosotros' },
-    { name: 'Contacto', to: '/Contacto' },
+    { name: 'Contacto', to: '/contact' },
   ];
 
   return (

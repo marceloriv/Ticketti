@@ -11,7 +11,7 @@ import Inicio from '@pages/Inicio';
 import Login from '@pages/Login';
 import Nosotros from '@pages/Nosotros';
 import Registro from '@pages/Registro';
-import Contacto from '@pages/Contacto';
+
 
 // Importar páginas protegidas
 import DashboardAdmin from '@pages/DashboardAdmin';
