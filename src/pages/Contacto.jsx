@@ -1,16 +1,20 @@
-import '@styles/brand.css';
-
 const Contacto = () => {
   return (
     <>
-      <section className="Contacto-header py-5">
-        <div className="container text-center">
+      <section
+        className="py-5 text-center"
+        style={{
+          background: 'linear-gradient(135deg, var(--ticketti-primary), #6f88c4)',
+          color: 'white',
+        }}
+      >
+        <div className="container">
           <h1>Contacto</h1>
           <p>Estamos aquí para ayudarte</p>
         </div>
       </section>
 
-      <section className="Contacto-content py-5">
+      <section className="py-5">
         <div className="container">
           <div className="row mb-5">
             <div className="col-md-6">
@@ -104,7 +108,7 @@ const Contacto = () => {
             </div>
 
             <div className="col-md-4 mb-4">
-              <div className="card h-100">
+              <div className="card h-100 border-0 shadow-sm">
                 <div className="card-body">
                   <h5 className="card-title">¿Cómo creo un evento?</h5>
                   <p className="card-text">
@@ -116,7 +120,7 @@ const Contacto = () => {
             </div>
 
             <div className="col-md-4 mb-4">
-              <div className="card h-100">
+              <div className="card h-100 border-0 shadow-sm">
                 <div className="card-body">
                   <h5 className="card-title">¿Los eventos son gratuitos?</h5>
                   <p className="card-text">
@@ -129,7 +133,7 @@ const Contacto = () => {
             </div>
 
             <div className="col-md-4 mb-4">
-              <div className="card h-100">
+              <div className="card h-100 border-0 shadow-sm">
                 <div className="card-body">
                   <h5 className="card-title">¿Cómo me registro?</h5>
                   <p className="card-text">
