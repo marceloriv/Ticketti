@@ -1,4 +1,5 @@
 import { useAuth } from '@hooks/useAuth';
+import { ROUTES } from '@utils/routes';
 import { LogOut, Ticket, User } from 'lucide-react';
 import { Badge, Button, Container, Nav, Navbar, Stack } from 'react-bootstrap';
 import { Link, NavLink } from 'react-router-dom';
@@ -10,7 +11,7 @@ const Header = () => {
     { name: 'Inicio', to: '/home' },
     { name: 'Eventos', to: '/events' },
     { name: 'Sobre Ticketti', to: '/nosotros' },
-    { name: 'Contacto', to: '/contact' },
+    { name: 'Contacto', to: '/Contacto' },
   ];
 
   return (

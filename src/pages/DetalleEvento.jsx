@@ -82,14 +82,7 @@ const DetalleEvento = () => {
       <Header />
       <main className="flex-grow-1 py-5">
         <Container>
-          <Button
-            variant="link"
-            onClick={() => navigate(-1)}
-            className="mb-4 p-0"
-            style={{ color: BRAND_COLOR }}
-          >
-            Inicio
-          </Button>
+
 
           <Row>
             <Col md={6}>
@@ -97,7 +90,7 @@ const DetalleEvento = () => {
                 src={evento.imagenUrl || '/assets/hero.png'}
                 alt={evento.nombre}
                 className="w-100 rounded shadow"
-                style={{ objectFit: 'cover', maxHeight: '400px' }}
+                style={{ objectFit: 'cover', maxHeight: '900px' }}
               />
             </Col>
 

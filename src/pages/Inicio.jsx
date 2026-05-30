@@ -21,7 +21,7 @@ const BRAND_COLOR = '#5ad4e6';
 
 const CATEGORIAS = [
   { id: 'todo', nombre: 'Todo', generos: [] },
-  { id: 'conciertos', nombre: 'Conciertos', generos: ['ROCK', 'JAZZ', 'POP', 'KPOP', 'METAL', 'RAP', 'RNB', 'INDIE', 'REGGAETOM'] },
+  { id: 'conciertos', nombre: 'Conciertos', generos: ['ROCK', 'JAZZ', 'POP', 'KPOP', 'METAL', 'RAP', 'RNB', 'INDIE', 'REGGAETON'] },
   { id: 'festivales', nombre: 'Festivales Culturales', generos: ['GASTRONOMIA', 'ARTE', 'ARTESANIA', 'FOLCLORE'] },
   { id: 'cinemovil', nombre: 'Cine Móvil', generos: ['TERROR', 'COMEDIA', 'DRAMA', 'ACCION', 'ROMANCE', 'PARODIA'] },
 ];

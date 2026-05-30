@@ -12,6 +12,7 @@ export const ROUTES = {
   EVENTO_DETALLE: (id) => `/evento/${id}`,
   DONACIONES: '/donaciones',
   NOSOTROS: '/nosotros',
+  CONTACTO: '/contacto',
 
   // Cliente autenticado
   PERFIL: '/perfil',
