@@ -1,7 +1,6 @@
 import { Container, Row, Col } from 'react-bootstrap';
 import { Ticket, Mail, Phone, MapPin, Globe, ExternalLink } from 'lucide-react';
-
-const BRAND_COLOR = '#5ad4e6';
+import { COLOR_MARCA } from '@utils/constantes';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -28,7 +27,7 @@ const Footer = () => {
         <Row className="g-4">
           <Col md={4}>
             <div className="mb-3 d-flex align-items-center gap-2">
-              <Ticket size={28} style={{ color: BRAND_COLOR }} />
+              <Ticket size={28} style={{ color: COLOR_MARCA }} />
               <span className="fw-bold fs-4">Ticketti</span>
             </div>
             <p className="text-white-50 mb-4">
@@ -48,7 +47,7 @@ const Footer = () => {
                     fontSize: '0.9rem',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = BRAND_COLOR;
+                    e.currentTarget.style.color = COLOR_MARCA;
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = '';
@@ -62,7 +61,7 @@ const Footer = () => {
           </Col>
 
           <Col md={4}>
-            <h5 className="fw-bold mb-3" style={{ color: BRAND_COLOR }}>
+            <h5 className="fw-bold mb-3" style={{ color: COLOR_MARCA }}>
               Contacto
             </h5>
             <ul className="list-unstyled">
@@ -70,7 +69,7 @@ const Footer = () => {
                 <MapPin
                   size={18}
                   className="me-2 mt-1 flex-shrink-0"
-                  style={{ color: BRAND_COLOR }}
+                  style={{ color: COLOR_MARCA }}
                 />
                 <span className="text-white-50">
                   Av. Los Conquistadores 1234, Oficina 502
@@ -82,7 +81,7 @@ const Footer = () => {
                 <Phone
                   size={18}
                   className="me-2 flex-shrink-0"
-                  style={{ color: BRAND_COLOR }}
+                  style={{ color: COLOR_MARCA }}
                 />
                 <span className="text-white-50">+56 2 2345 6789</span>
               </li>
@@ -90,7 +89,7 @@ const Footer = () => {
                 <Mail
                   size={18}
                   className="me-2 flex-shrink-0"
-                  style={{ color: BRAND_COLOR }}
+                  style={{ color: COLOR_MARCA }}
                 />
                 <span className="text-white-50">contacto@ticketti.cl</span>
               </li>
@@ -98,7 +97,7 @@ const Footer = () => {
           </Col>
 
           <Col md={4}>
-            <h5 className="fw-bold mb-3" style={{ color: BRAND_COLOR }}>
+            <h5 className="fw-bold mb-3" style={{ color: COLOR_MARCA }}>
               Enlaces
             </h5>
             <ul className="list-unstyled">
@@ -111,7 +110,7 @@ const Footer = () => {
                       transition: 'color 0.3s ease',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.color = BRAND_COLOR;
+                      e.currentTarget.style.color = COLOR_MARCA;
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.color = '';

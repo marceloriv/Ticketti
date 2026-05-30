@@ -11,8 +11,7 @@ import { Mail, RefreshCw } from 'lucide-react';
 import Header from '@components/layout/Header';
 import Footer from '@components/layout/Footer';
 import api from '@services/api';
-
-const BRAND_COLOR = '#5ad4e6';
+import { COLOR_MARCA } from '@utils/constantes';
 
 const TIPO_LABELS = {
   CONFIRMACION_COMPRA: 'Confirmación de compra',
@@ -86,7 +85,7 @@ const HistorialNotificaciones = () => {
         <Container>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div className="d-flex align-items-center gap-2">
-              <Mail size={28} style={{ color: BRAND_COLOR }} />
+              <Mail size={28} style={{ color: COLOR_MARCA }} />
               <h2 className="fw-bold mb-0">Mis Notificaciones</h2>
             </div>
             <Button
@@ -103,7 +102,7 @@ const HistorialNotificaciones = () => {
 
           {cargando ? (
             <div className="text-center py-5">
-              <Spinner animation="border" style={{ color: BRAND_COLOR }} />
+              <Spinner animation="border" style={{ color: COLOR_MARCA }} />
             </div>
           ) : notificaciones.length === 0 ? (
             <Alert variant="info">
@@ -126,7 +125,7 @@ const HistorialNotificaciones = () => {
                       <Badge
                         bg="light"
                         text="dark"
-                        style={{ borderLeft: `3px solid ${BRAND_COLOR}` }}
+                        style={{ borderLeft: `3px solid ${COLOR_MARCA}` }}
                       >
                         {TIPO_LABELS[n.tipo] || n.tipo}
                       </Badge>

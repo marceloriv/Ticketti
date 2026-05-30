@@ -3,8 +3,7 @@ import Header from '@components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
 import { BarChart2, Calendar, Plus, TrendingUp } from 'lucide-react';
 import { Button, Card, Col, Container, Nav, Row, Tab } from 'react-bootstrap';
-
-const BRAND_COLOR = '#5ad4e6';
+import { COLOR_MARCA } from '@utils/constantes';
 
 // Placeholder visible para el equipo
 const Placeholder = ({ ms, descripcion, altura = 200 }) => (
@@ -39,8 +38,8 @@ const DashboardOrganizador = () => {
             {/* MSEventos: conectar botón con modal/página de crear evento */}
             <Button
               style={{
-                backgroundColor: BRAND_COLOR,
-                borderColor: BRAND_COLOR,
+                backgroundColor: COLOR_MARCA,
+                borderColor: COLOR_MARCA,
                 color: '#000',
               }}
               className="d-flex align-items-center gap-2"
@@ -56,7 +55,7 @@ const DashboardOrganizador = () => {
                 <Card.Body className="d-flex align-items-center gap-3 p-4">
                   <div
                     style={{
-                      background: `${BRAND_COLOR}20`,
+                      background: `${COLOR_MARCA}20`,
                       borderRadius: '50%',
                       width: 48,
                       height: 48,
@@ -65,7 +64,7 @@ const DashboardOrganizador = () => {
                       justifyContent: 'center',
                     }}
                   >
-                    <Calendar size={22} style={{ color: BRAND_COLOR }} />
+                    <Calendar size={22} style={{ color: COLOR_MARCA }} />
                   </div>
                   <div>
                     <p className="text-muted small mb-1">Mis eventos</p>

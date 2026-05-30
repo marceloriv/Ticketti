@@ -23,6 +23,8 @@ import {
   Tab,
   Table,
 } from 'react-bootstrap';
+import { COLOR_MARCA } from '@utils/constantes';
+
 // Los endpoints de donaciones provienen de un microservicio externo.
 // Para mantener la UI funcional en este repo se usan stubs locales.
 const getOrganizaciones = async () => [];
@@ -30,8 +32,6 @@ const getCausasActivas = async () => [];
 const getTotalPorOrganizacion = async () => 0;
 const crearOrganizacion = async () => {};
 const crearCausa = async () => {};
-
-const BRAND_COLOR = '#5ad4e6';
 
 // Tarjeta de estadística reutilizable
 const StatCard = ({ icon: Icon, titulo, valor, color, cargando }) => (
@@ -214,7 +214,7 @@ const DashboardAdmin = () => {
                 icon={Building2}
                 titulo="Organizaciones"
                 valor={organizaciones.length}
-                color={BRAND_COLOR}
+                color={COLOR_MARCA}
                 cargando={cargando}
               />
             </Col>
@@ -297,8 +297,8 @@ const DashboardAdmin = () => {
                         size="sm"
                         onClick={() => setShowModalOrg(true)}
                         style={{
-                          backgroundColor: BRAND_COLOR,
-                          borderColor: BRAND_COLOR,
+                          backgroundColor: COLOR_MARCA,
+                          borderColor: COLOR_MARCA,
                           color: '#000',
                         }}
                       >
@@ -307,7 +307,7 @@ const DashboardAdmin = () => {
                     </div>
                     {cargando ? (
                       <div className="text-center py-4">
-                        <Spinner style={{ color: BRAND_COLOR }} />
+                        <Spinner style={{ color: COLOR_MARCA }} />
                       </div>
                     ) : (
                       <Table hover responsive size="sm">
@@ -358,8 +358,8 @@ const DashboardAdmin = () => {
                         size="sm"
                         onClick={() => setShowModalCausa(true)}
                         style={{
-                          backgroundColor: BRAND_COLOR,
-                          borderColor: BRAND_COLOR,
+                          backgroundColor: COLOR_MARCA,
+                          borderColor: COLOR_MARCA,
                           color: '#000',
                         }}
                       >
@@ -368,7 +368,7 @@ const DashboardAdmin = () => {
                     </div>
                     {cargando ? (
                       <div className="text-center py-4">
-                        <Spinner style={{ color: BRAND_COLOR }} />
+                        <Spinner style={{ color: COLOR_MARCA }} />
                       </div>
                     ) : (
                       <Table hover responsive size="sm">
@@ -504,8 +504,8 @@ const DashboardAdmin = () => {
                 type="submit"
                 disabled={guardando}
                 style={{
-                  backgroundColor: BRAND_COLOR,
-                  borderColor: BRAND_COLOR,
+                  backgroundColor: COLOR_MARCA,
+                  borderColor: COLOR_MARCA,
                   color: '#000',
                 }}
               >
@@ -613,8 +613,8 @@ const DashboardAdmin = () => {
                 type="submit"
                 disabled={guardando}
                 style={{
-                  backgroundColor: BRAND_COLOR,
-                  borderColor: BRAND_COLOR,
+                  backgroundColor: COLOR_MARCA,
+                  borderColor: COLOR_MARCA,
                   color: '#000',
                 }}
               >

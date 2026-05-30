@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Container,
-  Row,
-  Col,
   Card,
   Nav,
   Tab,
@@ -16,28 +14,50 @@ import { User, Mail, ShoppingBag, Heart, RefreshCw } from 'lucide-react';
 import Header from '@components/layout/Header';
 import Footer from '@components/layout/Footer';
 import { useAuth } from '@hooks/useAuth';
+import { Link } from 'react-router-dom';
 import api from '@services/api';
+import { COLOR_MARCA } from '@utils/constantes';
 
-const BRAND_COLOR = '#5ad4e6';
+const estadoLabelMap = {
+  CREADO: 'Creado',
+  RESERVADO: 'Reserva activa',
+  PAGADO: 'Pagado',
+  FALLIDO: 'Fallido',
+  CANCELADO: 'Cancelado',
+  REEMBOLSADO: 'Reembolsado',
+};
 
-const Placeholder = ({ ms, descripcion, altura = 200 }) => (
-  <div
-    className="d-flex flex-column align-items-center justify-content-center text-center rounded"
-    style={{
-      height: altura,
-      border: '2px dashed #dee2e6',
-      background: '#fafafa',
-    }}
-  >
-    <p className="text-muted fw-semibold mb-1">🔧 Pendiente — {ms}</p>
-    <p className="text-muted small mb-0">{descripcion}</p>
-  </div>
-);
+const estadoVariantMap = {
+  CREADO: 'secondary',
+  RESERVADO: 'warning',
+  PAGADO: 'success',
+  FALLIDO: 'danger',
+  CANCELADO: 'dark',
+  REEMBOLSADO: 'info',
+};
+
+const formatearFecha = (f) => {
+  if (!f) return '—';
+  const d = new Date(f);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
+const formatearMoneda = (v) =>
+  new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    minimumFractionDigits: 0,
+  }).format(v ?? 0);
 
 const TIPO_LABELS = {
-  CONFIRMACION_COMPRA: 'Confirmación',
-  RECOMENDACION: 'Recomendación',
-  DEVOLUCION: 'Devolución',
+  CONFIRMACION_COMPRA: 'Confirmacion',
+  RECOMENDACION: 'Recomendacion',
+  DEVOLUCION: 'Devolucion',
   RECORDATORIO_EVENTO: 'Recordatorio',
 };
 
@@ -47,17 +67,6 @@ const ESTADO_VARIANT = {
   FALLIDO: 'danger',
   CANCELADO: 'secondary',
 };
-
-const formatFecha = (f) =>
-  f
-    ? new Intl.DateTimeFormat('es-CL', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }).format(new Date(f))
-    : '—';
 
 const PerfilCliente = () => {
   const { usuario } = useAuth();
@@ -95,7 +104,7 @@ const PerfilCliente = () => {
             <Card.Body className="d-flex align-items-center gap-4 p-4">
               <div
                 style={{
-                  background: `${BRAND_COLOR}20`,
+                  background: `${COLOR_MARCA}20`,
                   borderRadius: '50%',
                   width: 72,
                   height: 72,
@@ -105,13 +114,13 @@ const PerfilCliente = () => {
                   flexShrink: 0,
                 }}
               >
-                <User size={36} style={{ color: BRAND_COLOR }} />
+                <User size={36} style={{ color: COLOR_MARCA }} />
               </div>
               <div>
                 <h4 className="fw-bold mb-1">
                   {usuario?.nombre || 'Mi perfil'}
                 </h4>
-                <Badge style={{ background: BRAND_COLOR, color: '#000' }}>
+                <Badge style={{ background: COLOR_MARCA, color: '#000' }}>
                   CLIENTE
                 </Badge>
               </div>
@@ -159,7 +168,7 @@ const PerfilCliente = () => {
               </Card.Header>
               <Card.Body>
                 <Tab.Content>
-                  {/* NOTIFICACIONES — tuyo */}
+                  {/* ── NOTIFICACIONES ── */}
                   <Tab.Pane eventKey="notificaciones">
                     <div className="d-flex justify-content-between align-items-center mb-3">
                       <h5 className="fw-bold mb-0">Historial de correos</h5>
@@ -175,7 +184,7 @@ const PerfilCliente = () => {
                     {error && <Alert variant="danger">{error}</Alert>}
                     {cargando ? (
                       <div className="text-center py-4">
-                        <Spinner style={{ color: BRAND_COLOR }} />
+                        <Spinner style={{ color: COLOR_MARCA }} />
                       </div>
                     ) : notificaciones.length === 0 ? (
                       <Alert variant="info">
@@ -199,7 +208,7 @@ const PerfilCliente = () => {
                                   bg="light"
                                   text="dark"
                                   style={{
-                                    borderLeft: `3px solid ${BRAND_COLOR}`,
+                                    borderLeft: `3px solid ${COLOR_MARCA}`,
                                   }}
                                 >
                                   {TIPO_LABELS[n.tipo] || n.tipo}
@@ -214,7 +223,7 @@ const PerfilCliente = () => {
                                 </Badge>
                               </td>
                               <td className="text-muted small">
-                                {formatFecha(n.fechaEnvio)}
+                                {formatearFecha(n.fechaEnvio)}
                               </td>
                             </tr>
                           ))}
@@ -223,16 +232,12 @@ const PerfilCliente = () => {
                     )}
                   </Tab.Pane>
 
-                  {/* COMPRAS — placeholder MSCarrito */}
+                  {/* ── MIS COMPRAS — conectado a ms-carrito ── */}
                   <Tab.Pane eventKey="compras">
-                    <Placeholder
-                      ms="MSCarrito"
-                      descripcion="Historial de compras del usuario — GET /api/v1/Carrito/listar (Marcelo)"
-                      altura={250}
-                    />
+                    <MisComprasTab usuarioId={usuario?.id} />
                   </Tab.Pane>
 
-                  {/* DONACIONES — placeholder MSDonaciones */}
+                  {/* ── DONACIONES — pendiente MSDonaciones */}
                   <Tab.Pane eventKey="donaciones">
                     <Placeholder
                       ms="MSDonaciones"
@@ -241,11 +246,11 @@ const PerfilCliente = () => {
                     />
                   </Tab.Pane>
 
-                  {/* PERFIL — placeholder MSUsuarios */}
+                  {/* ── PERFIL — pendiente MSUsuarios */}
                   <Tab.Pane eventKey="perfil">
                     <Placeholder
                       ms="MSUsuarios"
-                      descripcion="Editar datos del perfil — PUT /api/v1/usuarios/{id} (Ingrid)"
+                      descripcion="Editar datos del perfil — PUT /api/v1/usuarios/{id}"
                       altura={250}
                     />
                   </Tab.Pane>
@@ -259,5 +264,138 @@ const PerfilCliente = () => {
     </div>
   );
 };
+
+// Componente separado para Mis Compras — se aísla para que su estado de carga
+// y datos no interfiera con el resto del PerfilCliente
+function MisComprasTab({ usuarioId }) {
+  const [carritos, setCarritos] = useState([]);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState('');
+
+  const cargarCompras = useCallback(async () => {
+    if (!usuarioId) return;
+    setCargando(true);
+    setError('');
+    try {
+      const res = await api.get('/Carrito/listar', {
+        headers: { 'X-Usuario-Id': usuarioId },
+      });
+      setCarritos(res.data?.data || []);
+    } catch {
+      setError('No se pudieron cargar las compras.');
+    } finally {
+      setCargando(false);
+    }
+  }, [usuarioId]);
+
+  useEffect(() => {
+    cargarCompras();
+  }, [cargarCompras]);
+
+  if (cargando)
+    return (
+      <div className="text-center py-4">
+        <Spinner style={{ color: COLOR_MARCA }} />
+      </div>
+    );
+
+  if (error)
+    return (
+      <Alert variant="danger" className="d-flex align-items-center gap-2">
+        {error}
+      </Alert>
+    );
+
+  if (carritos.length === 0)
+    return (
+      <Alert variant="info">Todavía no tienes compras registradas.</Alert>
+    );
+
+  // Cada carrito se convierte en una fila con el resumen de ítems
+  const formatearItems = (carrito) => {
+    const items = carrito.items || carrito.detalles || [];
+    if (items.length === 0) return '—';
+    return items
+      .map(
+        (i) =>
+          `${i.tipoEntrada || i.tipoEntradaNombre || 'General'} x ${i.cantidad}`
+      )
+      .join(', ');
+  };
+
+  const totalEntradas = (carrito) =>
+    (carrito.items || carrito.detalles || []).reduce(
+      (sum, i) => sum + (i.cantidad || 0),
+      0
+    );
+
+  return (
+    <div>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h5 className="fw-bold mb-0">Historial de compras</h5>
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          onClick={cargarCompras}
+          className="d-flex align-items-center gap-1"
+        >
+          <RefreshCw size={14} /> Actualizar
+        </Button>
+      </div>
+
+      <Table hover responsive>
+        <thead className="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Entradas</th>
+            <th>Tipo</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {carritos.map((carrito) => {
+            const idCarrito = carrito.idCarrito || carrito.id;
+            const estado =
+              (carrito.estadoCarrito || carrito.estado || '—')
+                .toString()
+                .toUpperCase() || 'CREADO';
+            return (
+              <tr key={idCarrito}>
+                <td className="fw-semibold">#{idCarrito}</td>
+                <td className="text-muted small">
+                  {formatearFecha(carrito.fechaCreacion || carrito.createdAt)}
+                </td>
+                <td>{totalEntradas(carrito)}</td>
+                <td className="small">{formatearItems(carrito)}</td>
+                <td className="fw-semibold">{formatearMoneda(carrito.total || 0)}</td>
+                <td>
+                  <Badge
+                    bg={estadoVariantMap[estado] || 'secondary'}
+                    text={estadoVariantMap[estado] === 'light' ? 'dark' : undefined}
+                  >
+                    {estadoLabelMap[estado] || estado}
+                  </Badge>
+                </td>
+                <td>
+                  <Button
+                    as={Link}
+                    to={`/carrito/${idCarrito}`}
+                    variant="outline-primary"
+                    size="sm"
+                  >
+                    Ver detalle
+                  </Button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </Table>
+    </div>
+  );
+}
 
 export default PerfilCliente;

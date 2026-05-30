@@ -23,8 +23,7 @@ import {
   getCausasPorOrganizacion,
   crearOrganizacion,
 } from '@services/donacionesApi';
-
-const BRAND_COLOR = '#5ad4e6';
+import { COLOR_MARCA } from '@utils/constantes';
 
 const Donaciones = () => {
   const [organizaciones, setOrganizaciones] = useState([]);
@@ -129,15 +128,15 @@ const Donaciones = () => {
         <Container>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div className="d-flex align-items-center gap-2">
-              <Heart size={28} style={{ color: BRAND_COLOR }} />
+              <Heart size={28} style={{ color: COLOR_MARCA }} />
               <h2 className="fw-bold mb-0">Organizaciones Beneficiarias</h2>
             </div>
             <Button
               onClick={() => setShowCrear(true)}
               className="d-flex align-items-center gap-2"
               style={{
-                backgroundColor: BRAND_COLOR,
-                borderColor: BRAND_COLOR,
+                backgroundColor: COLOR_MARCA,
+                borderColor: COLOR_MARCA,
                 color: '#000',
               }}
             >
@@ -150,7 +149,7 @@ const Donaciones = () => {
 
           {cargando && (
             <div className="text-center py-5">
-              <Spinner animation="border" style={{ color: BRAND_COLOR }} />
+              <Spinner animation="border" style={{ color: COLOR_MARCA }} />
             </div>
           )}
 
@@ -175,7 +174,7 @@ const Donaciones = () => {
                 >
                   <Card.Body className="p-4">
                     <div className="d-flex align-items-center gap-2 mb-3">
-                      <Building2 size={22} style={{ color: BRAND_COLOR }} />
+                      <Building2 size={22} style={{ color: COLOR_MARCA }} />
                       <Card.Title className="fw-bold mb-0 fs-6">
                         {org.nombre}
                       </Card.Title>
@@ -194,7 +193,7 @@ const Donaciones = () => {
                         variant="outline-primary"
                         size="sm"
                         className="w-100 d-flex align-items-center justify-content-center gap-2"
-                        style={{ borderColor: BRAND_COLOR, color: BRAND_COLOR }}
+                        style={{ borderColor: COLOR_MARCA, color: COLOR_MARCA }}
                         onClick={() => verDetalle(org)}
                       >
                         <Eye size={16} /> Ver detalle y causas
@@ -217,14 +216,14 @@ const Donaciones = () => {
       >
         <Modal.Header closeButton>
           <Modal.Title className="d-flex align-items-center gap-2">
-            <Building2 size={22} style={{ color: BRAND_COLOR }} />
+            <Building2 size={22} style={{ color: COLOR_MARCA }} />
             {orgSeleccionada?.nombre}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {cargandoDetalle ? (
             <div className="text-center py-4">
-              <Spinner animation="border" style={{ color: BRAND_COLOR }} />
+              <Spinner animation="border" style={{ color: COLOR_MARCA }} />
             </div>
           ) : (
             <Tabs defaultActiveKey="causas" className="mb-3">
@@ -274,7 +273,7 @@ const Donaciones = () => {
                 <div className="text-center py-4">
                   <TrendingUp
                     size={48}
-                    style={{ color: BRAND_COLOR }}
+                    style={{ color: COLOR_MARCA }}
                     className="mb-3"
                   />
                   <h3 className="fw-bold">
@@ -370,8 +369,8 @@ const Donaciones = () => {
                 type="submit"
                 disabled={guardando}
                 style={{
-                  backgroundColor: BRAND_COLOR,
-                  borderColor: BRAND_COLOR,
+                  backgroundColor: COLOR_MARCA,
+                  borderColor: COLOR_MARCA,
                   color: '#000',
                 }}
               >

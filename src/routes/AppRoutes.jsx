@@ -11,11 +11,13 @@ import Inicio from '@pages/Inicio';
 import Login from '@pages/Login';
 import Nosotros from '@pages/Nosotros';
 import Registro from '@pages/Registro';
+import Contacto from '@pages/Contacto';
 
 // Importar páginas protegidas
 import DashboardAdmin from '@pages/DashboardAdmin';
 import DashboardOrganizador from '@pages/DashboardOrganizador';
 import HistorialNotificaciones from '@pages/HistorialNotificaciones';
+import PaginaCarrito from '@pages/PaginaCarrito';
 import PerfilCliente from '@pages/PerfilCliente';
 
 export default function AppRoutes() {
@@ -54,9 +56,11 @@ export default function AppRoutes() {
 
       {/* ========== RUTAS PÚBLICAS - EVENTOS ========== */}
       <Route path="/evento/:id" element={<DetalleEvento />} />
+      <Route path="/events" element={<Inicio />} />
       <Route path={ROUTES.DONACIONES} element={<Donaciones />} />
       <Route path={ROUTES.CONTACTO} element={<Contacto />} />
       <Route path="/nosotros" element={<Nosotros />} />
+      <Route path="/contact" element={<Contacto />} />
 
       {/* ========== RUTAS PROTEGIDAS - CLIENTE ========== */}
       <Route
@@ -71,6 +75,10 @@ export default function AppRoutes() {
       <Route
         path={ROUTES.NOTIFICACIONES}
         element={<ProtectedRoute element={<HistorialNotificaciones />} />}
+      />
+      <Route
+        path="/carrito/:carritoId"
+        element={<ProtectedRoute element={<PaginaCarrito />} />}
       />
 
       {/* ========== RUTAS PROTEGIDAS - ADMIN ========== */}
