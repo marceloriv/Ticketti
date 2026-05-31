@@ -1,18 +1,9 @@
 import { useAuth } from '@hooks/useAuth';
 import { useEffect, useState } from 'react';
-import {
-  Alert,
-  Button,
-  Card,
-  Col,
-  Container,
-  Row,
-  Spinner,
-} from 'react-bootstrap';
+import { Alert, Button, Card, Col, Container, Row, Spinner } from 'react-bootstrap';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
 import { Link, useNavigate } from 'react-router-dom';
-import { COLOR_MARCA } from '@utils/constantes';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -22,7 +13,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Redirigir si ya está autenticado
+  // Si ya está autenticado, mandarlo al home
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/home');
@@ -39,6 +30,8 @@ export default function Login() {
         email,
         password,
       });
+
+      // Después del login, todos van al home
       navigate('/home');
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión');

@@ -19,6 +19,8 @@ import HistorialNotificaciones from '@pages/HistorialNotificaciones';
 import PaginaCarrito from '@pages/PaginaCarrito';
 import PerfilCliente from '@pages/PerfilCliente';
 
+
+
 export default function AppRoutes() {
   const { isAuthenticated, loading } = useAuth();
 
@@ -40,17 +42,15 @@ export default function AppRoutes() {
       {/* ========== RUTAS PÚBLICAS ========== */}
       <Route path={ROUTES.HOME} element={<Inicio />} />
       <Route path={ROUTES.INICIO} element={<Inicio />} />
+
       <Route
         path={ROUTES.LOGIN}
-        element={
-          isAuthenticated ? <Navigate to={ROUTES.HOME} replace /> : <Login />
-        }
+        element={isAuthenticated ? <Navigate to={ROUTES.INICIO} replace /> : <Login />}
       />
+
       <Route
         path={ROUTES.REGISTRO}
-        element={
-          isAuthenticated ? <Navigate to={ROUTES.HOME} replace /> : <Registro />
-        }
+        element={isAuthenticated ? <Navigate to={ROUTES.INICIO} replace /> : <Registro />}
       />
 
       {/* ========== RUTAS PÚBLICAS - EVENTOS ========== */}
@@ -70,22 +70,24 @@ export default function AppRoutes() {
           />
         }
       />
+
       <Route
         path={ROUTES.NOTIFICACIONES}
         element={<ProtectedRoute element={<HistorialNotificaciones />} />}
       />
+
       <Route
         path="/carrito/:carritoId"
         element={<ProtectedRoute element={<PaginaCarrito />} />}
       />
 
-      {/* ========== RUTAS PROTEGIDAS - ADMIN ========== */}
+      {/* ========== RUTAS PROTEGIDAS - ADMIN PLATAFORMA ========== */}
       <Route
         path={ROUTES.ADMIN_DASHBOARD}
         element={
           <ProtectedRoute
             element={<DashboardAdmin />}
-            requiredRole={ROLES.ADMIN}
+            requiredRole={ROLES.ADMINPLATAFORMA}
           />
         }
       />
@@ -106,3 +108,5 @@ export default function AppRoutes() {
     </Routes>
   );
 }
+
+

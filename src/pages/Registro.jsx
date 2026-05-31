@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
-import {Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 const initialFormData = {
@@ -16,15 +16,18 @@ const initialFormData = {
 
 const getRegistroErrorMessage = (error) => {
   const raw = error.response?.data?.mensaje || error.response?.data?.message;
+
   if (!raw || typeof raw !== 'string') {
     return 'Error en el registro. Intenta nuevamente.';
   }
 
   if (raw.includes('ApiGateway error calling')) {
     const listMatch = raw.match(/\[[\s\S]*\]/);
+
     if (listMatch?.[0]) {
       try {
         const parsed = JSON.parse(listMatch[0]);
+
         if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed.join('\n');
         }
@@ -48,10 +51,11 @@ export default function Registro() {
   const [cargando, setCargando] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -60,11 +64,33 @@ export default function Registro() {
     setMensaje({ tipo: null, texto: '' });
     setCargando(true);
 
+    if (formData.contrasena !== formData.confirmarContrasena) {
+      setMensaje({
+        tipo: 'danger',
+        texto: 'Las contraseñas no coinciden.',
+      });
+      setCargando(false);
+      return;
+    }
+
+    if (!formData.aceptaTerminos) {
+      setMensaje({
+        tipo: 'danger',
+        texto: 'Debes aceptar los términos para registrarte.',
+      });
+      setCargando(false);
+      return;
+    }
+
     try {
       await api.post(
         '/usuarios',
         {
-          ...formData,
+          nombre: formData.nombre,
+          correo: formData.correo,
+          contrasena: formData.contrasena,
+          direccion: formData.direccion,
+          telefono: formData.telefono,
           rol: 'CLIENTE',
         },
         { skipAuth: true }
@@ -82,7 +108,11 @@ export default function Registro() {
       }, 2000);
     } catch (error) {
       const mensajeError = getRegistroErrorMessage(error);
-      setMensaje({ tipo: 'danger', texto: mensajeError });
+
+      setMensaje({
+        tipo: 'danger',
+        texto: mensajeError,
+      });
     } finally {
       setCargando(false);
     }
@@ -112,6 +142,7 @@ export default function Registro() {
                       name="nombre"
                       value={formData.nombre}
                       onChange={handleChange}
+                      required
                     />
                   </Form.Group>
                 </Row>
@@ -125,6 +156,7 @@ export default function Registro() {
                       name="correo"
                       value={formData.correo}
                       onChange={handleChange}
+                      required
                     />
                   </Form.Group>
                 </Row>
@@ -138,11 +170,12 @@ export default function Registro() {
                       name="contrasena"
                       value={formData.contrasena}
                       onChange={handleChange}
+                      required
                     />
                   </Form.Group>
                 </Row>
 
-                <Form.Group as={Col} controlId="formGridPassword">
+                <Form.Group className="mb-3" controlId="formGridPasswordConfirm">
                   <Form.Label>Confirmar Contraseña</Form.Label>
                   <Form.Control
                     type="password"
@@ -150,6 +183,7 @@ export default function Registro() {
                     name="confirmarContrasena"
                     value={formData.confirmarContrasena}
                     onChange={handleChange}
+                    required
                   />
                 </Form.Group>
 
@@ -160,6 +194,7 @@ export default function Registro() {
                     name="direccion"
                     value={formData.direccion}
                     onChange={handleChange}
+                    required
                   />
                 </Form.Group>
 
@@ -171,6 +206,7 @@ export default function Registro() {
                     name="telefono"
                     value={formData.telefono}
                     onChange={handleChange}
+                    required
                   />
                 </Form.Group>
 
@@ -185,16 +221,19 @@ export default function Registro() {
                 </Form.Group>
 
                 <div className="text-center">
-                  <Button variant="primary" type="submit" className="btn">
-                    Registrarse
-                    {cargando && ' ...'}
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    className="btn"
+                    disabled={cargando}
+                  >
+                    {cargando ? 'Registrando...' : 'Registrarse'}
                   </Button>
                 </div>
+
                 <p className="mb-0 text-center mt-3">
                   ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
                 </p>
-                
-                
               </Form>
             </Card.Body>
           </Card>
