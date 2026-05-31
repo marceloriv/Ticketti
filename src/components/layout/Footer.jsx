@@ -1,6 +1,5 @@
-import { Container, Row, Col } from 'react-bootstrap';
-import { Ticket, Mail, Phone, MapPin, Globe, ExternalLink } from 'lucide-react';
-import { COLOR_MARCA } from '@utils/constantes';
+import { Globe, Mail, MapPin, Phone, Ticket } from 'lucide-react';
+import { Col, Container, Row } from 'react-bootstrap';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -27,7 +26,7 @@ const Footer = () => {
         <Row className="g-4">
           <Col md={4}>
             <div className="mb-3 d-flex align-items-center gap-2">
-              <Ticket size={28} style={{ color: COLOR_MARCA }} />
+              <Ticket size={28} className="footer-brand-icon" />
               <span className="fw-bold fs-4">Ticketti</span>
             </div>
             <p className="text-white-50 mb-4">
@@ -40,18 +39,8 @@ const Footer = () => {
                 <a
                   key={red.nombre}
                   href={red.href}
-                  className="text-white-50 text-decoration-none d-flex align-items-center gap-1"
+                  className="text-white-50 text-decoration-none d-flex align-items-center gap-1 footer-social-link"
                   aria-label={red.nombre}
-                  style={{
-                    transition: 'color 0.3s ease',
-                    fontSize: '0.9rem',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = COLOR_MARCA;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = '';
-                  }}
                 >
                   <Globe size={16} />
                   {red.nombre}
@@ -61,15 +50,14 @@ const Footer = () => {
           </Col>
 
           <Col md={4}>
-            <h5 className="fw-bold mb-3" style={{ color: COLOR_MARCA }}>
+            <h5 className="fw-bold mb-3 footer-heading-ticketti">
               Contacto
             </h5>
             <ul className="list-unstyled">
               <li className="mb-3 d-flex align-items-start">
                 <MapPin
                   size={18}
-                  className="me-2 mt-1 flex-shrink-0"
-                  style={{ color: COLOR_MARCA }}
+                  className="me-2 mt-1 shrink-0 footer-contact-icon"
                 />
                 <span className="text-white-50">
                   Av. Los Conquistadores 1234, Oficina 502
@@ -80,16 +68,14 @@ const Footer = () => {
               <li className="mb-3 d-flex align-items-center">
                 <Phone
                   size={18}
-                  className="me-2 flex-shrink-0"
-                  style={{ color: COLOR_MARCA }}
+                  className="me-2 shrink-0 footer-contact-icon"
                 />
                 <span className="text-white-50">+56 2 2345 6789</span>
               </li>
               <li className="mb-3 d-flex align-items-center">
                 <Mail
                   size={18}
-                  className="me-2 flex-shrink-0"
-                  style={{ color: COLOR_MARCA }}
+                  className="me-2 shrink-0 footer-contact-icon"
                 />
                 <span className="text-white-50">contacto@ticketti.cl</span>
               </li>
@@ -97,7 +83,7 @@ const Footer = () => {
           </Col>
 
           <Col md={4}>
-            <h5 className="fw-bold mb-3" style={{ color: COLOR_MARCA }}>
+            <h5 className="fw-bold mb-3 footer-heading-ticketti">
               Enlaces
             </h5>
             <ul className="list-unstyled">
@@ -105,16 +91,7 @@ const Footer = () => {
                 <li key={enlace.nombre} className="mb-2">
                   <a
                     href={enlace.href}
-                    className="text-white-50 text-decoration-none"
-                    style={{
-                      transition: 'color 0.3s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = COLOR_MARCA;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = '';
-                    }}
+                    className="text-white-50 text-decoration-none footer-quick-link"
                   >
                     {enlace.nombre}
                   </a>

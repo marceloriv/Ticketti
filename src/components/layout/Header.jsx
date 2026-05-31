@@ -1,9 +1,9 @@
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
-import { LogOut, Ticket, User, ShoppingCart } from 'lucide-react';
+import { LogOut, ShoppingCart, Ticket, User } from 'lucide-react';
+import { useCallback, useEffect } from 'react';
 import { Button, Container, Nav, Navbar, Stack } from 'react-bootstrap';
-import { useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const { usuario, logout, carritoId, establecerCarritoId } = useAuth();
@@ -167,7 +167,6 @@ const Header = () => {
                     size="sm"
                     onClick={handleIrCarrito}
                     className="position-relative"
-                    style={{ cursor: 'pointer' }}
                   >
                     <ShoppingCart size={14} className="me-1" />
                     Carrito
@@ -179,24 +178,7 @@ const Header = () => {
                           e.stopPropagation();
                           handleIrCarrito();
                         }}
-                        style={{
-                          position: 'absolute',
-                          top: '-8px',
-                          right: '-8px',
-                          backgroundColor: 'red',
-                          color: 'white',
-                          borderRadius: '50%',
-                          width: '20px',
-                          height: '20px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '11px',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          zIndex: 1000,
-                          border: '2px solid white',
-                        }}
+                        className="carrito-badge-ticketti"
                       >
                         {cantidadCarrito}
                       </span>

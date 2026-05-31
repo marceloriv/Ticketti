@@ -3,17 +3,11 @@ import Header from '@components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
 import { BarChart2, Calendar, Plus, TrendingUp } from 'lucide-react';
 import { Button, Card, Col, Container, Nav, Row, Tab } from 'react-bootstrap';
-import { COLOR_MARCA } from '@utils/constantes';
 
 // Placeholder visible para el equipo
 const Placeholder = ({ ms, descripcion, altura = 200 }) => (
   <div
-    className="d-flex flex-column align-items-center justify-content-center text-center rounded"
-    style={{
-      height: altura,
-      border: '2px dashed #dee2e6',
-      background: '#fafafa',
-    }}
+    className={`d-flex flex-column align-items-center justify-content-center text-center rounded dashboard-organizador-placeholder dashboard-organizador-placeholder--${altura}`}
   >
     <p className="text-muted fw-semibold mb-1">🔧 Pendiente — {ms}</p>
     <p className="text-muted small mb-0">{descripcion}</p>
@@ -26,7 +20,7 @@ const DashboardOrganizador = () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
-      <main className="flex-grow-1 py-4" style={{ background: '#f8f9fa' }}>
+      <main className="grow py-4 dashboard-organizador-main">
         <Container fluid="lg">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -37,12 +31,7 @@ const DashboardOrganizador = () => {
             </div>
             {/* MSEventos: conectar botón con modal/página de crear evento */}
             <Button
-              style={{
-                backgroundColor: COLOR_MARCA,
-                borderColor: COLOR_MARCA,
-                color: '#000',
-              }}
-              className="d-flex align-items-center gap-2"
+              className="d-flex align-items-center gap-2 btn-ticketti"
             >
               <Plus size={18} /> Crear evento
             </Button>
@@ -53,18 +42,8 @@ const DashboardOrganizador = () => {
             <Col xs={6} md={3}>
               <Card className="border-0 shadow-sm h-100">
                 <Card.Body className="d-flex align-items-center gap-3 p-4">
-                  <div
-                    style={{
-                      background: `${COLOR_MARCA}20`,
-                      borderRadius: '50%',
-                      width: 48,
-                      height: 48,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Calendar size={22} style={{ color: COLOR_MARCA }} />
+                  <div className="dashboard-stat-icon dashboard-stat-icon-brand">
+                    <Calendar size={22} />
                   </div>
                   <div>
                     <p className="text-muted small mb-1">Mis eventos</p>
@@ -78,18 +57,8 @@ const DashboardOrganizador = () => {
             <Col xs={6} md={3}>
               <Card className="border-0 shadow-sm h-100">
                 <Card.Body className="d-flex align-items-center gap-3 p-4">
-                  <div
-                    style={{
-                      background: '#28a74520',
-                      borderRadius: '50%',
-                      width: 48,
-                      height: 48,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <TrendingUp size={22} style={{ color: '#28a745' }} />
+                  <div className="dashboard-stat-icon dashboard-stat-icon-success">
+                    <TrendingUp size={22} />
                   </div>
                   <div>
                     <p className="text-muted small mb-1">Entradas vendidas</p>
@@ -103,18 +72,8 @@ const DashboardOrganizador = () => {
             <Col xs={6} md={3}>
               <Card className="border-0 shadow-sm h-100">
                 <Card.Body className="d-flex align-items-center gap-3 p-4">
-                  <div
-                    style={{
-                      background: '#ffc10720',
-                      borderRadius: '50%',
-                      width: 48,
-                      height: 48,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <BarChart2 size={22} style={{ color: '#ffc107' }} />
+                  <div className="dashboard-stat-icon dashboard-stat-icon-warning">
+                    <BarChart2 size={22} />
                   </div>
                   <div>
                     <p className="text-muted small mb-1">Ingresos</p>
@@ -128,18 +87,8 @@ const DashboardOrganizador = () => {
             <Col xs={6} md={3}>
               <Card className="border-0 shadow-sm h-100">
                 <Card.Body className="d-flex align-items-center gap-3 p-4">
-                  <div
-                    style={{
-                      background: '#e83e8c20',
-                      borderRadius: '50%',
-                      width: 48,
-                      height: 48,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <TrendingUp size={22} style={{ color: '#e83e8c' }} />
+                  <div className="dashboard-stat-icon dashboard-stat-icon-pink">
+                    <TrendingUp size={22} />
                   </div>
                   <div>
                     <p className="text-muted small mb-1">

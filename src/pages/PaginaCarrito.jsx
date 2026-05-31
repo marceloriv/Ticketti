@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Container, Row, Col, Alert, Spinner, Button } from 'react-bootstrap';
+import { Alert, Col, Container, Row, Spinner } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import ListaEntradasCarrito from '../components/ListaEntradasCarrito';
+import ProtectedRoute from '../components/ProtectedRoute';
 import ResumenCarrito from '../components/ResumenCarrito';
 import { useCarrito } from '../hooks/useCarrito';
-import ProtectedRoute from '../components/ProtectedRoute';
 
 const PaginaCarrito = () => {
   const { carritoId } = useParams();
@@ -72,7 +72,7 @@ const PaginaCarrito = () => {
 
   return (
     <ProtectedRoute>
-      <Container className="py-5 bg-light" style={{ minHeight: '100vh' }}>
+      <Container className="py-5 bg-light pagina-carrito-ticketti">
         <h2 className="fw-bold mb-4">Carrito de Compras</h2>
 
         {error && <Alert variant="danger">{error}</Alert>}
@@ -85,7 +85,7 @@ const PaginaCarrito = () => {
 
         {loading && !resumen ? (
           <div className="text-center py-5">
-            <Spinner animation="border" role="status" style={{ color: '#2CACAD' }}>
+            <Spinner animation="border" role="status" className="spinner-ticketti">
               <span className="visually-hidden">Cargando...</span>
             </Spinner>
           </div>

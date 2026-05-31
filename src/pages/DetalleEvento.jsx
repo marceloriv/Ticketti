@@ -1,23 +1,22 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import {
-  Container,
-  Row,
-  Col,
-  Badge,
-  Button,
-  Spinner,
-  Alert,
-  Modal,
-  Form,
-} from 'react-bootstrap';
-import { Calendar, MapPin, Ticket, Users, AlertCircle } from 'lucide-react';
-import Header from '@components/layout/Header';
 import Footer from '@components/layout/Footer';
+import Header from '@components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
 import api from '@services/api';
-import { COLOR_MARCA } from '@utils/constantes';
+import { AlertCircle, Calendar, MapPin, Ticket, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  Alert,
+  Badge,
+  Button,
+  Col,
+  Container,
+  Form,
+  Modal,
+  Row,
+  Spinner,
+} from 'react-bootstrap';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const formatearMoneda = (price) => {
   if (!price) return 'Gratis';
@@ -109,7 +108,7 @@ const DetalleEvento = () => {
       <div className="d-flex flex-column min-vh-100">
         <Header />
         <div className="text-center py-5">
-          <Spinner animation="border" style={{ color: COLOR_MARCA }} />
+          <Spinner animation="border" className="spinner-ticketti" />
         </div>
         <Footer />
       </div>
@@ -129,13 +128,13 @@ const DetalleEvento = () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
-      <main className="flex-grow-1 py-5">
+      <main className="grow py-5 detalle-evento-main">
         <Container>
           <Button
             variant="link"
             onClick={() => navigate(-1)}
             className="mb-4 p-0"
-            style={{ color: COLOR_MARCA }}
+            className="mb-4 p-0 detalle-evento-text"
           >
             ← Volver
           </Button>
@@ -146,7 +145,7 @@ const DetalleEvento = () => {
                 src={evento.imagenUrl || '/assets/hero.png'}
                 alt={evento.nombre}
                 className="w-100 rounded shadow"
-                style={{ objectFit: 'cover', maxHeight: '400px' }}
+                className="w-100 rounded shadow detalle-evento-image"
               />
             </Col>
 
@@ -158,19 +157,19 @@ const DetalleEvento = () => {
               <p className="text-muted mb-4">{evento.descripcion}</p>
 
               <div className="mb-2 d-flex align-items-center gap-2">
-                <Calendar size={18} style={{ stroke: COLOR_MARCA }} />
+                <Calendar size={18} className="detalle-evento-text" />
                 <span>{formatearFecha(evento.fecha)}</span>
               </div>
 
               <div className="mb-2 d-flex align-items-center gap-2">
-                <MapPin size={18} style={{ stroke: COLOR_MARCA }} />
+                <MapPin size={18} className="detalle-evento-text" />
                 <span>
                   {evento.recinto?.nombre} — {evento.recinto?.ubicacion}
                 </span>
               </div>
 
               <div className="mb-2 d-flex align-items-center gap-2">
-                <Users size={18} style={{ stroke: COLOR_MARCA }} />
+                <Users size={18} className="detalle-evento-text" />
                 <span>{evento.stock} entradas disponibles</span>
               </div>
 
@@ -178,14 +177,7 @@ const DetalleEvento = () => {
 
               <Button
                 size="lg"
-                className="d-flex align-items-center gap-2 mb-3"
-                style={{
-                  backgroundColor: COLOR_MARCA,
-                  borderColor: COLOR_MARCA,
-                  color: '#000',
-                  width: '100%',
-                  justifyContent: 'center',
-                }}
+                className="d-flex align-items-center gap-2 mb-3 btn-ticketti detalle-evento-button"
                 onClick={() => setShowModal(true)}
               >
                 <Ticket size={20} />
@@ -204,7 +196,7 @@ const DetalleEvento = () => {
 
       {/* ── Modal de selección de cantidad ── */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton style={{ borderBottomColor: COLOR_MARCA }}>
+        <Modal.Header closeButton className="detalle-evento-modal-header">
           <Modal.Title className="fw-bold">Selecciona tu cantidad</Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -249,7 +241,7 @@ const DetalleEvento = () => {
             Cancelar
           </Button>
           <Button
-            style={{ backgroundColor: COLOR_MARCA, borderColor: COLOR_MARCA }}
+            className="btn-ticketti"
             onClick={manejarAgregarAlCarrito}
             disabled={loadingCarrito || cantidad < 1 || cantidad > 4}
           >

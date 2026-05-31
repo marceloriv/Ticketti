@@ -1,7 +1,7 @@
 import CommonCarousel from '@components/common/Carousel';
+import ProductCard from '@components/common/ProductCard';
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
-import ProductCard from '@components/common/ProductCard';
 import api from '@services/api';
 import { getCausasActivas, getOrganizaciones } from '@services/donacionesApi';
 import { Building2, Heart, Search } from 'lucide-react';
@@ -16,7 +16,6 @@ import {
   Row,
   Spinner,
 } from 'react-bootstrap';
-import { COLOR_MARCA } from '@utils/constantes';
 
 const CATEGORIAS = [
   { id: 'todo', nombre: 'Todo', generos: [] },
@@ -126,10 +125,10 @@ const Inicio = () => {
     <div className="d-flex flex-column min-vh-100">
       <Header />
 
-      <main className="flex-grow-1">
+      <main className="grow">
         {/* HERO - Eventos */}
         <section id="hero" className="position-relative">
-          <CommonCarousel slides={HERO_SLIDES} brandColor={COLOR_MARCA} />
+          <CommonCarousel slides={HERO_SLIDES} />
         </section>
 
         {/* BUSCADOR — EVENTOS */}
@@ -138,13 +137,7 @@ const Inicio = () => {
             <Row className="justify-content-center">
               <Col md={8} lg={6}>
                 <InputGroup className="mb-3">
-                  <InputGroup.Text
-                    style={{
-                      backgroundColor: 'transparent',
-                      borderColor: COLOR_MARCA,
-                      color: COLOR_MARCA,
-                    }}
-                  >
+                  <InputGroup.Text className="inicio-search-icon">
                     <Search size={18} />
                   </InputGroup.Text>
                   <Form.Control
@@ -152,7 +145,7 @@ const Inicio = () => {
                     placeholder="Buscar eventos por nombre, genero o ubicación..."
                     value={busqueda}
                     onChange={(e) => setBusqueda(e.target.value)}
-                    style={{ borderColor: COLOR_MARCA }}
+                    className="inicio-search-input"
                   />
                 </InputGroup>
                 <div className="d-flex flex-wrap justify-content-center gap-2">
@@ -161,16 +154,9 @@ const Inicio = () => {
                       key={cat.id}
                       size="sm"
                       onClick={() => setCategoriaActiva(cat.id)}
-                      className="rounded-pill px-4"
-                      style={{
-                        borderColor: COLOR_MARCA,
-                        backgroundColor:
-                          categoriaActiva === cat.id
-                            ? COLOR_MARCA
-                            : 'transparent',
-                        color:
-                          categoriaActiva === cat.id ? '#000' : COLOR_MARCA,
-                      }}
+                      className={`rounded-pill px-4 inicio-categoria-button ${
+                        categoriaActiva === cat.id ? 'active' : ''
+                      }`}
                     >
                       {cat.nombre}
                     </Button>
@@ -187,7 +173,7 @@ const Inicio = () => {
             <h2 className="text-center mb-4 fw-bold">Eventos Destacados</h2>
             {cargando && (
               <div className="text-center py-5">
-                <Spinner animation="border" style={{ color: COLOR_MARCA }} />
+                <Spinner animation="border" className="spinner-ticketti" />
               </div>
             )}
             {error && (
@@ -223,14 +209,10 @@ const Inicio = () => {
 
         {/* CAUSAS SOCIALES */}
         {causas.length > 0 && (
-          <section
-            id="causas"
-            className="py-5"
-            style={{ background: '#f8f9fa' }}
-          >
+          <section id="causas" className="py-5 inicio-causas-section">
             <Container>
               <div className="d-flex align-items-center gap-2 mb-3">
-                <Heart size={28} style={{ color: COLOR_MARCA }} />
+                <Heart size={28} className="text-ticketti" />
                 <h2 className="fw-bold mb-0">Apoya una causa</h2>
               </div>
               <p className="text-muted mb-4">
@@ -240,22 +222,9 @@ const Inicio = () => {
               <Row xs={1} sm={2} lg={3} className="g-4">
                 {causas.slice(0, 6).map((c) => (
                   <Col key={c.idCausa}>
-                    <div
-                      className="p-4 rounded shadow-sm h-100 d-flex flex-column"
-                      style={{
-                        background: '#fff',
-                        borderLeft: `4px solid ${COLOR_MARCA}`,
-                        transition: 'transform 0.2s',
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.transform = 'translateY(-3px)')
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.transform = '')
-                      }
-                    >
+                    <div className="p-4 rounded shadow-sm h-100 d-flex flex-column inicio-causa-card">
                       <div className="d-flex align-items-center gap-2 mb-2">
-                        <Heart size={18} style={{ color: COLOR_MARCA }} />
+                        <Heart size={18} className="text-ticketti" />
                         <span className="fw-bold">{c.nombre}</span>
                       </div>
                       {c.descripcion && (
@@ -280,7 +249,7 @@ const Inicio = () => {
           <section id="organizaciones" className="py-5">
             <Container>
               <div className="d-flex align-items-center gap-2 mb-3">
-                <Building2 size={28} style={{ color: COLOR_MARCA }} />
+                <Building2 size={28} className="text-ticketti" />
                 <h2 className="fw-bold mb-0">Organizaciones aliadas</h2>
               </div>
               <p className="text-muted mb-4">
@@ -290,32 +259,9 @@ const Inicio = () => {
               <Row xs={2} sm={3} lg={4} className="g-3">
                 {organizaciones.slice(0, 8).map((o) => (
                   <Col key={o.idOrganizacion}>
-                    <div
-                      className="p-3 rounded shadow-sm text-center h-100 d-flex flex-column align-items-center justify-content-center"
-                      style={{
-                        background: '#fff',
-                        transition: 'box-shadow 0.2s',
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.boxShadow = `0 4px 15px rgba(90,212,230,0.2)`)
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.boxShadow = '')
-                      }
-                    >
-                      <div
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: '50%',
-                          background: `${COLOR_MARCA}20`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          marginBottom: 8,
-                        }}
-                      >
-                        <Building2 size={20} style={{ color: COLOR_MARCA }} />
+                    <div className="p-3 rounded shadow-sm text-center h-100 d-flex flex-column align-items-center justify-content-center inicio-org-card">
+                      <div className="inicio-org-icon">
+                        <Building2 size={20} className="text-ticketti" />
                       </div>
                       <p className="fw-semibold small mb-0">{o.nombre}</p>
                     </div>

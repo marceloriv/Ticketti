@@ -1,5 +1,5 @@
-import { Card, Button, Row, Col, Badge, Alert } from 'react-bootstrap';
-import { Trash, RefreshCw } from 'lucide-react';
+import { RefreshCw, Trash } from 'lucide-react';
+import { Alert, Badge, Button, Card, Col, Row } from 'react-bootstrap';
 
 const ACCENT_COLOR = '#2CACAD';
 const PRECIO_MONEDA = new Intl.NumberFormat('es-CL', {
@@ -39,7 +39,7 @@ const ListaEntradasCarrito = ({ entradas, onEliminar, onRenovar, puedeRenovar, l
         const eventoNombre = item.eventoNombre ?? item.nombreEvento ?? `Evento #${eventoId}`;
 
         return (
-          <Card key={detalleId} className="shadow-sm" style={{ borderColor: ACCENT_COLOR }}>
+          <Card key={detalleId} className="shadow-sm lista-entradas-ticketti">
             <Card.Body className="bg-light">
               <Row className="align-items-center">
                 <Col md={6}>
@@ -54,7 +54,7 @@ const ListaEntradasCarrito = ({ entradas, onEliminar, onRenovar, puedeRenovar, l
                   <div className="text-muted small">Subtotal: {formatearMoneda(subtotal)}</div>
                 </Col>
                 <Col md={3} className="text-end d-flex flex-column gap-2">
-                  <div className="fw-bold" style={{ color: ACCENT_COLOR }}>
+                  <div className="fw-bold text-ticketti">
                     {formatearMoneda(subtotal)}
                   </div>
                   <Button
