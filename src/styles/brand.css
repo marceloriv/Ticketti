@@ -195,3 +195,33 @@ opciones
 
   --bs-btn-focus-shadow-rgb: 90, 212, 230;
 }
+
+/* Fondo compartido para Login y Registro */
+
+.loginContainer,
+.containerRegistro {
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* Fondo a pantalla completa */
+.loginContainer::before,
+.containerRegistro::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url('/img/loginimagen2.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #0f1b3d;
+  z-index: -1;
+}
+
+/* Para que el contenido quede encima del fondo */
+.loginContainer > *,
+.containerRegistro > * {
+  position: relative;
+  z-index: 1;
+}
