@@ -1,22 +1,21 @@
-import { useState, useEffect, useCallback } from 'react';
+import Footer from '@components/layout/Footer';
+import Header from '@components/layout/Header';
+import { useAuth } from '@hooks/useAuth';
+import api from '@services/api';
+import { Heart, Mail, RefreshCw, ShoppingBag, User } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  Container,
+  Alert,
+  Badge,
+  Button,
   Card,
+  Container,
   Nav,
+  Spinner,
   Tab,
   Table,
-  Badge,
-  Spinner,
-  Alert,
-  Button,
 } from 'react-bootstrap';
-import { User, Mail, ShoppingBag, Heart, RefreshCw } from 'lucide-react';
-import Header from '@components/layout/Header';
-import Footer from '@components/layout/Footer';
-import { useAuth } from '@hooks/useAuth';
 import { Link } from 'react-router-dom';
-import api from '@services/api';
-import { COLOR_MARCA } from '@utils/constantes';
 
 const estadoLabelMap = {
   CREADO: 'Creado',
@@ -97,30 +96,19 @@ const PerfilCliente = () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
-      <main className="flex-grow-1 py-4" style={{ background: '#f8f9fa' }}>
+      <main className="grow py-4 perfil-cliente-main">
         <Container fluid="lg">
           {/* Cabecera del perfil */}
           <Card className="border-0 shadow-sm mb-4">
             <Card.Body className="d-flex align-items-center gap-4 p-4">
-              <div
-                style={{
-                  background: `${COLOR_MARCA}20`,
-                  borderRadius: '50%',
-                  width: 72,
-                  height: 72,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <User size={36} style={{ color: COLOR_MARCA }} />
+              <div className="perfil-cliente-avatar">
+                <User size={36} className="perfil-cliente-icon" />
               </div>
               <div>
                 <h4 className="fw-bold mb-1">
                   {usuario?.nombre || 'Mi perfil'}
                 </h4>
-                <Badge style={{ background: COLOR_MARCA, color: '#000' }}>
+                <Badge className="badge-ticketti">
                   CLIENTE
                 </Badge>
               </div>
@@ -184,7 +172,7 @@ const PerfilCliente = () => {
                     {error && <Alert variant="danger">{error}</Alert>}
                     {cargando ? (
                       <div className="text-center py-4">
-                        <Spinner style={{ color: COLOR_MARCA }} />
+                        <Spinner className="spinner-ticketti" />
                       </div>
                     ) : notificaciones.length === 0 ? (
                       <Alert variant="info">
@@ -207,9 +195,7 @@ const PerfilCliente = () => {
                                 <Badge
                                   bg="light"
                                   text="dark"
-                                  style={{
-                                    borderLeft: `3px solid ${COLOR_MARCA}`,
-                                  }}
+                                  className="badge-ticketti-border"
                                 >
                                   {TIPO_LABELS[n.tipo] || n.tipo}
                                 </Badge>
@@ -295,7 +281,7 @@ function MisComprasTab({ usuarioId }) {
   if (cargando)
     return (
       <div className="text-center py-4">
-        <Spinner style={{ color: COLOR_MARCA }} />
+        <Spinner className="spinner-ticketti" />
       </div>
     );
 
