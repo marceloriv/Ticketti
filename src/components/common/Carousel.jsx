@@ -1,10 +1,7 @@
-import React from 'react';
-import { Carousel as RBCarousel, Container, Button } from 'react-bootstrap';
-import { COLOR_MARCA } from '@utils/constantes';
+import { Button, Container, Carousel as RBCarousel } from 'react-bootstrap';
 
 export default function CommonCarousel({
   slides = [],
-  brandColor = COLOR_MARCA,
 }) {
   return (
     <RBCarousel
@@ -15,31 +12,23 @@ export default function CommonCarousel({
     >
       {slides.map((slide) => (
         <RBCarousel.Item key={slide.id}>
-          <div
-            className="hero-slide"
-            style={{
-              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)), url(${slide.imagen})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              height: '85vh',
-              minHeight: '400px',
-            }}
-          >
-            <Container className="h-100 d-flex flex-column justify-content-center align-items-center text-center text-white py-5">
+          <div className="hero-slide">
+            <img
+              src={slide.imagen}
+              alt={slide.titulo}
+              className="hero-slide__image"
+            />
+            <div className="hero-slide__overlay" />
+            <Container className="hero-slide__content h-100 d-flex flex-column justify-content-center align-items-center text-center text-white py-5">
               <h1 className="display-4 fw-bold mb-3">{slide.titulo}</h1>
-              <p className="lead mb-4 max-w-600" style={{ maxWidth: '600px' }}>
+              <p className="lead mb-4 hero-carousel__text">
                 {slide.subtitulo}
               </p>
               <Button
                 variant="light"
                 size="lg"
                 href="#eventos"
-                className="fw-semibold px-4 py-2"
-                style={{
-                  '--bs-btn-hover-bg': brandColor,
-                  '--bs-btn-hover-color': '#000',
-                  '--bs-btn-hover-border-color': brandColor,
-                }}
+                className="fw-semibold px-4 py-2 hero-carousel__button"
               >
                 Explorar
               </Button>
