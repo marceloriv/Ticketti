@@ -1,17 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
-import {
-  Container,
-  Table,
-  Badge,
-  Spinner,
-  Alert,
-  Button,
-} from 'react-bootstrap';
-import { Mail, RefreshCw } from 'lucide-react';
-import Header from '@components/layout/Header';
 import Footer from '@components/layout/Footer';
+import Header from '@components/layout/Header';
 import api from '@services/api';
-import { COLOR_MARCA } from '@utils/constantes';
+import { Mail, RefreshCw } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  Alert,
+  Badge,
+  Button,
+  Container,
+  Spinner,
+  Table,
+} from 'react-bootstrap';
 
 const TIPO_LABELS = {
   CONFIRMACION_COMPRA: 'Confirmación de compra',
@@ -81,11 +80,11 @@ const HistorialNotificaciones = () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
-      <main className="flex-grow-1 py-5">
+      <main className="grow py-5">
         <Container>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div className="d-flex align-items-center gap-2">
-              <Mail size={28} style={{ color: COLOR_MARCA }} />
+              <Mail size={28} className="historial-notificaciones-icon" />
               <h2 className="fw-bold mb-0">Mis Notificaciones</h2>
             </div>
             <Button
@@ -102,7 +101,7 @@ const HistorialNotificaciones = () => {
 
           {cargando ? (
             <div className="text-center py-5">
-              <Spinner animation="border" style={{ color: COLOR_MARCA }} />
+              <Spinner animation="border" className="historial-notificaciones-spinner" />
             </div>
           ) : notificaciones.length === 0 ? (
             <Alert variant="info">
@@ -125,7 +124,7 @@ const HistorialNotificaciones = () => {
                       <Badge
                         bg="light"
                         text="dark"
-                        style={{ borderLeft: `3px solid ${COLOR_MARCA}` }}
+                        className="historial-notificaciones-badge"
                       >
                         {TIPO_LABELS[n.tipo] || n.tipo}
                       </Badge>
