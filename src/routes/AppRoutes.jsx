@@ -4,13 +4,13 @@ import { ROLES, ROUTES } from '@utils/routes';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 // Importar páginas públicas
+import Contacto from '@pages/Contacto';
 import DetalleEvento from '@pages/DetalleEvento';
 import Donaciones from '@pages/Donaciones';
 import Inicio from '@pages/Inicio';
 import Login from '@pages/Login';
 import Nosotros from '@pages/Nosotros';
 import Registro from '@pages/Registro';
-import Contacto from '@pages/Contacto';
 
 // Importar páginas protegidas
 import DashboardAdmin from '@pages/DashboardAdmin';
@@ -26,10 +26,7 @@ export default function AppRoutes() {
 
   if (loading) {
     return (
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: '100vh' }}
-      >
+      <div className="d-flex justify-content-center align-items-center app-routes-loading">
         <div className="spinner-border" role="status">
           <span className="visually-hidden">Cargando...</span>
         </div>
