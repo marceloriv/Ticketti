@@ -1,0 +1,401 @@
+import { useState, useEffect, useCallback } from 'react';
+import {
+  Container,
+  Card,
+  Nav,
+  Tab,
+  Table,
+  Badge,
+  Spinner,
+  Alert,
+  Button,
+} from 'react-bootstrap';
+import { User, Mail, ShoppingBag, Heart, RefreshCw } from 'lucide-react';
+import Header from '@components/layout/Header';
+import Footer from '@components/layout/Footer';
+import { useAuth } from '@hooks/useAuth';
+import { Link } from 'react-router-dom';
+import api from '@services/api';
+import { COLOR_MARCA } from '@utils/constantes';
+
+const estadoLabelMap = {
+  CREADO: 'Creado',
+  RESERVADO: 'Reserva activa',
+  PAGADO: 'Pagado',
+  FALLIDO: 'Fallido',
+  CANCELADO: 'Cancelado',
+  REEMBOLSADO: 'Reembolsado',
+};
+
+const estadoVariantMap = {
+  CREADO: 'secondary',
+  RESERVADO: 'warning',
+  PAGADO: 'success',
+  FALLIDO: 'danger',
+  CANCELADO: 'dark',
+  REEMBOLSADO: 'info',
+};
+
+const formatearFecha = (f) => {
+  if (!f) return '—';
+  const d = new Date(f);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
+const formatearMoneda = (v) =>
+  new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    minimumFractionDigits: 0,
+  }).format(v ?? 0);
+
+const TIPO_LABELS = {
+  CONFIRMACION_COMPRA: 'Confirmacion',
+  RECOMENDACION: 'Recomendacion',
+  DEVOLUCION: 'Devolucion',
+  RECORDATORIO_EVENTO: 'Recordatorio',
+};
+
+const ESTADO_VARIANT = {
+  ENVIADO: 'success',
+  PENDIENTE: 'warning',
+  FALLIDO: 'danger',
+  CANCELADO: 'secondary',
+};
+
+const PerfilCliente = () => {
+  const { usuario } = useAuth();
+  const [notificaciones, setNotificaciones] = useState([]);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState('');
+
+  const idUsuario = usuario?.id || localStorage.getItem('idUsuario');
+
+  const cargarNotificaciones = useCallback(async () => {
+    if (!idUsuario) return;
+    setCargando(true);
+    setError('');
+    try {
+      const res = await api.get(`/notificaciones/historial/${idUsuario}`);
+      setNotificaciones(res.data || []);
+    } catch {
+      setError('No se pudieron cargar las notificaciones.');
+    } finally {
+      setCargando(false);
+    }
+  }, [idUsuario]);
+
+  useEffect(() => {
+    cargarNotificaciones();
+  }, [cargarNotificaciones]);
+
+  return (
+    <div className="d-flex flex-column min-vh-100">
+      <Header />
+      <main className="flex-grow-1 py-4" style={{ background: '#f8f9fa' }}>
+        <Container fluid="lg">
+          {/* Cabecera del perfil */}
+          <Card className="border-0 shadow-sm mb-4">
+            <Card.Body className="d-flex align-items-center gap-4 p-4">
+              <div
+                style={{
+                  background: `${COLOR_MARCA}20`,
+                  borderRadius: '50%',
+                  width: 72,
+                  height: 72,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <User size={36} style={{ color: COLOR_MARCA }} />
+              </div>
+              <div>
+                <h4 className="fw-bold mb-1">
+                  {usuario?.nombre || 'Mi perfil'}
+                </h4>
+                <Badge style={{ background: COLOR_MARCA, color: '#000' }}>
+                  CLIENTE
+                </Badge>
+              </div>
+            </Card.Body>
+          </Card>
+
+          {/* Tabs */}
+          <Tab.Container defaultActiveKey="notificaciones">
+            <Card className="border-0 shadow-sm">
+              <Card.Header className="bg-white border-bottom">
+                <Nav variant="tabs" className="border-0">
+                  <Nav.Item>
+                    <Nav.Link
+                      eventKey="notificaciones"
+                      className="d-flex align-items-center gap-2"
+                    >
+                      <Mail size={16} /> Mis Correos
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link
+                      eventKey="compras"
+                      className="d-flex align-items-center gap-2"
+                    >
+                      <ShoppingBag size={16} /> Mis Compras
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link
+                      eventKey="donaciones"
+                      className="d-flex align-items-center gap-2"
+                    >
+                      <Heart size={16} /> Mis Donaciones
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link
+                      eventKey="perfil"
+                      className="d-flex align-items-center gap-2"
+                    >
+                      <User size={16} /> Editar Perfil
+                    </Nav.Link>
+                  </Nav.Item>
+                </Nav>
+              </Card.Header>
+              <Card.Body>
+                <Tab.Content>
+                  {/* ── NOTIFICACIONES ── */}
+                  <Tab.Pane eventKey="notificaciones">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <h5 className="fw-bold mb-0">Historial de correos</h5>
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={cargarNotificaciones}
+                        className="d-flex align-items-center gap-1"
+                      >
+                        <RefreshCw size={14} /> Actualizar
+                      </Button>
+                    </div>
+                    {error && <Alert variant="danger">{error}</Alert>}
+                    {cargando ? (
+                      <div className="text-center py-4">
+                        <Spinner style={{ color: COLOR_MARCA }} />
+                      </div>
+                    ) : notificaciones.length === 0 ? (
+                      <Alert variant="info">
+                        No tienes notificaciones todavía.
+                      </Alert>
+                    ) : (
+                      <Table hover responsive size="sm">
+                        <thead className="table-light">
+                          <tr>
+                            <th>Tipo</th>
+                            <th>Asunto</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {notificaciones.map((n) => (
+                            <tr key={n.idNotificacion}>
+                              <td>
+                                <Badge
+                                  bg="light"
+                                  text="dark"
+                                  style={{
+                                    borderLeft: `3px solid ${COLOR_MARCA}`,
+                                  }}
+                                >
+                                  {TIPO_LABELS[n.tipo] || n.tipo}
+                                </Badge>
+                              </td>
+                              <td className="text-muted small">{n.asunto}</td>
+                              <td>
+                                <Badge
+                                  bg={ESTADO_VARIANT[n.estado] || 'secondary'}
+                                >
+                                  {n.estado}
+                                </Badge>
+                              </td>
+                              <td className="text-muted small">
+                                {formatearFecha(n.fechaEnvio)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    )}
+                  </Tab.Pane>
+
+                  {/* ── MIS COMPRAS — conectado a ms-carrito ── */}
+                  <Tab.Pane eventKey="compras">
+                    <MisComprasTab usuarioId={usuario?.id} />
+                  </Tab.Pane>
+
+                  {/* ── DONACIONES — pendiente MSDonaciones */}
+                  <Tab.Pane eventKey="donaciones">
+                    <Placeholder
+                      ms="MSDonaciones"
+                      descripcion="Donaciones del usuario — GET /api/donaciones/usuario/{id}"
+                      altura={250}
+                    />
+                  </Tab.Pane>
+
+                  {/* ── PERFIL — pendiente MSUsuarios */}
+                  <Tab.Pane eventKey="perfil">
+                    <Placeholder
+                      ms="MSUsuarios"
+                      descripcion="Editar datos del perfil — PUT /api/v1/usuarios/{id}"
+                      altura={250}
+                    />
+                  </Tab.Pane>
+                </Tab.Content>
+              </Card.Body>
+            </Card>
+          </Tab.Container>
+        </Container>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+// Componente separado para Mis Compras — se aísla para que su estado de carga
+// y datos no interfiera con el resto del PerfilCliente
+function MisComprasTab({ usuarioId }) {
+  const [carritos, setCarritos] = useState([]);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState('');
+
+  const cargarCompras = useCallback(async () => {
+    if (!usuarioId) return;
+    setCargando(true);
+    setError('');
+    try {
+      const res = await api.get('/Carrito/listar', {
+        headers: { 'X-Usuario-Id': usuarioId },
+      });
+      setCarritos(res.data?.data || []);
+    } catch {
+      setError('No se pudieron cargar las compras.');
+    } finally {
+      setCargando(false);
+    }
+  }, [usuarioId]);
+
+  useEffect(() => {
+    cargarCompras();
+  }, [cargarCompras]);
+
+  if (cargando)
+    return (
+      <div className="text-center py-4">
+        <Spinner style={{ color: COLOR_MARCA }} />
+      </div>
+    );
+
+  if (error)
+    return (
+      <Alert variant="danger" className="d-flex align-items-center gap-2">
+        {error}
+      </Alert>
+    );
+
+  if (carritos.length === 0)
+    return (
+      <Alert variant="info">Todavía no tienes compras registradas.</Alert>
+    );
+
+  // Cada carrito se convierte en una fila con el resumen de ítems
+  const formatearItems = (carrito) => {
+    const items = carrito.items || carrito.detalles || [];
+    if (items.length === 0) return '—';
+    return items
+      .map(
+        (i) =>
+          `${i.tipoEntrada || i.tipoEntradaNombre || 'General'} x ${i.cantidad}`
+      )
+      .join(', ');
+  };
+
+  const totalEntradas = (carrito) =>
+    (carrito.items || carrito.detalles || []).reduce(
+      (sum, i) => sum + (i.cantidad || 0),
+      0
+    );
+
+  return (
+    <div>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h5 className="fw-bold mb-0">Historial de compras</h5>
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          onClick={cargarCompras}
+          className="d-flex align-items-center gap-1"
+        >
+          <RefreshCw size={14} /> Actualizar
+        </Button>
+      </div>
+
+      <Table hover responsive>
+        <thead className="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Entradas</th>
+            <th>Tipo</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {carritos.map((carrito) => {
+            const idCarrito = carrito.idCarrito || carrito.id;
+            const estado =
+              (carrito.estadoCarrito || carrito.estado || '—')
+                .toString()
+                .toUpperCase() || 'CREADO';
+            return (
+              <tr key={idCarrito}>
+                <td className="fw-semibold">#{idCarrito}</td>
+                <td className="text-muted small">
+                  {formatearFecha(carrito.fechaCreacion || carrito.createdAt)}
+                </td>
+                <td>{totalEntradas(carrito)}</td>
+                <td className="small">{formatearItems(carrito)}</td>
+                <td className="fw-semibold">{formatearMoneda(carrito.total || 0)}</td>
+                <td>
+                  <Badge
+                    bg={estadoVariantMap[estado] || 'secondary'}
+                    text={estadoVariantMap[estado] === 'light' ? 'dark' : undefined}
+                  >
+                    {estadoLabelMap[estado] || estado}
+                  </Badge>
+                </td>
+                <td>
+                  <Button
+                    as={Link}
+                    to={`/carrito/${idCarrito}`}
+                    variant="outline-primary"
+                    size="sm"
+                  >
+                    Ver detalle
+                  </Button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </Table>
+    </div>
+  );
+}
+
+export default PerfilCliente;

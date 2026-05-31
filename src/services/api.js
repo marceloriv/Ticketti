@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -11,17 +11,41 @@ const api = axios.create({
   },
 });
 
+const esRutaPublica = (config) => {
+  const metodo = (config.method || 'get').toLowerCase();
+  const url = config.url || '';
+
+  // Registro público de usuario.
+  if (metodo === 'post' && url === '/usuarios') {
+    return true;
+  }
+
+  // Listado/busqueda pública de eventos.
+  if (
+    metodo === 'get' &&
+    (url.startsWith('/Eventos/') || url.startsWith('/eventos/'))
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
 api.interceptors.request.use(
   (config) => {
+    if (config.skipAuth) {
+      return config;
+    }
+
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token && !esRutaPublica(config)) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   (error) => {
     return Promise.reject(error);
-  },
+  }
 );
 
 api.interceptors.response.use(
@@ -33,8 +57,11 @@ api.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           console.error('Sesión expirada o no autorizada');
-          localStorage.removeItem('token');
-          window.location.href = '/login';
+          // Solo redirigir si realmente habia una sesion activa.
+          if (localStorage.getItem('token')) {
+            localStorage.removeItem('token');
+            globalThis.location.href = '/login';
+          }
           break;
         case 403:
           console.error('Acceso prohibido');
@@ -55,7 +82,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  },
+  }
 );
 
 export default api;

@@ -1,54 +1,48 @@
-import { useState, useEffect, useCallback } from 'react';
-
-
-import {
-  Container,
-  Row,
-  Col,
-  Carousel,
-  Form,
-  Button,
-  Spinner,
-  Alert,
-  InputGroup,
-} from 'react-bootstrap';
-import { Search, Calendar, MapPin } from 'lucide-react';
-import Header from '@components/layout/Header';
+import CommonCarousel from '@components/common/Carousel';
 import Footer from '@components/layout/Footer';
-import ProductCard from '@components/layout/ProductCard';
+import Header from '@components/layout/Header';
+import ProductCard from '@components/common/ProductCard';
 import api from '@services/api';
-
-const BRAND_COLOR = '#5ad4e6';
+import { getCausasActivas, getOrganizaciones } from '@services/donacionesApi';
+import { Building2, Heart, Search } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  Alert,
+  Button,
+  Col,
+  Container,
+  Form,
+  InputGroup,
+  Row,
+  Spinner,
+} from 'react-bootstrap';
+import { COLOR_MARCA } from '@utils/constantes';
 
 const CATEGORIAS = [
-  { id: 'todo', nombre: 'Todo' },
-  { id: 'conciertos', nombre: 'Conciertos' },
-  { id: 'festivales', nombre: 'Festivales' },
-  { id: 'teatro', nombre: 'Teatro' },
-  { id: 'deportes', nombre: 'Deportes' },
+  { id: 'todo', nombre: 'Todo', generos: [] },
+  { id: 'conciertos', nombre: 'Conciertos', generos: ['ROCK', 'JAZZ', 'POP', 'KPOP', 'METAL', 'RAP', 'RNB', 'INDIE', 'REGGAETOM'] },
+  { id: 'festivales', nombre: 'Festivales Culturales', generos: ['GASTRONOMIA', 'ARTE', 'ARTESANIA', 'FOLCLORE'] },
+  { id: 'cinemovil', nombre: 'Cine Móvil', generos: ['TERROR', 'COMEDIA', 'DRAMA', 'ACCION', 'ROMANCE', 'PARODIA'] },
 ];
 
 const HERO_SLIDES = [
   {
     id: 1,
-    imagen: '/assets/hero.png',
+    imagen: '/public/img/Tour-Press-Photo-1-28ad2aa10b.webp',
     titulo: 'Mejores Eventos',
-    subtitulo:
-      'Descubre los eventos más emocionantes de la ciudad. Conciertos, festivales, teatro y mucho más te esperan.',
+    subtitulo: 'Descubre los eventos más emocionantes de la ciudad.',
   },
   {
     id: 2,
-    imagen: '/assets/hero.png',
+    imagen: '/public/img/dia_de_la_astronomia.jpg',
     titulo: 'Experiencias Únicas',
-    subtitulo:
-      'Vive momentos inolvidables con Ticketti. Encuentra tus eventos favoritos y asegura tus entradas.',
+    subtitulo: 'Vive momentos inolvidables con Ticketti.',
   },
   {
     id: 3,
-    imagen: '/assets/hero.png',
+    imagen: '/public/img/listicle_1686140315148_74ycs_1040x500.jpg',
     titulo: 'Cultura y Entretenimiento',
-    subtitulo:
-      'Desde eventos íntimos hasta grandes producciones, tenemos algo para todos los gustos.',
+    subtitulo: 'Desde eventos íntimos hasta grandes producciones.',
   },
 ];
 
@@ -59,12 +53,16 @@ const Inicio = () => {
   const [busqueda, setBusqueda] = useState('');
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  //Causas y organizaciones
+  const [causas, setCausas] = useState([]);
+  const [organizaciones, setOrganizaciones] = useState([]);
 
+  //carga eventos
   const cargarEventos = useCallback(async () => {
     setCargando(true);
     setError(null);
     try {
-      const response = await api.get('/api/v0/Eventos/listarEventos');
+      const response = await api.get('/eventos/listarEventos');
       const datos = response.data || [];
       setEventos(datos);
       setEventosFiltrados(datos);
@@ -84,89 +82,57 @@ const Inicio = () => {
     cargarEventos();
   }, [cargarEventos]);
 
+  // Carga causas y organizaciones
+  useEffect(() => {
+    const cargarCausas = async () => {
+      try {
+        const [causasData, orgsData] = await Promise.all([
+          getCausasActivas(),
+          getOrganizaciones(),
+        ]);
+        setCausas(causasData);
+        setOrganizaciones(orgsData);
+      } catch {
+        setCausas([]);
+        setOrganizaciones([]);
+      }
+    };
+    cargarCausas();
+  }, []);
+
+  //Filtros por categoría y búsqueda
   useEffect(() => {
     let filtrados = eventos;
 
-    if (categoriaActiva !== 'todo') {
-      filtrados = filtrados.filter(
-        (evento) =>
-          evento.categoria?.toLowerCase() === categoriaActiva.toLowerCase(),
-      );
-    }
+  if (categoriaActiva !== 'todo') {
+    const categoriaSeleccionada = CATEGORIAS.find(c => c.id === categoriaActiva);
+    filtrados = filtrados.filter(evento =>
+      categoriaSeleccionada.generos.includes(evento.genero)
+    );
+  }
 
-    if (busqueda.trim()) {
-      const termino = busqueda.toLowerCase();
-      filtrados = filtrados.filter(
-        (evento) =>
-          evento.nombre?.toLowerCase().includes(termino) ||
-          evento.artista?.toLowerCase().includes(termino) ||
-          evento.ubicacion?.toLowerCase().includes(termino),
-      );
-    }
+  if (busqueda.trim()) {
+    const termino = busqueda.toLowerCase();
+    filtrados = filtrados.filter(evento =>
+      evento.nombre?.toLowerCase().includes(termino) ||
+      evento.recinto?.ubicacion?.toLowerCase().includes(termino)
+    );
+  }
 
-    setEventosFiltrados(filtrados);
-  }, [categoriaActiva, busqueda, eventos]);
-
-  const handleBusquedaChange = (e) => {
-    setBusqueda(e.target.value);
-  };
-
-  const handleCategoriaClick = (categoriaId) => {
-    setCategoriaActiva(categoriaId);
-  };
+  setEventosFiltrados(filtrados);
+}, [categoriaActiva, busqueda, eventos]);
 
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
 
       <main className="flex-grow-1">
+        {/* HERO - Eventos */}
         <section id="hero" className="position-relative">
-          <Carousel
-            indicators={true}
-            controls={true}
-            interval={5000}
-            className="hero-carousel"
-          >
-            {HERO_SLIDES.map((slide) => (
-              <Carousel.Item key={slide.id}>
-                <div
-                  className="hero-slide"
-                  style={{
-                    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)), url(${slide.imagen})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    height: '60vh',
-                    minHeight: '400px',
-                  }}
-                >
-                  <Container className="h-100 d-flex flex-column justify-content-center align-items-center text-center text-white py-5">
-                    <h1 className="display-4 fw-bold mb-3">{slide.titulo}</h1>
-                    <p
-                      className="lead mb-4 max-w-600"
-                      style={{ maxWidth: '600px' }}
-                    >
-                      {slide.subtitulo}
-                    </p>
-                    <Button
-                      variant="light"
-                      size="lg"
-                      href="#eventos"
-                      className="fw-semibold px-4 py-2"
-                      style={{
-                        '--bs-btn-hover-bg': BRAND_COLOR,
-                        '--bs-btn-hover-color': '#000',
-                        '--bs-btn-hover-border-color': BRAND_COLOR,
-                      }}
-                    >
-                      Explorar
-                    </Button>
-                  </Container>
-                </div>
-              </Carousel.Item>
-            ))}
-          </Carousel>
+          <CommonCarousel slides={HERO_SLIDES} brandColor={COLOR_MARCA} />
         </section>
 
+        {/* BUSCADOR — EVENTOS */}
         <section id="buscador" className="py-4 bg-light">
           <Container>
             <Row className="justify-content-center">
@@ -175,52 +141,35 @@ const Inicio = () => {
                   <InputGroup.Text
                     style={{
                       backgroundColor: 'transparent',
-                      borderColor: BRAND_COLOR,
-                      color: BRAND_COLOR,
+                      borderColor: COLOR_MARCA,
+                      color: COLOR_MARCA,
                     }}
                   >
                     <Search size={18} />
                   </InputGroup.Text>
                   <Form.Control
                     type="text"
-                    placeholder="Buscar eventos por nombre, artista o ubicación..."
+                    placeholder="Buscar eventos por nombre, genero o ubicación..."
                     value={busqueda}
-                    onChange={handleBusquedaChange}
-                    className="shadow-sm"
-                    style={{
-                      borderColor: BRAND_COLOR,
-                    }}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                    style={{ borderColor: COLOR_MARCA }}
                   />
                 </InputGroup>
-
                 <div className="d-flex flex-wrap justify-content-center gap-2">
                   {CATEGORIAS.map((cat) => (
                     <Button
                       key={cat.id}
-                      variant={
-                        categoriaActiva === cat.id
-                          ? 'primary'
-                          : 'outline-primary'
-                      }
                       size="sm"
-                      onClick={() => handleCategoriaClick(cat.id)}
+                      onClick={() => setCategoriaActiva(cat.id)}
                       className="rounded-pill px-4"
                       style={{
-                        borderColor: BRAND_COLOR,
+                        borderColor: COLOR_MARCA,
                         backgroundColor:
                           categoriaActiva === cat.id
-                            ? BRAND_COLOR
+                            ? COLOR_MARCA
                             : 'transparent',
                         color:
-                          categoriaActiva === cat.id ? '#000' : BRAND_COLOR,
-                        '--bs-btn-hover-bg': BRAND_COLOR,
-                        '--bs-btn-hover-color': '#000',
-                        '--bs-btn-hover-border-color': BRAND_COLOR,
-                        outline:
-                          categoriaActiva === cat.id
-                            ? `2px solid ${BRAND_COLOR}`
-                            : 'none',
-                        outlineOffset: '2px',
+                          categoriaActiva === cat.id ? '#000' : COLOR_MARCA,
                       }}
                     >
                       {cat.nombre}
@@ -232,35 +181,25 @@ const Inicio = () => {
           </Container>
         </section>
 
+        {/* EVENTOS  */}
         <section id="eventos" className="py-5">
           <Container>
             <h2 className="text-center mb-4 fw-bold">Eventos Destacados</h2>
-
             {cargando && (
               <div className="text-center py-5">
-                <Spinner
-                  animation="border"
-                  role="status"
-                  style={{ color: BRAND_COLOR }}
-                >
-                  <span className="visually-hidden">Cargando...</span>
-                </Spinner>
-                <p className="mt-2 text-muted">Cargando eventos...</p>
+                <Spinner animation="border" style={{ color: COLOR_MARCA }} />
               </div>
             )}
-
             {error && (
               <Alert variant="danger" className="text-center">
                 {error}
               </Alert>
             )}
-
             {!cargando && !error && eventosFiltrados.length === 0 && (
               <Alert variant="info" className="text-center">
-                No se encontraron eventos con los filtros aplicados.
+                No se encontraron eventos.
               </Alert>
             )}
-
             {!cargando && !error && eventosFiltrados.length > 0 && (
               <Row xs={1} sm={2} lg={3} xl={4} className="g-4">
                 {eventosFiltrados.map((evento) => (
@@ -268,12 +207,11 @@ const Inicio = () => {
                     <ProductCard
                       evento={{
                         id: evento.id,
-                        imagen: evento.imagen || '/assets/hero.png',
+                        imagen: evento.imagenUrl || '/assets/hero.png',
                         titulo: evento.nombre || 'Evento sin nombre',
                         fecha: evento.fecha,
-                        ubicacion:
-                          evento.ubicacion || 'Ubicación por confirmar',
-                        precio: evento.precio || 0,
+                        ubicacion: evento.recinto?.ubicacion || 'Ubicación por confirmar',
+                        precio: evento.precioEntrada || 0,
                       }}
                     />
                   </Col>
@@ -282,8 +220,112 @@ const Inicio = () => {
             )}
           </Container>
         </section>
-      </main>
 
+        {/* CAUSAS SOCIALES */}
+        {causas.length > 0 && (
+          <section
+            id="causas"
+            className="py-5"
+            style={{ background: '#f8f9fa' }}
+          >
+            <Container>
+              <div className="d-flex align-items-center gap-2 mb-3">
+                <Heart size={28} style={{ color: COLOR_MARCA }} />
+                <h2 className="fw-bold mb-0">Apoya una causa</h2>
+              </div>
+              <p className="text-muted mb-4">
+                Con cada compra, el 10% de tu entrada va directo a la causa que
+                elijas.
+              </p>
+              <Row xs={1} sm={2} lg={3} className="g-4">
+                {causas.slice(0, 6).map((c) => (
+                  <Col key={c.idCausa}>
+                    <div
+                      className="p-4 rounded shadow-sm h-100 d-flex flex-column"
+                      style={{
+                        background: '#fff',
+                        borderLeft: `4px solid ${COLOR_MARCA}`,
+                        transition: 'transform 0.2s',
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.transform = 'translateY(-3px)')
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.transform = '')
+                      }
+                    >
+                      <div className="d-flex align-items-center gap-2 mb-2">
+                        <Heart size={18} style={{ color: COLOR_MARCA }} />
+                        <span className="fw-bold">{c.nombre}</span>
+                      </div>
+                      {c.descripcion && (
+                        <p className="text-muted small mb-2">{c.descripcion}</p>
+                      )}
+                      {c.organizacion && (
+                        <p className="text-muted small mt-auto mb-0">
+                          <Building2 size={13} className="me-1" />
+                          {c.organizacion.nombre}
+                        </p>
+                      )}
+                    </div>
+                  </Col>
+                ))}
+              </Row>
+            </Container>
+          </section>
+        )}
+
+        {/* ORGANIZACIONES */}
+        {organizaciones.length > 0 && (
+          <section id="organizaciones" className="py-5">
+            <Container>
+              <div className="d-flex align-items-center gap-2 mb-3">
+                <Building2 size={28} style={{ color: COLOR_MARCA }} />
+                <h2 className="fw-bold mb-0">Organizaciones aliadas</h2>
+              </div>
+              <p className="text-muted mb-4">
+                Trabajamos con estas organizaciones para que tu aporte llegue
+                donde más se necesita.
+              </p>
+              <Row xs={2} sm={3} lg={4} className="g-3">
+                {organizaciones.slice(0, 8).map((o) => (
+                  <Col key={o.idOrganizacion}>
+                    <div
+                      className="p-3 rounded shadow-sm text-center h-100 d-flex flex-column align-items-center justify-content-center"
+                      style={{
+                        background: '#fff',
+                        transition: 'box-shadow 0.2s',
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.boxShadow = `0 4px 15px rgba(90,212,230,0.2)`)
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.boxShadow = '')
+                      }
+                    >
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: '50%',
+                          background: `${COLOR_MARCA}20`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginBottom: 8,
+                        }}
+                      >
+                        <Building2 size={20} style={{ color: COLOR_MARCA }} />
+                      </div>
+                      <p className="fw-semibold small mb-0">{o.nombre}</p>
+                    </div>
+                  </Col>
+                ))}
+              </Row>
+            </Container>
+          </section>
+        )}
+      </main>
       <Footer />
     </div>
   );
