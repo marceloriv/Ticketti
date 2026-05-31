@@ -23,21 +23,24 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      // Todas las rutas /api pasan por el BFF para validar JWT, roles y errores antes de llegar al API Gateway.
       '/api/v1': {
-        target: 'http://localhost:8222',
+        target: 'http://localhost:8081',
         changeOrigin: true,
         secure: false,
       },
       '/api/v0': {
-        target: 'http://localhost:8222',
+        target: 'http://localhost:8081',
         changeOrigin: true,
         secure: false,
       },
       '/api': {
-        target: 'http://localhost:8222',
+        target: 'http://localhost:8081',
         changeOrigin: true,
         secure: false,
       },
+
+      // Login/autenticación también vive en el BFF.
       '/auth': {
         target: 'http://localhost:8081',
         changeOrigin: true,

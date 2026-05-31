@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
 import { LogOut, Ticket, User, ShoppingCart } from 'lucide-react';
-import { Badge, Button, Container, Nav, Navbar, Stack } from 'react-bootstrap';
+import { Button, Container, Nav, Navbar, Stack } from 'react-bootstrap';
 import { useEffect, useCallback } from 'react';
 
 const Header = () => {
@@ -10,15 +10,14 @@ const Header = () => {
   const navigate = useNavigate();
   const { obtenerResumen, resumen, inicializarCarrito } = useCarrito(carritoId);
 
-  // Cantidad total de entradas en el carrito
   const cantidadCarrito = (resumen?.items || []).reduce(
     (sum, item) => sum + (item.cantidad || 0),
     0
   );
 
-  // Obtener resumen al montar y cuando cambie el carritoId
   useEffect(() => {
     console.log('[Carrito] useEffect disparado', { carritoId });
+
     if (carritoId) {
       obtenerResumen().catch((e) => {
         console.error('[Carrito] Error al obtener resumen:', e);
@@ -26,18 +25,67 @@ const Header = () => {
     }
   }, [carritoId, obtenerResumen]);
 
-  console.log('[Header] Render', { usuario: usuario?.nombre, rol: usuario?.rol, carritoId, cantidadCarrito });
+  const obtenerPayloadDesdeToken = () => {
+    const token = localStorage.getItem('token');
+
+    if (!token) return null;
+
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch {
+      return null;
+    }
+  };
+
+  const obtenerRolDesdeToken = () => {
+    const payload = obtenerPayloadDesdeToken();
+    return payload?.rol || null;
+  };
+
+  const obtenerNombreUsuario = () => {
+    const payload = obtenerPayloadDesdeToken();
+
+    return (
+      usuario?.nombre ||
+      payload?.nombre ||
+      payload?.sub ||
+      'Usuario'
+    );
+  };
+
+  const handleIrPerfilUsuario = () => {
+    const rol = obtenerRolDesdeToken() || usuario?.rol;
+
+    console.log('[Header] Rol detectado:', rol);
+
+    if (rol === 'ADMINPLATAFORMA') {
+      navigate('/admin/dashboard');
+      return;
+    }
+
+    if (rol === 'ORGANIZADOR') {
+      navigate('/organizador/dashboard');
+      return;
+    }
+
+    navigate('/perfil');
+  };
 
   const handleIrCarrito = useCallback(async () => {
-    console.log('[Carrito] Click en icono carrito', { carritoId, usuarioRol: usuario?.rol });
+    console.log('[Carrito] Click en icono carrito', {
+      carritoId,
+      usuarioRol: usuario?.rol,
+    });
+
     let id = carritoId;
 
-    // Si no hay carritoId, intentar inicializar uno nuevo
     if (!id) {
       try {
         console.log('[Carrito] Sin carritoId, inicializando...');
         const resultado = await inicializarCarrito();
+
         console.log('[Carrito] Carrito inicializado:', resultado);
+
         if (resultado?.carritoId) {
           establecerCarritoId(resultado.carritoId);
           id = resultado.carritoId;
@@ -54,7 +102,13 @@ const Header = () => {
     } else {
       console.warn('[Carrito] No hay carritoId después de inicializar');
     }
-  }, [carritoId, inicializarCarrito, establecerCarritoId, navigate, usuario?.rol]);
+  }, [
+    carritoId,
+    inicializarCarrito,
+    establecerCarritoId,
+    navigate,
+    usuario?.rol,
+  ]);
 
   const navLinksPublicos = [
     { name: 'Inicio', to: '/home' },
@@ -62,6 +116,9 @@ const Header = () => {
     { name: 'Sobre Ticketti', to: '/nosotros' },
     { name: 'Contacto', to: '/contact' },
   ];
+
+  const rolActual = obtenerRolDesdeToken() || usuario?.rol;
+  const nombreUsuario = obtenerNombreUsuario();
 
   return (
     <Navbar
@@ -92,14 +149,19 @@ const Header = () => {
           </Nav>
 
           <Stack direction="horizontal" gap={3}>
-            {usuario ? (
+            {usuario || localStorage.getItem('token') ? (
               <>
-                <span className="text-muted small d-flex align-items-center gap-1">
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
+                  onClick={handleIrPerfilUsuario}
+                  className="d-flex align-items-center gap-1"
+                >
                   <User size={16} />
-                  {usuario.nombre || 'Usuario'}
-                </span>
+                  {nombreUsuario}
+                </Button>
 
-                {usuario?.rol === 'CLIENTE' && (
+                {rolActual === 'CLIENTE' && (
                   <Button
                     variant="outline-secondary"
                     size="sm"
@@ -109,6 +171,7 @@ const Header = () => {
                   >
                     <ShoppingCart size={14} className="me-1" />
                     Carrito
+
                     {cantidadCarrito > 0 && (
                       <span
                         role="button"
@@ -147,7 +210,8 @@ const Header = () => {
                   onClick={logout}
                   className="d-flex align-items-center gap-1"
                 >
-                  <LogOut size={16} /> Salir
+                  <LogOut size={16} />
+                  Salir
                 </Button>
               </>
             ) : (
