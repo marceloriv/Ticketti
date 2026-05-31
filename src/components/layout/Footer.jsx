@@ -1,5 +1,5 @@
-import { Container, Row, Col } from 'react-bootstrap';
-import { Ticket, Mail, Phone, MapPin, Globe } from 'lucide-react';
+import { Globe, Mail, MapPin, Phone, Ticket } from 'lucide-react';
+import { Col, Container, Row } from 'react-bootstrap';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
