@@ -1,5 +1,5 @@
-import { Card, Button, Form, Alert, Badge } from 'react-bootstrap';
 import { useState } from 'react';
+import { Alert, Badge, Button, Card, Form } from 'react-bootstrap';
 
 const ACCENT_COLOR = '#2CACAD';
 const PRECIO_MONEDA = new Intl.NumberFormat('es-CL', {
@@ -53,8 +53,8 @@ const ResumenCarrito = ({ resumen, onCheckout, loading }) => {
   };
 
   return (
-    <Card className="shadow-sm" style={{ borderColor: ACCENT_COLOR }}>
-      <Card.Header className="bg-white" style={{ borderBottomColor: ACCENT_COLOR }}>
+    <Card className="shadow-sm resumen-carrito-ticketti">
+      <Card.Header className="bg-white resumen-carrito-ticketti__header">
         <h5 className="mb-0 fw-bold">Resumen de Compra</h5>
       </Card.Header>
       <Card.Body className="bg-light">
@@ -80,14 +80,14 @@ const ResumenCarrito = ({ resumen, onCheckout, loading }) => {
           </div>
           <div className="d-flex justify-content-between mb-2">
             <span className="text-muted">Donacion (10%):</span>
-            <span className="fw-semibold" style={{ color: ACCENT_COLOR }}>
+            <span className="fw-semibold text-ticketti">
               {formatearMoneda(donacion)}
             </span>
           </div>
           <hr />
           <div className="d-flex justify-content-between">
             <span className="fw-bold">Total:</span>
-            <span className="fw-bold fs-5" style={{ color: ACCENT_COLOR }}>
+            <span className="fw-bold fs-5 text-ticketti">
               {formatearMoneda(total)}
             </span>
           </div>
@@ -115,8 +115,7 @@ const ResumenCarrito = ({ resumen, onCheckout, loading }) => {
             <Button
               type="submit"
               variant="primary"
-              className="w-100 fw-semibold"
-              style={{ backgroundColor: ACCENT_COLOR, borderColor: ACCENT_COLOR }}
+              className="w-100 fw-semibold btn-ticketti"
               disabled={loading || esReservado || !causaSocialId}
             >
               {esReservado
