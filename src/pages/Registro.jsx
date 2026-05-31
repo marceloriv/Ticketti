@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
-import { useNavigate } from 'react-router-dom';
+import {Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 const initialFormData = {
@@ -190,6 +190,11 @@ export default function Registro() {
                     {cargando && ' ...'}
                   </Button>
                 </div>
+                <p className="mb-0 text-center mt-3">
+                  ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+                </p>
+                
+                
               </Form>
             </Card.Body>
           </Card>
