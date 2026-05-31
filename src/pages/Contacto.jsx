@@ -2,11 +2,7 @@ const Contacto = () => {
   return (
     <>
       <section
-        className="py-5 text-center"
-        style={{
-          background: 'linear-gradient(135deg, var(--ticketti-primary), #6f88c4)',
-          color: 'white',
-        }}
+        className="py-5 text-center contacto-hero-ticketti"
       >
         <div className="container">
           <h1>Contacto</h1>
