@@ -78,3 +78,20 @@
   background-color: var(--ticketti-primary);
   border-color: var(--ticketti-primary);
 }
+
+/* Fondo compartido para Login y Registro */
+.loginContainer,
+.containerRegistro {
+  min-height: 92vh;
+  background-image: url('C:/Users/ingri/OneDrive/Documentos/material fullstack 3/Microservicios/Ticketti/src/assets/img/d173bced1917d077c86ef8c9b67f40e2.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #0f1b3d;
+}
+
+.loginContainer .row,
+.containerRegistro .row {
+  width: 100%;
+}
+
