@@ -1,5 +1,5 @@
-import { Card, Button, Row, Col, Badge, Alert } from 'react-bootstrap';
-import { Trash, RefreshCw } from 'lucide-react';
+import { RefreshCw, Trash } from 'lucide-react';
+import { Alert, Badge, Button, Card, Col, Row } from 'react-bootstrap';
 
 const ACCENT_COLOR = '#2CACAD';
 const PRECIO_MONEDA = new Intl.NumberFormat('es-CL', {
