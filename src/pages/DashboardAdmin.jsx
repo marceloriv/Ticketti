@@ -23,8 +23,6 @@ import {
   Tab,
   Table,
 } from 'react-bootstrap';
-import { COLOR_MARCA } from '@utils/constantes';
-
 // Los endpoints de donaciones provienen de un microservicio externo.
 // Para mantener la UI funcional en este repo se usan stubs locales.
 const getOrganizaciones = async () => [];
@@ -33,28 +31,23 @@ const getTotalPorOrganizacion = async () => 0;
 const crearOrganizacion = async () => {};
 const crearCausa = async () => {};
 
+const STAT_VARIANTS = {
+  brand: 'dashboard-stat-icon-brand',
+  pink: 'dashboard-stat-icon-pink',
+  success: 'dashboard-stat-icon-success',
+};
+
 // Tarjeta de estadística reutilizable
-const StatCard = ({ icon: Icon, titulo, valor, color, cargando }) => (
+const StatCard = ({ icon: Icon, titulo, valor, variant = 'brand', cargando }) => (
   <Card className="border-0 shadow-sm h-100">
     <Card.Body className="d-flex align-items-center gap-3 p-4">
-      <div
-        style={{
-          background: `${color}20`,
-          borderRadius: '50%',
-          width: 52,
-          height: 52,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
-      >
-        {Icon ? <Icon size={24} style={{ color }} /> : null}
+      <div className={`dashboard-stat-icon ${STAT_VARIANTS[variant] || STAT_VARIANTS.brand}`}>
+        {Icon ? <Icon size={24} /> : null}
       </div>
       <div>
         <p className="text-muted small mb-1">{titulo}</p>
         {cargando ? (
-          <Spinner size="sm" />
+          <Spinner size="sm" className="spinner-ticketti" />
         ) : (
           <h4 className="fw-bold mb-0">{valor}</h4>
         )}
@@ -66,8 +59,7 @@ const StatCard = ({ icon: Icon, titulo, valor, color, cargando }) => (
 // Placeholder para secciones de otros microservicios
 const Placeholder = ({ ms, descripcion }) => (
   <Card
-    className="border-0 border-dashed shadow-sm"
-    style={{ border: '2px dashed #dee2e6 !important' }}
+    className="border-0 border-dashed shadow-sm dashboard-placeholder-card"
   >
     <Card.Body className="text-center py-5">
       <p className="text-muted mb-1 fw-semibold">🔧 Pendiente — {ms}</p>
@@ -192,7 +184,7 @@ const DashboardAdmin = () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
-      <main className="flex-grow-1 py-4" style={{ background: '#f8f9fa' }}>
+      <main className="grow py-4 dashboard-admin-main">
         <Container fluid="lg">
           <h2 className="fw-bold mb-4">Panel Administrador</h2>
 
@@ -214,7 +206,7 @@ const DashboardAdmin = () => {
                 icon={Building2}
                 titulo="Organizaciones"
                 valor={organizaciones.length}
-                color={COLOR_MARCA}
+                variant="brand"
                 cargando={cargando}
               />
             </Col>
@@ -223,7 +215,7 @@ const DashboardAdmin = () => {
                 icon={Heart}
                 titulo="Causas activas"
                 valor={causas.length}
-                color="#e83e8c"
+                variant="pink"
                 cargando={cargando}
               />
             </Col>
@@ -232,7 +224,7 @@ const DashboardAdmin = () => {
                 icon={TrendingUp}
                 titulo="Total donado"
                 valor={fmt(totalRecaudado)}
-                color="#28a745"
+                variant="success"
                 cargando={cargando}
               />
             </Col>
@@ -240,18 +232,8 @@ const DashboardAdmin = () => {
               {/* Placeholder ventas — MSCarrito */}
               <Card className="border-0 shadow-sm h-100">
                 <Card.Body className="d-flex align-items-center gap-3 p-4">
-                  <div
-                    style={{
-                      background: '#ffc10720',
-                      borderRadius: '50%',
-                      width: 52,
-                      height: 52,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <ShoppingBag size={24} style={{ color: '#ffc107' }} />
+                  <div className="dashboard-stat-icon dashboard-stat-icon-warning">
+                    <ShoppingBag size={24} />
                   </div>
                   <div>
                     <p className="text-muted small mb-1">Total ventas</p>
@@ -296,18 +278,14 @@ const DashboardAdmin = () => {
                       <Button
                         size="sm"
                         onClick={() => setShowModalOrg(true)}
-                        style={{
-                          backgroundColor: COLOR_MARCA,
-                          borderColor: COLOR_MARCA,
-                          color: '#000',
-                        }}
+                        variant="primary"
                       >
                         <Plus size={16} /> Nueva
                       </Button>
                     </div>
                     {cargando ? (
                       <div className="text-center py-4">
-                        <Spinner style={{ color: COLOR_MARCA }} />
+                        <Spinner className="spinner-ticketti" />
                       </div>
                     ) : (
                       <Table hover responsive size="sm">
@@ -337,10 +315,7 @@ const DashboardAdmin = () => {
                                   {o.estado}
                                 </Badge>
                               </td>
-                              <td
-                                className="fw-semibold"
-                                style={{ color: '#28a745' }}
-                              >
+                              <td className="fw-semibold text-success">
                                 {fmt(totales[o.idOrganizacion])}
                               </td>
                             </tr>
@@ -357,18 +332,14 @@ const DashboardAdmin = () => {
                       <Button
                         size="sm"
                         onClick={() => setShowModalCausa(true)}
-                        style={{
-                          backgroundColor: COLOR_MARCA,
-                          borderColor: COLOR_MARCA,
-                          color: '#000',
-                        }}
+                        variant="primary"
                       >
                         <Plus size={16} /> Nueva causa
                       </Button>
                     </div>
                     {cargando ? (
                       <div className="text-center py-4">
-                        <Spinner style={{ color: COLOR_MARCA }} />
+                        <Spinner className="spinner-ticketti" />
                       </div>
                     ) : (
                       <Table hover responsive size="sm">
@@ -503,13 +474,9 @@ const DashboardAdmin = () => {
               <Button
                 type="submit"
                 disabled={guardando}
-                style={{
-                  backgroundColor: COLOR_MARCA,
-                  borderColor: COLOR_MARCA,
-                  color: '#000',
-                }}
+                variant="primary"
               >
-                {guardando ? <Spinner size="sm" /> : 'Guardar'}
+                {guardando ? <Spinner size="sm" className="spinner-ticketti" /> : 'Guardar'}
               </Button>
             </div>
           </Form>
@@ -612,13 +579,9 @@ const DashboardAdmin = () => {
               <Button
                 type="submit"
                 disabled={guardando}
-                style={{
-                  backgroundColor: COLOR_MARCA,
-                  borderColor: COLOR_MARCA,
-                  color: '#000',
-                }}
+                variant="primary"
               >
-                {guardando ? <Spinner size="sm" /> : 'Guardar'}
+                {guardando ? <Spinner size="sm" className="spinner-ticketti" /> : 'Guardar'}
               </Button>
             </div>
           </Form>
