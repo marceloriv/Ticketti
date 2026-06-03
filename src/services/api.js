@@ -30,13 +30,13 @@ const esRutaPublica = (config) => {
 
   return false;
 };
-
+// componente para ageragr jwt en las peticiones, exepto en las rutas publicas no se envia el token
 api.interceptors.request.use(
   (config) => {
     if (config.skipAuth) {
       return config;
     }
-
+    // Solo agregar el token si no es una ruta pública.
     const token = localStorage.getItem('token');
     if (token && !esRutaPublica(config)) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -44,10 +44,11 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    return Promise.reject(error);
+    return Promise.reject(error);// Manejo de errores en la configuración de la petición.
   }
 );
-
+// este interceptor para maneja errores globales de la API
+// Manejo global de errores HTTP, especialmente para redirigir en caso de 401(sesión expirada o no autorizada).
 api.interceptors.response.use(
   (response) => {
     return response;
@@ -63,13 +64,13 @@ api.interceptors.response.use(
             globalThis.location.href = '/login';
           }
           break;
-        case 403:
+        case 403:// Acceso prohibido, aunque el usuario esté autenticado.
           console.error('Acceso prohibido');
           break;
-        case 404:
+        case 404:// Recurso no encontrado.
           console.error('Recurso no encontrado');
           break;
-        case 500:
+        case 500:// Error interno del servidor.
           console.error('Error interno del servidor');
           break;
         default:

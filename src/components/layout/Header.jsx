@@ -4,7 +4,7 @@ import { useCarrito } from '@hooks/useCarrito';
 import { LogOut, Ticket, User, ShoppingCart } from 'lucide-react';
 import { Button, Container, Nav, Navbar, Stack } from 'react-bootstrap';
 import { useEffect, useCallback } from 'react';
-
+// 
 const Header = () => {
   const { usuario, logout, carritoId, establecerCarritoId } = useAuth();
   const navigate = useNavigate();
@@ -52,17 +52,17 @@ const Header = () => {
       'Usuario'
     );
   };
-
+  // Función para determinar si una ruta es pública, basada en el path de la URL.
   const handleIrPerfilUsuario = () => {
     const rol = obtenerRolDesdeToken() || usuario?.rol;
 
     console.log('[Header] Rol detectado:', rol);
-
+    // Redirigir según el rol del usuario.
     if (rol === 'ADMINPLATAFORMA') {
       navigate('/admin/dashboard');
       return;
     }
-
+    // Si el rol es ORGANIZADOR, redirigir a su dashboard específico.
     if (rol === 'ORGANIZADOR') {
       navigate('/organizador/dashboard');
       return;
@@ -70,7 +70,7 @@ const Header = () => {
 
     navigate('/perfil');
   };
-
+  // Función para determinar si una ruta es pública, basada en el path de la URL.
   const handleIrCarrito = useCallback(async () => {
     console.log('[Carrito] Click en icono carrito', {
       carritoId,
