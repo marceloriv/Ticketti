@@ -6,6 +6,7 @@ import api from '@services/api';
 import { getCausasActivas, getOrganizaciones } from '@services/donacionesApi';
 import { Building2, Heart, Search } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { useCarrito } from '@hooks/useCarrito';
 import {
   Alert,
   Button,
@@ -34,7 +35,7 @@ const HERO_SLIDES = [
   {
     id: 2,
     imagen: '/public/img/dia_de_la_astronomia.jpg',
-    titulo: 'Experiencias Únicas',
+    titulo: 'Experiencias únicas',
     subtitulo: 'Vive momentos inolvidables con Ticketti.',
   },
   {
@@ -55,6 +56,11 @@ const Inicio = () => {
   //Causas y organizaciones
   const [causas, setCausas] = useState([]);
   const [organizaciones, setOrganizaciones] = useState([]);
+
+  // Carrito
+  const { inicializarCarrito, agregarEntrada } = useCarrito(null);
+  const [message, setMessage] = useState('');
+  const [addingToCart, setAddingToCart] = useState(false);
 
   //carga eventos
   const cargarEventos = useCallback(async () => {
@@ -99,39 +105,65 @@ const Inicio = () => {
     cargarCausas();
   }, []);
 
+  const handleAddToCart = async (evento) => {
+    if (addingToCart) return;
+    setAddingToCart(true);
+    try {
+      const { carritoId } = await inicializarCarrito();
+      if (!carritoId) throw new Error('No se pudo obtener el carrito');
+      await agregarEntrada({
+        eventoId: evento.id,
+        tipoEntrada: 'General',
+        cantidad: 1,
+        precioUnitario: evento.precioEntrada || 0,
+      });
+      setMessage(`Entrada agregada al carrito: ${evento.nombre}`);
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      setMessage('Error al agregar al carrito: ' + err.message);
+      setTimeout(() => setMessage(''), 3000);
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
   //Filtros por categoría y búsqueda
   useEffect(() => {
     let filtrados = eventos;
 
-  if (categoriaActiva !== 'todo') {
-    const categoriaSeleccionada = CATEGORIAS.find(c => c.id === categoriaActiva);
-    filtrados = filtrados.filter(evento =>
-      categoriaSeleccionada.generos.includes(evento.genero)
-    );
-  }
+    if (categoriaActiva !== 'todo') {
+      const categoriaSeleccionada = CATEGORIAS.find(c => c.id === categoriaActiva);
+      filtrados = filtrados.filter(evento =>
+        categoriaSeleccionada.generos.includes(evento.genero)
+      );
+    }
 
-  if (busqueda.trim()) {
-    const termino = busqueda.toLowerCase();
-    filtrados = filtrados.filter(evento =>
-      evento.nombre?.toLowerCase().includes(termino) ||
-      evento.recinto?.ubicacion?.toLowerCase().includes(termino)
-    );
-  }
+    if (busqueda.trim()) {
+      const termino = busqueda.toLowerCase();
+      filtrados = filtrados.filter(evento =>
+        evento.nombre?.toLowerCase().includes(termino) ||
+        evento.recinto?.ubicacion?.toLowerCase().includes(termino)
+      );
+    }
 
-  setEventosFiltrados(filtrados);
-}, [categoriaActiva, busqueda, eventos]);
+    setEventosFiltrados(filtrados);
+  }, [categoriaActiva, busqueda, eventos]);
 
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
-
       <main className="grow">
+        {message && (
+          <Alert variant={message.startsWith('Error') ? 'danger' : 'success'}>
+            {message}
+          </Alert>
+        )}
         {/* HERO - Eventos */}
         <section id="hero" className="position-relative">
           <CommonCarousel slides={HERO_SLIDES} />
         </section>
 
-        {/* BUSCADOR — EVENTOS */}
+        {/* BUSCADOR - EVENTOS */}
         <section id="buscador" className="py-4 bg-light">
           <Container>
             <Row className="justify-content-center">
@@ -142,7 +174,7 @@ const Inicio = () => {
                   </InputGroup.Text>
                   <Form.Control
                     type="text"
-                    placeholder="Buscar eventos por nombre, genero o ubicación..."
+                    placeholder="Buscar eventos por nombre, género o ubicación..."
                     value={busqueda}
                     onChange={(e) => setBusqueda(e.target.value)}
                     className="inicio-search-input"
@@ -199,6 +231,7 @@ const Inicio = () => {
                         ubicacion: evento.recinto?.ubicacion || 'Ubicación por confirmar',
                         precio: evento.precioEntrada || 0,
                       }}
+                      onComprar={(id) => handleAddToCart(evento)}
                     />
                   </Col>
                 ))}
@@ -278,3 +311,4 @@ const Inicio = () => {
 };
 
 export default Inicio;
+
