@@ -2,11 +2,11 @@ import CommonCarousel from '@components/common/Carousel';
 import ProductCard from '@components/common/ProductCard';
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
+import { useCarrito } from '@hooks/useCarrito';
 import api from '@services/api';
 import { getCausasActivas, getOrganizaciones } from '@services/donacionesApi';
 import { Building2, Heart, Search } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { useCarrito } from '@hooks/useCarrito';
 import {
   Alert,
   Button,

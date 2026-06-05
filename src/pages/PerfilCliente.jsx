@@ -223,22 +223,22 @@ const PerfilCliente = () => {
                     <MisComprasTab usuarioId={usuario?.id} />
                   </Tab.Pane>
 
-                  {/* ── DONACIONES — pendiente MSDonaciones */}
+                  {/* ── DONACIONES ── pendiente MSDonaciones */}
                   <Tab.Pane eventKey="donaciones">
-                    <Placeholder
-                      ms="MSDonaciones"
-                      descripcion="Donaciones del usuario — GET /api/donaciones/usuario/{id}"
-                      altura={250}
-                    />
+                    <Alert variant="info" className="text-center py-4">
+                      <Heart size={24} className="mb-2 text-ticketti" />
+                      <p className="mb-1 fw-semibold">Historial de donaciones próximamente</p>
+                      <p className="text-muted small mb-0">MSDonaciones — GET /api/donaciones/usuario/&#123;id&#125;</p>
+                    </Alert>
                   </Tab.Pane>
 
-                  {/* ── PERFIL — pendiente MSUsuarios */}
+                  {/* ── PERFIL ── pendiente MSUsuarios */}
                   <Tab.Pane eventKey="perfil">
-                    <Placeholder
-                      ms="MSUsuarios"
-                      descripcion="Editar datos del perfil — PUT /api/v1/usuarios/{id}"
-                      altura={250}
-                    />
+                    <Alert variant="info" className="text-center py-4">
+                      <User size={24} className="mb-2" />
+                      <p className="mb-1 fw-semibold">Edición de perfil próximamente</p>
+                      <p className="text-muted small mb-0">MSUsuarios — PUT /api/v1/usuarios/&#123;id&#125;</p>
+                    </Alert>
                   </Tab.Pane>
                 </Tab.Content>
               </Card.Body>
