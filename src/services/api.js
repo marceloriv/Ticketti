@@ -14,21 +14,8 @@ const api = axios.create({
 const esRutaPublica = (config) => {
   const metodo = (config.method || 'get').toLowerCase();
   const url = config.url || '';
-
   // Registro público de usuario.
-  if (metodo === 'post' && url === '/usuarios') {
-    return true;
-  }
-
-  // Listado/busqueda pública de eventos.
-  if (
-    metodo === 'get' &&
-    (url.startsWith('/Eventos/') || url.startsWith('/eventos/'))
-  ) {
-    return true;
-  }
-
-  return false;
+  return metodo === 'post' && url === '/usuarios';
 };
 
 api.interceptors.request.use(
