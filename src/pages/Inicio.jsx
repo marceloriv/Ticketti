@@ -28,19 +28,19 @@ const CATEGORIAS = [
 const HERO_SLIDES = [
   {
     id: 1,
-    imagen: '/public/img/Tour-Press-Photo-1-28ad2aa10b.webp',
+    imagen: '/img/Tour-Press-Photo-1-28ad2aa10b.webp',
     titulo: 'Mejores Eventos',
     subtitulo: 'Descubre los eventos más emocionantes de la ciudad.',
   },
   {
     id: 2,
-    imagen: '/public/img/dia_de_la_astronomia.jpg',
+    imagen: '/img/dia_de_la_astronomia.jpg',
     titulo: 'Experiencias únicas',
     subtitulo: 'Vive momentos inolvidables con Ticketti.',
   },
   {
     id: 3,
-    imagen: '/public/img/listicle_1686140315148_74ycs_1040x500.jpg',
+    imagen: '/img/listicle_1686140315148_74ycs_1040x500.jpg',
     titulo: 'Cultura y Entretenimiento',
     subtitulo: 'Desde eventos íntimos hasta grandes producciones.',
   },
