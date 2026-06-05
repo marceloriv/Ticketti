@@ -5,15 +5,15 @@ import api from '@services/api';
 import { Heart, Mail, RefreshCw, ShoppingBag, User } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  Alert,
-  Badge,
-  Button,
-  Card,
-  Container,
-  Nav,
-  Spinner,
-  Tab,
-  Table,
+    Alert,
+    Badge,
+    Button,
+    Card,
+    Container,
+    Nav,
+    Spinner,
+    Tab,
+    Table,
 } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
