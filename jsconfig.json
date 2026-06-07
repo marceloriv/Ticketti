@@ -17,7 +17,7 @@
       "@components/*": ["src/components/*"],
       "@pages/*": ["src/pages/*"],
       "@routes/*": ["src/routes/*"],
-      "@services/*": ["src/services/*"],
+      "@api/*": ["src/api/*"],
       "@contexts/*": ["src/contexts/*"],
       "@hooks/*": ["src/hooks/*"],
       "@utils/*": ["src/utils/*"],
