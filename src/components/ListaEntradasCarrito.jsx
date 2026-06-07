@@ -1,5 +1,6 @@
 import { RefreshCw, Trash } from 'lucide-react';
 import { Alert, Badge, Button, Card, Col, Row } from 'react-bootstrap';
+import '../styles/components/ListaEntradasCarrito.css';
 
 const ACCENT_COLOR = '#2CACAD';
 const PRECIO_MONEDA = new Intl.NumberFormat('es-CL', {
@@ -10,7 +11,18 @@ const PRECIO_MONEDA = new Intl.NumberFormat('es-CL', {
 
 const formatearMoneda = (valor) => PRECIO_MONEDA.format(valor || 0);
 
+/**
+ * Componente que muestra una lista de entradas en el carrito
+ *
+ * @param {Object} props - Propiedades del componente
+ * @param {Array|Object} props.entradas - Array de entradas u objeto con propiedad items
+ * @param {Function} props.onEliminar - Función para eliminar una entrada
+ * @param {Function} props.onRenovar - Función para renovar la reserva
+ * @param {boolean} props.puedeRenovar - Indica si se puede renovar la reserva
+ * @param {boolean} props.loading - Indica si está cargando
+ */
 const ListaEntradasCarrito = ({ entradas, onEliminar, onRenovar, puedeRenovar, loading }) => {
+  /** Items del carrito (array normalizado) */
   let items = [];
   if (Array.isArray(entradas)) {
     items = entradas;
@@ -29,7 +41,7 @@ const ListaEntradasCarrito = ({ entradas, onEliminar, onRenovar, puedeRenovar, l
 
   return (
     <div className="d-flex flex-column gap-3">
-      {items.map((item) => {
+      {items.map((item, index) => {
         const detalleId = item.detalleId ?? item.idDetalleCarrito ?? item.id;
         const eventoId = item.eventoId ?? item.idEvento;
         const tipoEntrada = item.tipoEntrada ?? item.tipoEntradaNombre ?? 'General';
@@ -37,32 +49,34 @@ const ListaEntradasCarrito = ({ entradas, onEliminar, onRenovar, puedeRenovar, l
         const precioUnitario = item.precioUnitario ?? item.precio ?? 0;
         const subtotal = precioUnitario * cantidad;
         const eventoNombre = item.eventoNombre ?? item.nombreEvento ?? `Evento #${eventoId}`;
+        /** Key único para el elemento (usa detalleId o índice como fallback) */
+        const uniqueKey = detalleId || `${eventoId}-${tipoEntrada}-${index}`;
 
         return (
-          <Card key={detalleId} className="shadow-sm lista-entradas-ticketti">
-            <Card.Body className="bg-light">
+          <Card key={uniqueKey} className="lista-entradas-ticketti">
+            <Card.Body>
               <Row className="align-items-center">
                 <Col md={6}>
-                  <h6 className="fw-bold mb-1">{eventoNombre}</h6>
-                  <p className="text-muted mb-1 small">{tipoEntrada}</p>
-                  <Badge bg="light" text="dark" className="border">
+                  <h6 className="lista-entradas-nombre">{eventoNombre}</h6>
+                  <p className="lista-entradas-tipo">{tipoEntrada}</p>
+                  <Badge className="lista-entradas-badge">
                     Cantidad: {cantidad}
                   </Badge>
                 </Col>
                 <Col md={3} className="text-center">
-                  <div className="fw-semibold">{formatearMoneda(precioUnitario)} c/u</div>
-                  <div className="text-muted small">Subtotal: {formatearMoneda(subtotal)}</div>
+                  <div className="lista-entradas-precio">{formatearMoneda(precioUnitario)} c/u</div>
+                  <div className="lista-entradas-subtotal">Subtotal: {formatearMoneda(subtotal)}</div>
                 </Col>
                 <Col md={3} className="text-end d-flex flex-column gap-2">
-                  <div className="fw-bold text-ticketti">
+                  <div className="lista-entradas-total">
                     {formatearMoneda(subtotal)}
                   </div>
                   <Button
                     variant="outline-danger"
                     size="sm"
-                    onClick={() => onEliminar && onEliminar(detalleId)}
+                    onClick={() => onEliminar && onEliminar(detalleId, item)}
                     disabled={loading}
-                    className="d-flex align-items-center gap-1 ms-auto"
+                    className="lista-entradas-boton-eliminar"
                   >
                     <Trash size={14} />
                     Eliminar
@@ -73,7 +87,7 @@ const ListaEntradasCarrito = ({ entradas, onEliminar, onRenovar, puedeRenovar, l
                       size="sm"
                       onClick={onRenovar}
                       disabled={loading}
-                      className="d-flex align-items-center gap-1 ms-auto"
+                      className="lista-entradas-boton-renovar"
                     >
                       <RefreshCw size={14} />
                       Renovar reserva
