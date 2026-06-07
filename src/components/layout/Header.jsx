@@ -1,30 +1,44 @@
 import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
+import { useCarritoGuest } from '@hooks/useCarritoGuest';
 import { LogOut, ShoppingCart, Ticket, User } from 'lucide-react';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Button, Container, Nav, Navbar, Stack } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Componente de navegación principal de la aplicación
+ * Muestra el logo, enlaces de navegación, botón de carrito y opciones de usuario
+ */
 const Header = () => {
-  const { usuario, logout, carritoId, establecerCarritoId } = useAuth();
+  const { usuario, logout, carritoId, establecerCarritoId, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { obtenerResumen, resumen, inicializarCarrito } = useCarrito(carritoId);
+  const { totalEntradas: guestTotalEntradas } = useCarritoGuest();
+  const obtenerResumenRef = useRef(obtenerResumen);
 
-  const cantidadCarrito = (resumen?.items || []).reduce(
-    (sum, item) => sum + (item.cantidad || 0),
-    0
-  );
+  /** Cantidad de items en el carrito (backend para autenticados, localStorage para invitados) */
+  const cantidadCarrito = isAuthenticated
+    ? (resumen?.items || []).reduce((sum, item) => sum + (item.cantidad || 0), 0)
+    : guestTotalEntradas;
 
   useEffect(() => {
-    console.log('[Carrito] useEffect disparado', { carritoId });
+    obtenerResumenRef.current = obtenerResumen;
+  }, [obtenerResumen]);
 
+  useEffect(() => {
     if (carritoId) {
-      obtenerResumen().catch((e) => {
+      obtenerResumenRef.current().catch((e) => {
         console.error('[Carrito] Error al obtener resumen:', e);
       });
     }
-  }, [carritoId, obtenerResumen]);
+  }, [carritoId]);
 
+  /**
+   * Obtiene el payload del token JWT del localStorage
+   *
+   * @returns {Object|null} Payload del token o null si no existe
+   */
   const obtenerPayloadDesdeToken = () => {
     const token = localStorage.getItem('token');
 
@@ -37,11 +51,21 @@ const Header = () => {
     }
   };
 
+  /**
+   * Obtiene el rol del usuario desde el token JWT
+   *
+   * @returns {string|null} Rol del usuario o null si no existe
+   */
   const obtenerRolDesdeToken = () => {
     const payload = obtenerPayloadDesdeToken();
     return payload?.rol || null;
   };
 
+  /**
+   * Obtiene el nombre del usuario desde el token JWT o del contexto
+   *
+   * @returns {string} Nombre del usuario
+   */
   const obtenerNombreUsuario = () => {
     const payload = obtenerPayloadDesdeToken();
 
@@ -53,6 +77,9 @@ const Header = () => {
     );
   };
 
+  /**
+   * Maneja la navegación al perfil del usuario según su rol
+   */
   const handleIrPerfilUsuario = () => {
     const rol = obtenerRolDesdeToken() || usuario?.rol;
 
@@ -71,53 +98,39 @@ const Header = () => {
     navigate('/perfil');
   };
 
+  /**
+   * Maneja la navegación al carrito de compras
+   * Solución temporal: navegar siempre a /carrito (carrito de invitado)
+   * hasta que el backend esté arreglado
+   */
   const handleIrCarrito = useCallback(async () => {
     console.log('[Carrito] Click en icono carrito', {
       carritoId,
       usuarioRol: usuario?.rol,
+      isAuthenticated,
     });
 
-    let id = carritoId;
-
-    if (!id) {
-      try {
-        console.log('[Carrito] Sin carritoId, inicializando...');
-        const resultado = await inicializarCarrito();
-
-        console.log('[Carrito] Carrito inicializado:', resultado);
-
-        if (resultado?.carritoId) {
-          establecerCarritoId(resultado.carritoId);
-          id = resultado.carritoId;
-        }
-      } catch (e) {
-        console.error('[Carrito] Error al inicializar carrito:', e);
-        return;
-      }
-    }
-
-    if (id) {
-      console.log('[Carrito] Navegando a:', `/carrito/${id}`);
-      navigate(`/carrito/${id}`);
-    } else {
-      console.warn('[Carrito] No hay carritoId después de inicializar');
-    }
+    // Solución temporal: navegar siempre a /carrito (carrito de invitado)
+    console.log('[Carrito] Navegando a /carrito (carrito de invitado)');
+    navigate('/carrito');
   }, [
-    carritoId,
-    inicializarCarrito,
-    establecerCarritoId,
     navigate,
+    carritoId,
     usuario?.rol,
+    isAuthenticated,
   ]);
 
   const navLinksPublicos = [
+    /** Enlaces de navegación públicos */
     { name: 'Inicio', to: '/home' },
     { name: 'Eventos', to: '/events' },
     { name: 'Sobre Ticketti', to: '/nosotros' },
     { name: 'Contacto', to: '/contact' },
   ];
 
+  /** Rol actual del usuario (desde token o contexto) */
   const rolActual = obtenerRolDesdeToken() || usuario?.rol;
+  /** Nombre del usuario actual */
   const nombreUsuario = obtenerNombreUsuario();
 
   return (
@@ -161,7 +174,7 @@ const Header = () => {
                   {nombreUsuario}
                 </Button>
 
-                {rolActual === 'CLIENTE' && (
+                {(rolActual === 'CLIENTE' || !isAuthenticated) && (
                   <Button
                     variant="outline-secondary"
                     size="sm"
@@ -197,9 +210,33 @@ const Header = () => {
                 </Button>
               </>
             ) : (
-              <Button as="a" href="/login" className="btn-primary">
-                Acceso
-              </Button>
+              <>
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
+                  onClick={handleIrCarrito}
+                  className="position-relative"
+                >
+                  <ShoppingCart size={14} className="me-1" />
+                  Carrito
+
+                  {cantidadCarrito > 0 && (
+                    <span
+                      role="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleIrCarrito();
+                      }}
+                      className="carrito-badge-ticketti"
+                    >
+                      {cantidadCarrito}
+                    </span>
+                  )}
+                </Button>
+                <Button as="a" href="/login" className="btn-primary">
+                  Acceso
+                </Button>
+              </>
             )}
           </Stack>
         </Navbar.Collapse>
