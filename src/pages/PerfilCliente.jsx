@@ -1,7 +1,7 @@
+import api from '@api/api';
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
-import api from '@services/api';
 import { Heart, Mail, RefreshCw, ShoppingBag, User } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -368,7 +368,7 @@ function MisComprasTab({ usuarioId }) {
                 <td>
                   <Button
                     as={Link}
-                    to={`/carrito/${idCarrito}`}
+                    to="/carrito"
                     variant="outline-primary"
                     size="sm"
                   >
