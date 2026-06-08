@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
+import api from '@api/api';
+import { useState } from 'react';
+import { Alert, Button, Card, Col, Container, Row } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../services/api';
 
 const initialFormData = {
   nombre: '',

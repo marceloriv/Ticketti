@@ -1,0 +1,114 @@
+/**
+ * Estilos para el resumen del carrito de compras
+ */
+
+.resumen-carrito-container {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+}
+
+.resumen-carrito-titulo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #2cacad;
+}
+
+.resumen-carrito-fila {
+  padding: 0.75rem 0;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.resumen-carrito-fila:last-child {
+  border-bottom: none;
+}
+
+.resumen-carrito-etiqueta {
+  font-size: 0.95rem;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.resumen-carrito-valor {
+  font-size: 1rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.resumen-carrito-total {
+  padding: 1.5rem 0;
+  margin-top: 1rem;
+  border-top: 2px solid #2cacad;
+}
+
+.resumen-carrito-total-etiqueta {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.resumen-carrito-total-valor {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #2cacad 0%, #1a8a8b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.resumen-carrito-donacion {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  border-left: 4px solid #ff9800;
+}
+
+.resumen-carrito-donacion-texto {
+  font-size: 0.9rem;
+  color: #e65100;
+  font-weight: 500;
+}
+
+.resumen-carrito-boton-checkout {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #2cacad 0%, #1a8a8b 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.resumen-carrito-boton-checkout:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(44, 172, 173, 0.4);
+}
+
+.resumen-carrito-boton-checkout:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.resumen-carrito-boton-checkout-invitado {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+.resumen-carrito-boton-checkout-invitado:hover {
+  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+.resumen-carrito-alerta {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}

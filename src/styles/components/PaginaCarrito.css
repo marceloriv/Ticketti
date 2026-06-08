@@ -1,0 +1,82 @@
+/**
+ * Estilos para la página del carrito de compras
+ */
+
+.pagina-carrito-container {
+  padding: 2rem 0;
+  min-height: calc(100vh - 200px);
+}
+
+.pagina-carrito-titulo {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+}
+
+.pagina-carrito-subtitulo {
+  font-size: 1.1rem;
+  color: #7f8c8d;
+  margin-bottom: 2rem;
+}
+
+.pagina-carrito-loading {
+  min-height: 300px;
+}
+
+.pagina-carrito-vacio {
+  text-align: center;
+  padding: 3rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  margin: 2rem 0;
+}
+
+.pagina-carrito-vacio-icono {
+  font-size: 4rem;
+  color: #95a5a6;
+  margin-bottom: 1rem;
+}
+
+.pagina-carrito-vacio-texto {
+  font-size: 1.2rem;
+  color: #7f8c8d;
+  margin-bottom: 1.5rem;
+}
+
+.pagina-carrito-contenido {
+  margin-top: 2rem;
+}
+
+.pagina-carrito-entradas {
+  padding-right: 1rem;
+}
+
+.pagina-carrito-resumen {
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+}
+
+.pagina-carrito-alerta {
+  margin-bottom: 1.5rem;
+}
+
+.pagina-carrito-alerta.alert-info {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-color: #90caf9;
+  color: #1565c0;
+}
+
+.pagina-carrito-boton-inicio {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.pagina-carrito-boton-inicio:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(44, 172, 173, 0.3);
+}

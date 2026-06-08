@@ -17,7 +17,7 @@ export const ROUTES = {
   // Cliente autenticado
   PERFIL: '/perfil',
   NOTIFICACIONES: '/notificaciones',
-  CARRITO: (id) => `/carrito/${id}`,
+  CARRITO: '/carrito',
 
   // Admin
   ADMIN_DASHBOARD: '/admin/dashboard',

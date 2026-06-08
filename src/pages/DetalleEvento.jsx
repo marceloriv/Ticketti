@@ -1,22 +1,24 @@
+import api from '@api/api';
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
-import api from '@services/api';
 import { AlertCircle, Calendar, MapPin, Ticket, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
-  Alert,
-  Badge,
-  Button,
-  Col,
-  Container,
-  Form,
-  Modal,
-  Row,
-  Spinner,
+    Alert,
+    Badge,
+    Button,
+    Col,
+    Container,
+    Form,
+    Modal,
+    Row,
+    Spinner,
 } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useCarritoGuest } from '../hooks/useCarritoGuest';
+import '../styles/components/DetalleEvento.css';
 
 const formatearMoneda = (price) => {
   if (!price) return 'Gratis';
@@ -39,8 +41,11 @@ const formatearFecha = (dateString) => {
 const DetalleEvento = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { usuario } = useAuth();
+  /** Indica si el usuario está autenticado en el sistema */
+  const { usuario, isAuthenticated } = useAuth();
   const { agregarEntrada, inicializarCarrito, loading: loadingCarrito } = useCarrito(null);
+  /** Función para agregar entradas al carrito de invitado (localStorage) */
+  const { agregarEntrada: guestAgregarEntrada } = useCarritoGuest();
   const [evento, setEvento] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -63,43 +68,36 @@ const DetalleEvento = () => {
     cargarEvento();
   }, [id]);
 
+  /**
+   * Maneja el proceso de agregar entradas al carrito
+   * Para usuarios invitados, agrega al localStorage
+   * Para usuarios autenticados, agrega al backend
+   *
+   * @returns {Promise<void>} Promesa que se resuelve cuando la entrada se agrega
+   */
   const manejarAgregarAlCarrito = async () => {
     setErrorCarrito('');
-    if (!usuario?.id) {
-      navigate('/login');
-      return;
-    }
 
     if (cantidad < 1 || cantidad > 4) {
       setErrorCarrito('Debes seleccionar entre 1 y 4 entradas');
       return;
     }
 
+    // Solución temporal: usar siempre carrito de invitado hasta que el backend esté arreglado
     try {
-      // Crear o recuperar carrito activo del usuario
-      const { carritoId: idCarrito } = await inicializarCarrito();
-      if (!idCarrito) {
-        setErrorCarrito('No se pudo crear el carrito. Intenta nuevamente.');
-        return;
-      }
-
-      // Agregar entrada al carrito
-      await agregarEntrada({
+      guestAgregarEntrada({
         eventoId: Number(id),
         tipoEntrada: 'General',
         cantidad,
         precioUnitario: evento?.precioEntrada || 0,
+        eventoNombre: evento?.nombre,
       });
 
       setShowModal(false);
       setCantidad(1);
-
-      // Navegar al carrito
-      navigate(`/carrito/${idCarrito}`);
+      navigate('/carrito');
     } catch (err) {
-      setErrorCarrito(
-        err.message || 'Error al agregar entrada al carrito.'
-      );
+      setErrorCarrito(err.message || 'Error al agregar entrada al carrito.');
     }
   };
 
@@ -128,13 +126,12 @@ const DetalleEvento = () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
-      <main className="grow py-5 detalle-evento-main">
+      <main className="detalle-evento-container">
         <Container>
           <Button
             variant="link"
             onClick={() => navigate(-1)}
             className="mb-4 p-0"
-            className="mb-4 p-0 detalle-evento-text"
           >
             ← Volver
           </Button>
@@ -144,51 +141,57 @@ const DetalleEvento = () => {
               <img
                 src={evento.imagenUrl || '/assets/hero.png'}
                 alt={evento.nombre}
-                className="w-100 rounded shadow"
-                className="w-100 rounded shadow detalle-evento-image"
+                className="detalle-evento-imagen"
               />
             </Col>
 
             <Col md={6} className="mt-4 mt-md-0">
-              <Badge bg="info" className="mb-3">
+              <Badge bg="info" className="detalle-evento-badge mb-3">
                 {evento.genero}
               </Badge>
-              <h1 className="fw-bold mb-3">{evento.nombre}</h1>
-              <p className="text-muted mb-4">{evento.descripcion}</p>
+              <h1 className="detalle-evento-titulo">{evento.nombre}</h1>
+              <p className="detalle-evento-descripcion-texto">{evento.descripcion}</p>
 
-              <div className="mb-2 d-flex align-items-center gap-2">
-                <Calendar size={18} className="detalle-evento-text" />
-                <span>{formatearFecha(evento.fecha)}</span>
+              <div className="detalle-evento-info-card">
+                <div className="d-flex align-items-center gap-2">
+                  <Calendar size={18} className="detalle-evento-info-icono" />
+                  <span>{formatearFecha(evento.fecha)}</span>
+                </div>
               </div>
 
-              <div className="mb-2 d-flex align-items-center gap-2">
-                <MapPin size={18} className="detalle-evento-text" />
-                <span>
-                  {evento.recinto?.nombre} — {evento.recinto?.ubicacion}
-                </span>
+              <div className="detalle-evento-info-card">
+                <div className="d-flex align-items-center gap-2">
+                  <MapPin size={18} className="detalle-evento-info-icono" />
+                  <span>
+                    {evento.recinto?.nombre} — {evento.recinto?.ubicacion}
+                  </span>
+                </div>
               </div>
 
-              <div className="mb-2 d-flex align-items-center gap-2">
-                <Users size={18} className="detalle-evento-text" />
-                <span>{evento.stock} entradas disponibles</span>
+              <div className="detalle-evento-info-card">
+                <div className="d-flex align-items-center gap-2">
+                  <Users size={18} className="detalle-evento-info-icono" />
+                  <span>{evento.stock} entradas disponibles</span>
+                </div>
               </div>
 
-              <h3 className="fw-bold mb-4">{formatearMoneda(evento.precioEntrada)}</h3>
-
-              <Button
-                size="lg"
-                className="d-flex align-items-center gap-2 mb-3 btn-ticketti detalle-evento-button"
-                onClick={() => setShowModal(true)}
-              >
-                <Ticket size={20} />
-                Comprar entrada
-              </Button>
-
-              {evento.stock > 0 && (
-                <p className="text-muted small text-center mb-0">
-                  Quedan {evento.stock} entradas disponibles
-                </p>
-              )}
+              <div className="detalle-evento-precio-card">
+                <p className="detalle-evento-precio-etiqueta">Precio por entrada</p>
+                <h3 className="detalle-evento-precio-valor">{formatearMoneda(evento.precioEntrada)}</h3>
+                <Button
+                  size="lg"
+                  className="detalle-evento-boton-agregar"
+                  onClick={() => setShowModal(true)}
+                >
+                  <Ticket size={20} className="me-2" />
+                  Comprar entrada
+                </Button>
+                {evento.stock > 0 && (
+                  <p className="text-muted small text-center mb-0 mt-3">
+                    Quedan {evento.stock} entradas disponibles
+                  </p>
+                )}
+              </div>
             </Col>
           </Row>
         </Container>
@@ -196,7 +199,7 @@ const DetalleEvento = () => {
 
       {/* ── Modal de selección de cantidad ── */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton className="detalle-evento-modal-header">
+        <Modal.Header closeButton>
           <Modal.Title className="fw-bold">Selecciona tu cantidad</Modal.Title>
         </Modal.Header>
         <Modal.Body>

@@ -1,0 +1,109 @@
+/**
+ * Estilos para la lista de entradas del carrito
+ */
+
+.lista-entradas-ticketti {
+  border: none;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.lista-entradas-ticketti:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.lista-entradas-ticketti .card-body {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.lista-entradas-nombre {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.lista-entradas-ticketti:hover .lista-entradas-nombre {
+  color: #2cacad;
+}
+
+.lista-entradas-tipo {
+  font-size: 0.95rem;
+  color: #7f8c8d;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.lista-entradas-badge {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border: 1px solid #81c784;
+  color: #2e7d32;
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+.lista-entradas-precio {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.lista-entradas-subtotal {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin-top: 0.25rem;
+}
+
+.lista-entradas-total {
+  font-size: 1.3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #2cacad 0%, #1a8a8b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.lista-entradas-boton-eliminar {
+  border: 2px solid #e74c3c;
+  color: #e74c3c;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.lista-entradas-boton-eliminar:hover {
+  background: #e74c3c;
+  color: white;
+  transform: scale(1.05);
+}
+
+.lista-entradas-boton-eliminar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lista-entradas-boton-renovar {
+  border: 2px solid #3498db;
+  color: #3498db;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.lista-entradas-boton-renovar:hover {
+  background: #3498db;
+  color: white;
+  transform: scale(1.05);
+}
+
+.lista-entradas-boton-renovar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

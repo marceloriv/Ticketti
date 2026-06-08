@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Alert, Badge, Button, Card, Form } from 'react-bootstrap';
+import '../styles/components/ResumenCarrito.css';
 
 const ACCENT_COLOR = '#2CACAD';
 const PRECIO_MONEDA = new Intl.NumberFormat('es-CL', {
@@ -19,7 +20,16 @@ const ESTADO_CARRITO_VARIANT = {
   REEMBOLSADO: 'info',
 };
 
-const ResumenCarrito = ({ resumen, onCheckout, loading }) => {
+/**
+ * Componente que muestra el resumen del carrito de compras
+ *
+ * @param {Object} props - Propiedades del componente
+ * @param {Object} props.resumen - Objeto con los datos del resumen del carrito
+ * @param {Function} props.onCheckout - Función para manejar el checkout
+ * @param {boolean} props.loading - Indica si está cargando
+ * @param {boolean} [props.isGuest=false] - Indica si el usuario es un invitado (no autenticado)
+ */
+const ResumenCarrito = ({ resumen, onCheckout, loading, isGuest = false }) => {
   const [causaSocialId, setCausaSocialId] = useState('');
   const [error, setError] = useState('');
 
@@ -39,7 +49,7 @@ const ResumenCarrito = ({ resumen, onCheckout, loading }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-    if (!causaSocialId) {
+    if (!causaSocialId && !isGuest) {
       setError('Por favor selecciona una causa social');
       return;
     }
@@ -48,17 +58,16 @@ const ResumenCarrito = ({ resumen, onCheckout, loading }) => {
       return;
     }
     if (onCheckout) {
-      onCheckout(causaSocialId);
+      onCheckout(isGuest ? null : causaSocialId);
     }
   };
 
   return (
-    <Card className="shadow-sm resumen-carrito-ticketti">
-      <Card.Header className="bg-white resumen-carrito-ticketti__header">
-        <h5 className="mb-0 fw-bold">Resumen de Compra</h5>
-      </Card.Header>
-      <Card.Body className="bg-light">
-        {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
+    <Card className="resumen-carrito-container">
+      <Card.Body>
+        <h4 className="resumen-carrito-titulo">Resumen de Compra</h4>
+
+        {error && <Alert variant="danger" className="resumen-carrito-alerta mb-3">{error}</Alert>}
 
         {estadoCarrito && (
           <div className="d-flex gap-2 mb-3 flex-wrap">
@@ -74,49 +83,51 @@ const ResumenCarrito = ({ resumen, onCheckout, loading }) => {
         )}
 
         <div className="mb-4">
-          <div className="d-flex justify-content-between mb-2">
-            <span className="text-muted">Subtotal:</span>
-            <span className="fw-semibold">{formatearMoneda(subtotal)}</span>
+          <div className="resumen-carrito-fila">
+            <span className="resumen-carrito-etiqueta">Subtotal:</span>
+            <span className="resumen-carrito-valor">{formatearMoneda(subtotal)}</span>
           </div>
-          <div className="d-flex justify-content-between mb-2">
-            <span className="text-muted">Donacion (10%):</span>
-            <span className="fw-semibold text-ticketti">
-              {formatearMoneda(donacion)}
-            </span>
+          <div className="resumen-carrito-fila">
+            <span className="resumen-carrito-etiqueta">Donación (10%):</span>
+            <span className="resumen-carrito-valor">{formatearMoneda(donacion)}</span>
           </div>
-          <hr />
-          <div className="d-flex justify-content-between">
-            <span className="fw-bold">Total:</span>
-            <span className="fw-bold fs-5 text-ticketti">
-              {formatearMoneda(total)}
-            </span>
+          <div className="resumen-carrito-donacion">
+            <p className="resumen-carrito-donacion-texto">
+              Tu donación ayuda a causas sociales importantes
+            </p>
+          </div>
+          <div className="resumen-carrito-total">
+            <span className="resumen-carrito-total-etiqueta">Total:</span>
+            <span className="resumen-carrito-total-valor">{formatearMoneda(total)}</span>
           </div>
         </div>
 
         {puedePagar && (
           <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-semibold">Causa Social</Form.Label>
-              <Form.Select
-                name="causaSocial"
-                value={causaSocialId}
-                onChange={(e) => setCausaSocialId(e.target.value)}
-                required
-                disabled={loading || esReservado}
-              >
-                <option value="">Selecciona una causa social...</option>
-                <option value="1">Fundacion Educacion para Todos</option>
-                <option value="2">Asociacion Proteccion Animal</option>
-                <option value="3">Organizacion Medio Ambiente</option>
-                <option value="4">Fundacion Salud Comunitaria</option>
-              </Form.Select>
-            </Form.Group>
+            {!isGuest && (
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-semibold">Causa Social</Form.Label>
+                <Form.Select
+                  name="causaSocial"
+                  value={causaSocialId}
+                  onChange={(e) => setCausaSocialId(e.target.value)}
+                  required
+                  disabled={loading || esReservado}
+                >
+                  <option value="">Selecciona una causa social...</option>
+                  <option value="1">Fundacion Educacion para Todos</option>
+                  <option value="2">Asociacion Proteccion Animal</option>
+                  <option value="3">Organizacion Medio Ambiente</option>
+                  <option value="4">Fundacion Salud Comunitaria</option>
+                </Form.Select>
+              </Form.Group>
+            )}
 
             <Button
               type="submit"
               variant="primary"
-              className="w-100 fw-semibold btn-ticketti"
-              disabled={loading || esReservado || !causaSocialId}
+              className={`resumen-carrito-boton-checkout ${isGuest ? 'resumen-carrito-boton-checkout-invitado' : ''}`}
+              disabled={loading || esReservado || (!isGuest && !causaSocialId)}
             >
               {esReservado
                 ? 'Reserva activa'
@@ -128,7 +139,7 @@ const ResumenCarrito = ({ resumen, onCheckout, loading }) => {
         )}
 
         {yaPagado && (
-          <Alert variant="success" className="text-center mb-0">
+          <Alert variant="success" className="resumen-carrito-alerta text-center mb-0">
             Pago confirmado ✓
           </Alert>
         )}

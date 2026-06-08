@@ -1,15 +1,15 @@
+import api from '@api/api';
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
-import api from '@services/api';
 import { Mail, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  Alert,
-  Badge,
-  Button,
-  Container,
-  Spinner,
-  Table,
+    Alert,
+    Badge,
+    Button,
+    Container,
+    Spinner,
+    Table,
 } from 'react-bootstrap';
 
 const TIPO_LABELS = {

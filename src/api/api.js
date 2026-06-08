@@ -1,7 +1,13 @@
 import axios from 'axios';
 
+/**
+ * URL base de la API
+ */
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
+/**
+ * Instancia de Axios configurada para la API
+ */
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
@@ -11,6 +17,12 @@ const api = axios.create({
   },
 });
 
+/**
+ * Verifica si una ruta es pública (no requiere autenticación)
+ *
+ * @param {Object} config - Configuración de la petición
+ * @returns {boolean} True si la ruta es pública
+ */
 const esRutaPublica = (config) => {
   const metodo = (config.method || 'get').toLowerCase();
   const url = config.url || '';
@@ -18,6 +30,9 @@ const esRutaPublica = (config) => {
   return metodo === 'post' && url === '/usuarios';
 };
 
+/**
+ * Interceptor de peticiones para agregar token de autenticación
+ */
 api.interceptors.request.use(
   (config) => {
     if (config.skipAuth) {
@@ -35,6 +50,9 @@ api.interceptors.request.use(
   }
 );
 
+/**
+ * Interceptor de respuestas para manejar errores HTTP
+ */
 api.interceptors.response.use(
   (response) => {
     return response;

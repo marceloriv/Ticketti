@@ -1,21 +1,23 @@
+import api from '@api/api';
+import { getCausasActivas, getOrganizaciones } from '@api/donacionesApi';
 import CommonCarousel from '@components/common/Carousel';
 import ProductCard from '@components/common/ProductCard';
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
-import api from '@services/api';
-import { getCausasActivas, getOrganizaciones } from '@services/donacionesApi';
+import { useAuth } from '@hooks/useAuth';
+import { useCarrito } from '@hooks/useCarrito';
+import { useCarritoGuest } from '@hooks/useCarritoGuest';
 import { Building2, Heart, Search } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { useCarrito } from '@hooks/useCarrito';
 import {
-  Alert,
-  Button,
-  Col,
-  Container,
-  Form,
-  InputGroup,
-  Row,
-  Spinner,
+    Alert,
+    Button,
+    Col,
+    Container,
+    Form,
+    InputGroup,
+    Row,
+    Spinner,
 } from 'react-bootstrap';
 
 const CATEGORIAS = [
@@ -28,25 +30,26 @@ const CATEGORIAS = [
 const HERO_SLIDES = [
   {
     id: 1,
-    imagen: '/public/img/Tour-Press-Photo-1-28ad2aa10b.webp',
+    imagen: '/img/Tour-Press-Photo-1-28ad2aa10b.webp',
     titulo: 'Mejores Eventos',
     subtitulo: 'Descubre los eventos más emocionantes de la ciudad.',
   },
   {
     id: 2,
-    imagen: '/public/img/dia_de_la_astronomia.jpg',
+    imagen: '/img/dia_de_la_astronomia.jpg',
     titulo: 'Experiencias únicas',
     subtitulo: 'Vive momentos inolvidables con Ticketti.',
   },
   {
     id: 3,
-    imagen: '/public/img/listicle_1686140315148_74ycs_1040x500.jpg',
+    imagen: '/img/listicle_1686140315148_74ycs_1040x500.jpg',
     titulo: 'Cultura y Entretenimiento',
     subtitulo: 'Desde eventos íntimos hasta grandes producciones.',
   },
 ];
 
 const Inicio = () => {
+  const { establecerCarritoId, isAuthenticated } = useAuth();
   const [eventos, setEventos] = useState([]);
   const [eventosFiltrados, setEventosFiltrados] = useState([]);
   const [categoriaActiva, setCategoriaActiva] = useState('todo');
@@ -58,11 +61,15 @@ const Inicio = () => {
   const [organizaciones, setOrganizaciones] = useState([]);
 
   // Carrito
-  const { inicializarCarrito, agregarEntrada } = useCarrito(null);
+  const [carritoId, setCarritoId] = useState(null);
+  const { inicializarCarrito, agregarEntrada } = useCarrito(carritoId);
+  const { agregarEntrada: guestAgregarEntrada } = useCarritoGuest();
   const [message, setMessage] = useState('');
   const [addingToCart, setAddingToCart] = useState(false);
 
-  //carga eventos
+  /**
+   * Carga los eventos desde la API
+   */
   const cargarEventos = useCallback(async () => {
     setCargando(true);
     setError(null);
@@ -87,7 +94,9 @@ const Inicio = () => {
     cargarEventos();
   }, [cargarEventos]);
 
-  // Carga causas y organizaciones
+  /**
+   * Carga las causas sociales y organizaciones
+   */
   useEffect(() => {
     const cargarCausas = async () => {
       try {
@@ -105,14 +114,23 @@ const Inicio = () => {
     cargarCausas();
   }, []);
 
+  /**
+   * Maneja el proceso de agregar una entrada al carrito desde la página de inicio
+   * Para usuarios invitados, usa localStorage
+   * Para usuarios autenticados, usa el backend
+   *
+   * @param {Object} evento - Objeto con los datos del evento
+   * @returns {Promise<void>} Promesa que se resuelve cuando se agrega la entrada
+   */
   const handleAddToCart = async (evento) => {
     if (addingToCart) return;
     setAddingToCart(true);
     try {
-      const { carritoId } = await inicializarCarrito();
-      if (!carritoId) throw new Error('No se pudo obtener el carrito');
-      await agregarEntrada({
+      // Solución temporal: usar siempre carrito de invitado hasta que el backend esté arreglado
+      guestAgregarEntrada({
         eventoId: evento.id,
+        eventoNombre: evento.nombre,
+        imagenUrl: evento.imagenUrl,
         tipoEntrada: 'General',
         cantidad: 1,
         precioUnitario: evento.precioEntrada || 0,
@@ -231,7 +249,7 @@ const Inicio = () => {
                         ubicacion: evento.recinto?.ubicacion || 'Ubicación por confirmar',
                         precio: evento.precioEntrada || 0,
                       }}
-                      onComprar={(id) => handleAddToCart(evento)}
+                      onComprar={() => handleAddToCart(evento)}
                     />
                   </Col>
                 ))}

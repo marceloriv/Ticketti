@@ -1,6 +1,6 @@
+import api from '@api/api';
 import axios from 'axios';
-import { useEffect, useState, useCallback } from 'react';
-import api from '../../services/api';
+import { useCallback, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 
 const TOKEN_KEY = 'token';
@@ -88,10 +88,73 @@ export function AuthProvider({ children }) {
       setToken(data.token);
       setUsuario(usuarioData);
 
+      // Solución temporal: no migrar carrito de invitado hasta que el backend esté arreglado
+      // migrarCarritoInvitado(usuarioData.id);
+
       return data.token;
     } catch (err) {
       const msg = err.response?.data?.mensaje || 'Error al iniciar sesión';
       throw new Error(msg);
+    }
+  };
+
+  // Migrar carrito de localStorage al backend
+  /**
+   * Migra el carrito de compras de un usuario invitado al backend
+   * cuando el usuario inicia sesión por primera vez.
+   *
+   * Este método:
+   * 1. Lee el carrito del localStorage
+   * 2. Crea un nuevo carrito en el backend para el usuario autenticado
+   * 3. Agrega cada entrada del carrito de invitado al carrito del backend
+   * 4. Limpia el localStorage después de una migración exitosa
+   *
+   * @param {number} usuarioId - ID del usuario autenticado
+   * @returns {Promise<void>} Promesa que se resuelve cuando la migración se completa
+   */
+  const migrarCarritoInvitado = async (usuarioId) => {
+    /** Clave utilizada para almacenar el carrito de invitado en localStorage */
+    const GUEST_CART_KEY = 'guestCart';
+    try {
+      const guestCartStr = localStorage.getItem(GUEST_CART_KEY);
+      if (!guestCartStr) return;
+
+      const guestCart = JSON.parse(guestCartStr);
+      if (!guestCart || guestCart.length === 0) return;
+
+      // Crear carrito para el usuario
+      const carritoResponse = await api.post('/Carrito/crear', null, {
+        headers: {
+          'X-Usuario-Id': usuarioId,
+          'X-Rol-Usuario-Id': 'CLIENTE',
+        },
+      });
+
+      const carritoId = carritoResponse.data?.data?.idCarrito;
+      if (!carritoId) return;
+
+      // Agregar cada entrada del carrito de invitado
+      for (const entrada of guestCart) {
+        try {
+          await api.post(`/Carrito/${carritoId}/entradas`, {
+            eventoId: entrada.eventoId,
+            tipoEntrada: entrada.tipoEntrada,
+            cantidad: entrada.cantidad,
+            precioUnitario: entrada.precioUnitario,
+          }, {
+            headers: {
+              'X-Usuario-Id': usuarioId,
+            },
+          });
+        } catch (err) {
+          console.error('Error migrando entrada:', err);
+        }
+      }
+
+      // Limpiar carrito de invitado después de migrar
+      localStorage.removeItem(GUEST_CART_KEY);
+    } catch (err) {
+      console.error('Error migrando carrito de invitado:', err);
     }
   };
 

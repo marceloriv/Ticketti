@@ -14,6 +14,7 @@ export default defineConfig({
       '@pages': path.resolve(process.cwd(), './src/pages'),
       '@routes': path.resolve(process.cwd(), './src/routes'),
       '@services': path.resolve(process.cwd(), './src/services'),
+      '@api': path.resolve(process.cwd(), './src/api'),
       '@contexts': path.resolve(process.cwd(), './src/contexts'),
       '@hooks': path.resolve(process.cwd(), './src/hooks'),
       '@utils': path.resolve(process.cwd(), './src/utils'),
