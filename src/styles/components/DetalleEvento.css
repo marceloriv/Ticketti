@@ -1,0 +1,166 @@
+/**
+ * Estilos para la página de detalle de evento
+ */
+
+.detalle-evento-container {
+  padding: 2rem 0;
+  min-height: calc(100vh - 200px);
+}
+
+.detalle-evento-header {
+  background: linear-gradient(135deg, #2cacad 0%, #1a8a8b 100%);
+  color: white;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(44, 172, 173, 0.3);
+}
+
+.detalle-evento-titulo {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.detalle-evento-subtitulo {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.detalle-evento-imagen {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  margin-bottom: 2rem;
+}
+
+.detalle-evento-info-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.detalle-evento-info-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.detalle-evento-info-icono {
+  color: #2cacad;
+  margin-right: 0.75rem;
+}
+
+.detalle-evento-info-etiqueta {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.detalle-evento-info-valor {
+  font-size: 1.1rem;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.detalle-evento-descripcion {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.detalle-evento-descripcion-titulo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #2cacad;
+}
+
+.detalle-evento-descripcion-texto {
+  font-size: 1rem;
+  color: #34495e;
+  line-height: 1.8;
+}
+
+.detalle-evento-precio-card {
+  background: linear-gradient(135deg, #2cacad 0%, #1a8a8b 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 2rem;
+  position: sticky;
+  top: 100px;
+  box-shadow: 0 8px 20px rgba(44, 172, 173, 0.3);
+}
+
+.detalle-evento-precio-etiqueta {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+}
+
+.detalle-evento-precio-valor {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+}
+
+.detalle-evento-boton-agregar {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: white;
+  color: #2cacad;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.detalle-evento-boton-agregar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
+}
+
+.detalle-evento-boton-agregar:disabled {
+  background: #bdc3c7;
+  color: #7f8c8d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.detalle-evento-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .detalle-evento-titulo {
+    font-size: 1.8rem;
+  }
+
+  .detalle-evento-imagen {
+    height: 250px;
+  }
+
+  .detalle-evento-precio-card {
+    position: static;
+  }
+}
