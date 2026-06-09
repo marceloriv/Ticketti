@@ -52,8 +52,12 @@ api.interceptors.request.use(
           // El JWT tiene el usuarioId en el claim "usuarioId"
           // Convertir a Number para asegurar que el backend reciba un Long
           const usuarioId = Number(decoded.usuarioId);
-          config.headers['X-Usuario-Id'] = usuarioId;
-          console.log('[API] X-Usuario-Id header agregado:', usuarioId);
+          if (!Number.isNaN(usuarioId)) {
+            config.headers['X-Usuario-Id'] = usuarioId;
+            console.log('[API] X-Usuario-Id header agregado:', usuarioId);
+          } else {
+            console.warn('[API] usuarioId no es un número válido:', decoded.usuarioId);
+          }
         } else {
           console.warn('[API] JWT no tiene claim usuarioId. Claims disponibles:', Object.keys(decoded));
         }
@@ -81,11 +85,7 @@ api.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           console.error('Sesión expirada o no autorizada');
-          // Solo redirigir si realmente habia una sesion activa.
-          if (localStorage.getItem('token')) {
-            localStorage.removeItem('token');
-            globalThis.location.href = '/login';
-          }
+          // No eliminar token ni redirigir automáticamente para evitar deslogueos indeseados
           break;
         case 403:
           console.error('Acceso prohibido');

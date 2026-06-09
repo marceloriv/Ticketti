@@ -1,6 +1,7 @@
 import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
 import { useCarritoGuest } from '@hooks/useCarritoGuest';
+import { jwtDecode } from 'jwt-decode';
 import { LogOut, ShoppingCart, Ticket, User } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
 import { Button, Container, Nav, Navbar, Stack } from 'react-bootstrap';
@@ -45,7 +46,7 @@ const Header = () => {
     if (!token) return null;
 
     try {
-      return JSON.parse(atob(token.split('.')[1]));
+      return jwtDecode(token);
     } catch {
       return null;
     }

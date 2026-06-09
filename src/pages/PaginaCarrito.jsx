@@ -46,7 +46,9 @@ const PaginaCarrito = () => {
 
   useEffect(() => {
     if (carritoId && !isGuest) {
-      obtenerResumen().catch(() => {});
+      obtenerResumen().catch((err) => {
+        console.error('[PaginaCarrito] Error al obtener resumen:', err);
+      });
     }
   }, [carritoId, obtenerResumen, isGuest]);
 
@@ -69,7 +71,7 @@ const PaginaCarrito = () => {
     try {
       await eliminarEntrada(detalleId);
     } catch (err) {
-      console.error('Error al eliminar entrada:', err);
+      console.error('[PaginaCarrito] Error al eliminar entrada:', err);
     }
   };
 
@@ -81,7 +83,7 @@ const PaginaCarrito = () => {
     try {
       await renovarReserva();
     } catch (err) {
-      console.error('Error al renovar reserva:', err);
+      console.error('[PaginaCarrito] Error al renovar reserva:', err);
     }
   };
 
@@ -103,7 +105,7 @@ const PaginaCarrito = () => {
         navigate('/perfil');
       }, 2500);
     } catch (err) {
-      console.error('Error al iniciar checkout:', err);
+      console.error('[PaginaCarrito] Error al iniciar checkout:', err);
     }
   };
 

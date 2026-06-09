@@ -269,10 +269,9 @@ export const useCarrito = (initialCarritoId) => {
       setLoading(true);
       setError(null);
       try {
+        // Generar idempotencyKey más robusto usando timestamp + random + carritoId
         const idempotencyKey =
-          'kilo-' +
-          Date.now().toString(36) +
-          Math.random().toString(36).substring(2, 10);
+          `checkout-${carritoId}-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 10)}`;
         const response = await api.post(
           `/Carrito/checkout/${carritoId}`,
           {
@@ -363,8 +362,9 @@ export const useCarrito = (initialCarritoId) => {
         const id = activo.idCarrito || activo.id;
         return { carritoId: id, carrito: activo };
       }
-    } catch {
-      // silecioso — intentamos crear
+    } catch (err) {
+      console.warn('[Carrito] Error al listar carritos existentes:', err);
+      // Continuar intentando crear uno nuevo
     }
 
     // 2. No hay carrito activo → crear uno nuevo
@@ -373,7 +373,8 @@ export const useCarrito = (initialCarritoId) => {
       if (!nuevo) return { carritoId: null, carrito: null };
       const id = nuevo?.idCarrito || nuevo?.id;
       return { carritoId: id || null, carrito: nuevo };
-    } catch {
+    } catch (err) {
+      console.error('[Carrito] Error al crear nuevo carrito:', err);
       return { carritoId: null, carrito: null };
     }
   }, [crearCarrito, listarCarritos]);

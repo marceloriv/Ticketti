@@ -160,24 +160,13 @@ const DetalleEvento = () => {
       // Navegar al carrito
       navigate(`/carrito/${idCarrito}`);
     } catch (err) {
-      // Fallback: usar carrito de invitado si el backend falla
-      console.warn('Backend falló, usando carrito de invitado como fallback:', err);
-      try {
-        guestAgregarEntrada({
-          eventoId: Number(id),
-          tipoEntrada: 'General',
-          cantidad,
-          precioUnitario: evento?.precioEntrada || 0,
-          eventoNombre: evento?.nombre,
-        });
-        setShowModal(false);
-        setCantidad(1);
-        navigate('/carrito');
-      } catch (guestError) {
-        setErrorCarrito(
-          guestError.message || 'Error al agregar entrada al carrito.'
-        );
-      }
+      // Mostrar error explícito en lugar de fallback silencioso a carrito de invitado
+      console.error('[DetalleEvento] Error al agregar entrada al carrito:', err);
+      setErrorCarrito(
+        err.response?.data?.mensaje ||
+        err.response?.data?.message ||
+        'Error al agregar entrada al carrito. Intenta nuevamente.'
+      );
     }
   };
 
@@ -210,7 +199,13 @@ const DetalleEvento = () => {
         <Container>
           <Button
             variant="link"
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              try {
+                navigate(-1);
+              } catch {
+                navigate('/home');
+              }
+            }}
             className="mb-4 p-0"
           >
             ← Volver
@@ -219,9 +214,12 @@ const DetalleEvento = () => {
           <Row>
             <Col md={6}>
               <img
-                src={evento.imagenUrl || '/assets/hero.png'}
+                src={evento.imagenUrl || 'https://via.placeholder.com/600x400?text=Ticketti'}
                 alt={evento.nombre}
                 className="detalle-evento-imagen"
+                onError={(e) => {
+                  e.target.src = 'https://via.placeholder.com/600x400?text=Ticketti';
+                }}
               />
             </Col>
 
@@ -296,8 +294,10 @@ const DetalleEvento = () => {
             value={cantidad}
             onChange={(e) => {
               const val = Number(e.target.value);
-              setCantidad(val);
-              setErrorCarrito('');
+              if (!Number.isNaN(val) && val >= 1 && val <= 4) {
+                setCantidad(val);
+                setErrorCarrito('');
+              }
             }}
             className="mb-3"
           />

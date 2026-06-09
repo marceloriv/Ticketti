@@ -125,8 +125,10 @@ export function AuthProvider({ children }) {
       setToken(data.token);
       setUsuario(usuarioData);
 
-      // Migrar carrito de invitado al backend si existe
-      migrarCarritoInvitado(usuarioData.id);
+      // Migrar carrito de invitado al backend si existe (fire-and-forget)
+      migrarCarritoInvitado().catch((err) => {
+        console.error('[AuthProvider] Error migrando carrito de invitado:', err);
+      });
 
       return data.token;
     } catch (err) {
@@ -146,10 +148,9 @@ export function AuthProvider({ children }) {
    * 3. Agrega cada entrada del carrito de invitado al carrito del backend
    * 4. Limpia el localStorage después de una migración exitosa
    *
-   * @param {number} usuarioId - ID del usuario autenticado
    * @returns {Promise<void>} Promesa que se resuelve cuando la migración se completa
    */
-  const migrarCarritoInvitado = async (usuarioId) => {
+  const migrarCarritoInvitado = async () => {
     /** Clave utilizada para almacenar el carrito de invitado en localStorage */
     const GUEST_CART_KEY = 'guestCart';
     try {
@@ -159,18 +160,13 @@ export function AuthProvider({ children }) {
       const guestCart = JSON.parse(guestCartStr);
       if (!guestCart || guestCart.length === 0) return;
 
-      // Crear carrito para el usuario
-      const carritoResponse = await api.post('/Carrito/crear', null, {
-        headers: {
-          'X-Usuario-Id': usuarioId,
-          'X-Rol-Usuario-Id': 'CLIENTE',
-        },
-      });
+      // Crear carrito para el usuario (el interceptor agrega headers automáticamente)
+      const carritoResponse = await api.post('/Carrito/crear', null);
 
       const carritoId = carritoResponse.data?.data?.idCarrito;
       if (!carritoId) return;
 
-      // Agregar cada entrada del carrito de invitado
+      // Agregar cada entrada del carrito de invitado (el interceptor agrega headers automáticamente)
       for (const entrada of guestCart) {
         try {
           await api.post(`/Carrito/${carritoId}/entradas`, {
@@ -178,10 +174,6 @@ export function AuthProvider({ children }) {
             tipoEntrada: entrada.tipoEntrada,
             cantidad: entrada.cantidad,
             precioUnitario: entrada.precioUnitario,
-          }, {
-            headers: {
-              'X-Usuario-Id': usuarioId,
-            },
           });
         } catch (err) {
           console.error('Error migrando entrada:', err);
