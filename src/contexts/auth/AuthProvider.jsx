@@ -1,5 +1,6 @@
 import api from '@api/api';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 import { useCallback, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 
@@ -35,13 +36,37 @@ export function AuthProvider({ children }) {
     const tokenGuardado = localStorage.getItem(TOKEN_KEY);
     if (tokenGuardado) {
       setToken(tokenGuardado);
-    }
-    const usuarioGuardado = localStorage.getItem(USER_KEY);
-    if (usuarioGuardado) {
-      try {
-        setUsuario(JSON.parse(usuarioGuardado));
-      } catch {
-        localStorage.removeItem(USER_KEY);
+
+      // Decodificar token para extraer usuarioId si no hay usuario guardado
+      const usuarioGuardado = localStorage.getItem(USER_KEY);
+      if (!usuarioGuardado) {
+        try {
+          const decodedToken = jwtDecode(tokenGuardado);
+          const usuarioData = {
+            rol: decodedToken.rol || 'CLIENTE',
+            id: decodedToken.usuarioId || null,
+            correo: decodedToken.sub || null,
+          };
+          localStorage.setItem(USER_KEY, JSON.stringify(usuarioData));
+          setUsuario(usuarioData);
+        } catch (e) {
+          console.warn('No se pudo decodificar el token JWT:', e);
+        }
+      } else {
+        try {
+          setUsuario(JSON.parse(usuarioGuardado));
+        } catch {
+          localStorage.removeItem(USER_KEY);
+        }
+      }
+    } else {
+      const usuarioGuardado = localStorage.getItem(USER_KEY);
+      if (usuarioGuardado) {
+        try {
+          setUsuario(JSON.parse(usuarioGuardado));
+        } catch {
+          localStorage.removeItem(USER_KEY);
+        }
       }
     }
     setLoading(false);
@@ -80,7 +105,19 @@ export function AuthProvider({ children }) {
         throw new Error(data?.mensaje || 'Token no recibido');
       }
 
-      const usuarioData = data.usuario || { rol: 'CLIENTE', id: null };
+      // Decodificar JWT para extraer usuarioId
+      let decodedToken = {};
+      try {
+        decodedToken = jwtDecode(data.token);
+      } catch (e) {
+        console.warn('No se pudo decodificar el token JWT:', e);
+      }
+
+      const usuarioData = data.usuario || {
+        rol: decodedToken.rol || 'CLIENTE',
+        id: decodedToken.usuarioId || null,
+        correo: decodedToken.sub || null,
+      };
 
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(USER_KEY, JSON.stringify(usuarioData));
@@ -88,8 +125,8 @@ export function AuthProvider({ children }) {
       setToken(data.token);
       setUsuario(usuarioData);
 
-      // Solución temporal: no migrar carrito de invitado hasta que el backend esté arreglado
-      // migrarCarritoInvitado(usuarioData.id);
+      // Migrar carrito de invitado al backend si existe
+      migrarCarritoInvitado(usuarioData.id);
 
       return data.token;
     } catch (err) {

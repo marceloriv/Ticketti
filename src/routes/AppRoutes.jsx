@@ -73,7 +73,6 @@ export default function AppRoutes() {
         element={<ProtectedRoute element={<HistorialNotificaciones />} />}
       />
 
-      <Route path="/carrito" element={<PaginaCarrito />} />
       <Route path="/carrito/:carritoId" element={<PaginaCarrito />} />
 
       {/* ========== RUTAS PROTEGIDAS - ADMIN PLATAFORMA ========== */}

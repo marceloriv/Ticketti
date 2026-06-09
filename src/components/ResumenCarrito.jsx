@@ -129,11 +129,13 @@ const ResumenCarrito = ({ resumen, onCheckout, loading, isGuest = false }) => {
               className={`resumen-carrito-boton-checkout ${isGuest ? 'resumen-carrito-boton-checkout-invitado' : ''}`}
               disabled={loading || esReservado || (!isGuest && !causaSocialId)}
             >
-              {esReservado
-                ? 'Reserva activa'
-                : loading
-                  ? 'Procesando...'
-                  : 'Ir a Pagar'}
+              {isGuest
+                ? 'Inicia sesión para comprar'
+                : esReservado
+                  ? 'Reserva activa'
+                  : loading
+                    ? 'Procesando...'
+                    : 'Ir a Pagar'}
             </Button>
           </Form>
         )}

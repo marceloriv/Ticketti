@@ -34,8 +34,7 @@ const PaginaCarrito = () => {
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
 
   /** Indica si el usuario es un invitado (no autenticado) */
-  // Solución temporal: tratar a todos como invitados hasta que el backend esté arreglado
-  const isGuest = true;
+  const isGuest = !isAuthenticated;
   /** Items del carrito (localStorage para invitados, backend para autenticados) */
   const cartItems = isGuest ? guestCart : (resumen?.items || []);
   /** Subtotal de las entradas (sin donación) */
@@ -110,17 +109,10 @@ const PaginaCarrito = () => {
 
   /**
    * Maneja el checkout para usuarios invitados
-   * Si el usuario está autenticado, procede con el checkout normal
-   * Si no está autenticado, redirige a login
+   * Redirige a la página de login para que el usuario se registre
    */
   const handleGuestCheckout = () => {
-    if (isAuthenticated) {
-      // Usuario autenticado pero usando carrito de invitado (solución temporal)
-      // Navegar directamente al perfil o a una página de checkout para invitados
-      navigate('/perfil');
-    } else {
-      navigate('/login');
-    }
+    navigate('/login');
   };
 
   if (isGuest && guestIsEmpty) {
@@ -146,7 +138,7 @@ const PaginaCarrito = () => {
     <Container className="pagina-carrito-container">
       <h2 className="pagina-carrito-titulo">Carrito de Compras</h2>
       <p className="pagina-carrito-subtitulo">
-        {isAuthenticated ? 'Revisa tus entradas antes de pagar' : 'Carrito de invitado - Inicia sesión para completar tu compra'}
+        {isGuest ? 'Carrito de invitado - Inicia sesión para completar tu compra' : 'Revisa tus entradas antes de pagar'}
       </p>
 
       {error && <Alert variant="danger" className="pagina-carrito-alerta">{error}</Alert>}
@@ -157,7 +149,7 @@ const PaginaCarrito = () => {
         </Alert>
       )}
 
-      {!isAuthenticated && (
+      {isGuest && (
         <Alert variant="info" className="pagina-carrito-alerta">
           Estás navegando como invitado. Para completar tu compra, necesitas tener una cuenta.
           <Button variant="link" className="p-0 ms-2" onClick={() => navigate('/login')}>

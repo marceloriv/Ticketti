@@ -368,7 +368,7 @@ function MisComprasTab({ usuarioId }) {
                 <td>
                   <Button
                     as={Link}
-                    to="/carrito"
+                    to={`/carrito/${idCarrito}`}
                     variant="outline-primary"
                     size="sm"
                   >

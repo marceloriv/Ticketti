@@ -23,7 +23,7 @@ import { useCallback, useState } from 'react';
  * @returns {Function} renovarReserva - Función para renovar la reserva del carrito
  * @returns {Function} listarCarritos - Función para listar todos los carritos del usuario
  */
-export const useCarrito = (carritoId) => {
+export const useCarrito = (initialCarritoId) => {
   /** Indica si una operación está en curso */
   const [loading, setLoading] = useState(false);
   /** Mensaje de error si existe */
@@ -32,6 +32,8 @@ export const useCarrito = (carritoId) => {
   const [resumen, setResumen] = useState(null);
   /** Carrito recién creado */
   const [carritoCreado, setCarritoCreado] = useState(null);
+  /** ID del carrito actual */
+  const [carritoId, setCarritoId] = useState(initialCarritoId);
 
   /**
    * Limpia el mensaje de error
@@ -94,18 +96,39 @@ export const useCarrito = (carritoId) => {
    * @returns {Promise<Object>} Promesa que resuelve con el resumen del carrito
    * @throws {Error} Si hay un error al obtener el resumen
    */
-  const obtenerResumen = useCallback(async () => {
-    if (!carritoId) return;
+  const obtenerResumen = useCallback(async (targetCarritoId = null) => {
+    const idCarrito = targetCarritoId || carritoId;
+    if (!idCarrito) return;
 
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get(`/Carrito/resumen/${carritoId}`);
+      const response = await api.get(`/Carrito/resumen/${idCarrito}`);
       // respuesta envuelta en ApiRespuestaDto → { exito, mensaje, data }
       setResumen(response.data?.data || null);
       setCarritoCreado(null);
       return response.data?.data;
     } catch (err) {
+      // Si el carrito no existe (404), crear uno nuevo
+      if (err.response?.status === 404) {
+        console.log('[Carrito] Carrito no encontrado, creando nuevo carrito');
+        try {
+          const responseCrear = await api.post('/Carrito/crear');
+          const nuevoCarrito = responseCrear.data?.data;
+          if (nuevoCarrito) {
+            const nuevoId = nuevoCarrito?.idCarrito || nuevoCarrito?.id;
+            setCarritoId(nuevoId);
+            localStorage.setItem('carritoId', nuevoId);
+            // Intentar obtener el resumen del nuevo carrito
+            const response = await api.get(`/Carrito/resumen/${nuevoId}`);
+            setResumen(response.data?.data || null);
+            setCarritoCreado(null);
+            return response.data?.data;
+          }
+        } catch (crearErr) {
+          console.error('[Carrito] Error al crear nuevo carrito:', crearErr);
+        }
+      }
       const msg =
         err.response?.data?.mensaje ||
         err.response?.data?.message ||
@@ -126,22 +149,26 @@ export const useCarrito = (carritoId) => {
    * @param {string} entradaData.tipoEntrada - Tipo de entrada
    * @param {number} entradaData.cantidad - Cantidad de entradas
    * @param {number} entradaData.precioUnitario - Precio unitario
+   * @param {number} targetCarritoId - ID del carrito (opcional, usa el estado interno si no se proporciona)
    * @returns {Promise<Object>} Promesa que resuelve con la entrada agregada
    * @throws {Error} Si hay un error al agregar la entrada
    */
   const agregarEntrada = useCallback(
-    async (entradaData) => {
-      if (!carritoId) return;
+    async (entradaData, targetCarritoId = null) => {
+      const idCarrito = targetCarritoId || carritoId;
+      if (!idCarrito) {
+        throw new Error('No hay carrito disponible para agregar entradas');
+      }
 
       setLoading(true);
       setError(null);
       try {
         const response = await api.post(
-          `/Carrito/${carritoId}/entradas`,
+          `/Carrito/${idCarrito}/entradas`,
           entradaData
         );
         // respuesta envuelta en ApiRespuestaDto
-        await obtenerResumen();
+        await obtenerResumen(idCarrito);
         return response.data?.data;
       } catch (err) {
         const msg =
@@ -352,6 +379,8 @@ export const useCarrito = (carritoId) => {
   }, [crearCarrito, listarCarritos]);
 
   return {
+    carritoId,
+    setCarritoId,
     resumen,
     carritoCreado,
     loading,

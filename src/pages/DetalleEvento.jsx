@@ -3,6 +3,7 @@ import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
+import { jwtDecode } from 'jwt-decode';
 import { AlertCircle, Calendar, MapPin, Ticket, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
@@ -38,11 +39,26 @@ const formatearFecha = (dateString) => {
   }).format(new Date(dateString));
 };
 
+// Helper para obtener usuarioId del JWT si no está en usuario.id
+const getUsuarioId = (usuario) => {
+  if (usuario?.id) return usuario.id;
+  try {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decoded = jwtDecode(token);
+      return decoded.usuarioId;
+    }
+  } catch (e) {
+    console.warn('No se pudo decodificar el token:', e);
+  }
+  return null;
+};
+
 const DetalleEvento = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   /** Indica si el usuario está autenticado en el sistema */
-  const { usuario, isAuthenticated } = useAuth();
+  const { usuario, isAuthenticated, establecerCarritoId } = useAuth();
   const { agregarEntrada, inicializarCarrito, loading: loadingCarrito } = useCarrito(null);
   /** Función para agregar entradas al carrito de invitado (localStorage) */
   const { agregarEntrada: guestAgregarEntrada } = useCarritoGuest();
@@ -76,6 +92,7 @@ const DetalleEvento = () => {
    * @returns {Promise<void>} Promesa que se resuelve cuando la entrada se agrega
    */
   const manejarAgregarAlCarrito = async () => {
+    console.log('[DetalleEvento] Iniciando agregar al carrito');
     setErrorCarrito('');
 
     if (cantidad < 1 || cantidad > 4) {
@@ -83,21 +100,84 @@ const DetalleEvento = () => {
       return;
     }
 
-    // Solución temporal: usar siempre carrito de invitado hasta que el backend esté arreglado
+    // Guest user: add to localStorage cart
+    if (!isAuthenticated) {
+      console.log('[DetalleEvento] Usuario no autenticado, usando carrito guest');
+      try {
+        guestAgregarEntrada({
+          eventoId: Number(id),
+          tipoEntrada: 'General',
+          cantidad,
+          precioUnitario: evento?.precioEntrada || 0,
+          eventoNombre: evento?.nombre,
+        });
+
+        setShowModal(false);
+        setCantidad(1);
+        navigate('/carrito');
+      } catch (err) {
+        setErrorCarrito(err.message || 'Error al agregar entrada al carrito.');
+      }
+      return;
+    }
+
+    // Authenticated user: add to backend cart with fallback
+    const usuarioId = getUsuarioId(usuario);
+    if (!usuarioId) {
+      console.log('[DetalleEvento] Usuario sin ID, redirigiendo a login');
+      navigate('/login');
+      return;
+    }
+
     try {
-      guestAgregarEntrada({
-        eventoId: Number(id),
-        tipoEntrada: 'General',
-        cantidad,
-        precioUnitario: evento?.precioEntrada || 0,
-        eventoNombre: evento?.nombre,
-      });
+      console.log('[DetalleEvento] Usuario autenticado, inicializando carrito');
+      // Crear o recuperar carrito activo del usuario
+      const { carritoId: idCarrito } = await inicializarCarrito();
+      console.log('[DetalleEvento] Carrito inicializado con ID:', idCarrito);
+      if (!idCarrito) {
+        setErrorCarrito('No se pudo crear el carrito. Intenta nuevamente.');
+        return;
+      }
+      // Actualizar el contexto de autenticación con el nuevo carritoId
+      establecerCarritoId(idCarrito);
+
+      // Agregar entrada al carrito
+      console.log('[DetalleEvento] Agregando entrada al carrito:', idCarrito);
+      await agregarEntrada(
+        {
+          eventoId: Number(id),
+          tipoEntrada: 'General',
+          cantidad,
+          precioUnitario: evento?.precioEntrada || 0,
+        },
+        idCarrito
+      );
+      console.log('[DetalleEvento] Entrada agregada exitosamente');
 
       setShowModal(false);
       setCantidad(1);
-      navigate('/carrito');
+
+      // Navegar al carrito
+      navigate(`/carrito/${idCarrito}`);
     } catch (err) {
-      setErrorCarrito(err.message || 'Error al agregar entrada al carrito.');
+      // Fallback: usar carrito de invitado si el backend falla
+      console.warn('Backend falló, usando carrito de invitado como fallback:', err);
+      try {
+        guestAgregarEntrada({
+          eventoId: Number(id),
+          tipoEntrada: 'General',
+          cantidad,
+          precioUnitario: evento?.precioEntrada || 0,
+          eventoNombre: evento?.nombre,
+        });
+        setShowModal(false);
+        setCantidad(1);
+        navigate('/carrito');
+      } catch (guestError) {
+        setErrorCarrito(
+          guestError.message || 'Error al agregar entrada al carrito.'
+        );
+      }
     }
   };
 
