@@ -122,6 +122,10 @@ export function AuthProvider({ children }) {
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(USER_KEY, JSON.stringify(usuarioData));
 
+      // Limpiar carritoId del localStorage para forzar que se busque un nuevo carrito activo
+      localStorage.removeItem(CARRITO_ID_KEY);
+      setCarritoIdState(null);
+
       setToken(data.token);
       setUsuario(usuarioData);
 
