@@ -4,33 +4,68 @@
 
 .resumen-carrito-container {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+}
+
+.resumen-carrito-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.resumen-carrito-header-icon {
+  color: #2cacad;
+  flex-shrink: 0;
 }
 
 .resumen-carrito-titulo {
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #2c3e50;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #2cacad;
+  margin-bottom: 0;
+}
+
+.resumen-carrito-estados {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.resumen-carrito-estado-badge {
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+}
+
+.resumen-carrito-detalles {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid #e9ecef;
 }
 
 .resumen-carrito-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 0.75rem 0;
   margin-bottom: 0.5rem;
-  border-bottom: 1px solid #ecf0f1;
+  border-bottom: 1px solid #f1f3f4;
 }
 
-.resumen-carrito-fila:last-child {
+.resumen-carrito-fila:last-of-type {
   border-bottom: none;
 }
 
 .resumen-carrito-etiqueta {
   font-size: 0.95rem;
-  color: #7f8c8d;
+  color: #6c757d;
   font-weight: 500;
 }
 
@@ -40,14 +75,38 @@
   font-weight: 600;
 }
 
+.resumen-carrito-donacion {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  padding: 1rem;
+  border-radius: 10px;
+  margin: 1rem 0;
+  border-left: 4px solid #ff9800;
+}
+
+.resumen-carrito-donacion-icon {
+  color: #ff9800;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.resumen-carrito-donacion-texto {
+  font-size: 0.9rem;
+  color: #e65100;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 .resumen-carrito-total {
-  padding: 1.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 0;
   margin-top: 1rem;
   border-top: 2px solid #2cacad;
 }
 
 .resumen-carrito-total-etiqueta {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #2c3e50;
 }
@@ -61,28 +120,31 @@
   background-clip: text;
 }
 
-.resumen-carrito-donacion {
-  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-  padding: 1rem;
-  border-radius: 8px;
-  margin: 1rem 0;
-  border-left: 4px solid #ff9800;
+.resumen-carrito-label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
 }
 
-.resumen-carrito-donacion-texto {
-  font-size: 0.9rem;
-  color: #e65100;
-  font-weight: 500;
+.resumen-carrito-select {
+  border-radius: 8px;
+  border-color: #dee2e6;
+  padding: 0.6rem;
+}
+
+.resumen-carrito-select:focus {
+  border-color: #2cacad;
+  box-shadow: 0 0 0 0.2rem rgba(44, 172, 173, 0.15);
 }
 
 .resumen-carrito-boton-checkout {
   width: 100%;
   padding: 1rem;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   background: linear-gradient(135deg, #2cacad 0%, #1a8a8b 100%);
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   color: white;
   transition: all 0.3s ease;
   margin-top: 1rem;
@@ -91,6 +153,7 @@
 .resumen-carrito-boton-checkout:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(44, 172, 173, 0.4);
+  background: linear-gradient(135deg, #1a8a8b 0%, #0f6a6b 100%);
 }
 
 .resumen-carrito-boton-checkout:disabled {
@@ -106,9 +169,24 @@
 
 .resumen-carrito-boton-checkout-invitado:hover {
   box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+  background: linear-gradient(135deg, #2980b9 0%, #1a5276 100%);
 }
 
 .resumen-carrito-alerta {
   margin-bottom: 1rem;
   font-size: 0.9rem;
+  border-radius: 8px;
+}
+
+.resumen-carrito-footer {
+  text-align: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.resumen-carrito-items-badge {
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
 }

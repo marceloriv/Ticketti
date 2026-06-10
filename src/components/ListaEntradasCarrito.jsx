@@ -1,5 +1,5 @@
-import { RefreshCw, Trash } from 'lucide-react';
-import { Alert, Badge, Button, Card, Col, Row } from 'react-bootstrap';
+import { RefreshCw, Ticket, Trash } from 'lucide-react';
+import { Badge, Button, Card } from 'react-bootstrap';
 import '../styles/components/ListaEntradasCarrito.css';
 
 const ACCENT_COLOR = '#2CACAD';
@@ -33,9 +33,13 @@ const ListaEntradasCarrito = ({ entradas, onEliminar, onRenovar, puedeRenovar, l
 
   if (!items || items.length === 0) {
     return (
-      <Alert variant="info" className="text-center">
-        Tu carrito está vacío. Agrega entradas para comenzar tu compra.
-      </Alert>
+      <Card className="lista-entradas-vacio">
+        <Card.Body className="text-center py-5">
+          <Ticket size={48} className="text-muted mb-3" />
+          <h5 className="text-muted">Tu carrito está vacío</h5>
+          <p className="text-muted small">Agrega entradas para comenzar tu compra.</p>
+        </Card.Body>
+      </Card>
     );
   }
 
@@ -55,46 +59,62 @@ const ListaEntradasCarrito = ({ entradas, onEliminar, onRenovar, puedeRenovar, l
         return (
           <Card key={uniqueKey} className="lista-entradas-ticketti">
             <Card.Body>
-              <Row className="align-items-center">
-                <Col md={6}>
-                  <h6 className="lista-entradas-nombre">{eventoNombre}</h6>
-                  <p className="lista-entradas-tipo">{tipoEntrada}</p>
-                  <Badge className="lista-entradas-badge">
-                    Cantidad: {cantidad}
-                  </Badge>
-                </Col>
-                <Col md={3} className="text-center">
-                  <div className="lista-entradas-precio">{formatearMoneda(precioUnitario)} c/u</div>
-                  <div className="lista-entradas-subtotal">Subtotal: {formatearMoneda(subtotal)}</div>
-                </Col>
-                <Col md={3} className="text-end d-flex flex-column gap-2">
-                  <div className="lista-entradas-total">
-                    {formatearMoneda(subtotal)}
+              <div className="lista-entradas-row">
+                <div className="lista-entradas-col lista-entradas-col-info">
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="lista-entradas-icono">
+                      <Ticket size={24} className="text-primary" />
+                    </div>
+                    <div className="flex-grow-1">
+                      <h6 className="lista-entradas-nombre">{eventoNombre}</h6>
+                      <div className="d-flex align-items-center gap-2">
+                        <Badge className="lista-entradas-badge">
+                          {tipoEntrada}
+                        </Badge>
+                        <Badge bg="light" text="dark" className="lista-entradas-cantidad-badge">
+                          x{cantidad}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    onClick={() => onEliminar && onEliminar(detalleId, item)}
-                    disabled={loading}
-                    className="lista-entradas-boton-eliminar"
-                  >
-                    <Trash size={14} />
-                    Eliminar
-                  </Button>
-                  {onRenovar && puedeRenovar && (
-                    <Button
-                      variant="outline-info"
-                      size="sm"
-                      onClick={onRenovar}
-                      disabled={loading}
-                      className="lista-entradas-boton-renovar"
-                    >
-                      <RefreshCw size={14} />
-                      Renovar reserva
-                    </Button>
-                  )}
-                </Col>
-              </Row>
+                </div>
+                <div className="lista-entradas-col lista-entradas-col-precio">
+                  <div className="lista-entradas-precio-container">
+                    <div className="lista-entradas-precio">{formatearMoneda(precioUnitario)}</div>
+                    <small className="text-muted">c/u</small>
+                  </div>
+                </div>
+                <div className="lista-entradas-col lista-entradas-col-total">
+                  <div className="d-flex flex-column align-items-end gap-2">
+                    <div className="lista-entradas-total">
+                      {formatearMoneda(subtotal)}
+                    </div>
+                    <div className="d-flex gap-2">
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => onEliminar && onEliminar(detalleId, item)}
+                        disabled={loading}
+                        className="lista-entradas-boton-eliminar"
+                      >
+                        <Trash size={14} />
+                      </Button>
+                      {onRenovar && puedeRenovar && (
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          onClick={onRenovar}
+                          disabled={loading}
+                          className="lista-entradas-boton-renovar"
+                          title="Renovar reserva"
+                        >
+                          <RefreshCw size={14} />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </Card.Body>
           </Card>
         );
