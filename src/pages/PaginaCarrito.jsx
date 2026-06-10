@@ -1,6 +1,15 @@
 import { Info, ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Alert, Badge, Button, Card, Col, Container, Row, Spinner } from 'react-bootstrap';
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Col,
+  Container,
+  Row,
+  Spinner,
+} from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import ListaEntradasCarrito from '../components/ListaEntradasCarrito';
 import ResumenCarrito from '../components/ResumenCarrito';
@@ -8,6 +17,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useCarrito } from '../hooks/useCarrito';
 import { useCarritoGuest } from '../hooks/useCarritoGuest';
 import '../styles/components/PaginaCarrito.css';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 
 const PaginaCarrito = () => {
   const { carritoId } = useParams();
@@ -37,9 +48,9 @@ const PaginaCarrito = () => {
   /** Indica si el usuario es un invitado (no autenticado) */
   const isGuest = !isAuthenticated;
   /** Items del carrito (localStorage para invitados, backend para autenticados) */
-  const cartItems = isGuest ? guestCart : (resumen?.items || []);
+  const cartItems = isGuest ? guestCart : resumen?.items || [];
   /** Subtotal de las entradas (sin donación) */
-  const subtotal = isGuest ? guestSubtotal : (resumen?.subtotal || 0);
+  const subtotal = isGuest ? guestSubtotal : resumen?.subtotal || 0;
   /** Monto de donación (10% del subtotal) */
   const donacion = isGuest ? guestDonacion : (resumen?.montoDonacion ?? 0);
   /** Total a pagar (subtotal + donación) */
@@ -126,8 +137,14 @@ const PaginaCarrito = () => {
             <ShoppingBag size={64} />
           </div>
           <h2 className="pagina-carrito-vacio-titulo">Carrito de Compras</h2>
-          <p className="pagina-carrito-vacio-texto">Tu carrito está vacío. Agrega entradas para comenzar tu compra.</p>
-          <Button variant="primary" className="pagina-carrito-boton-inicio" onClick={() => navigate('/home')}>
+          <p className="pagina-carrito-vacio-texto">
+            Tu carrito está vacío. Agrega entradas para comenzar tu compra.
+          </p>
+          <Button
+            variant="primary"
+            className="pagina-carrito-boton-inicio"
+            onClick={() => navigate('/home')}
+          >
             Explorar Eventos
           </Button>
         </div>
@@ -147,98 +164,137 @@ const PaginaCarrito = () => {
   }
 
   return (
-    <Container className="pagina-carrito-container">
-      <Card className="pagina-carrito-header-card mb-4">
-        <Card.Body>
-          <div className="pagina-carrito-header">
-            <ShoppingBag className="pagina-carrito-header-icon" size={32} />
-            <div>
-              <h2 className="pagina-carrito-titulo">Carrito de Compras</h2>
-              <p className="pagina-carrito-subtitulo">
-                {isGuest ? (
-                  <>
-                    <Badge bg="info" className="me-2">Invitado</Badge>
-                    Inicia sesión para completar tu compra
-                  </>
-                ) : (
-                  'Revisa tus entradas antes de pagar'
-                )}
-              </p>
-            </div>
-          </div>
-        </Card.Body>
-      </Card>
-
-      {error && (
-        <Alert variant="danger" className="pagina-carrito-alerta d-flex align-items-center">
-          <Info className="me-2" size={20} />
-          <div>{error}</div>
-        </Alert>
-      )}
-
-      {checkoutSuccess && (
-        <Alert variant="success" className="pagina-carrito-alerta">
-          Reserva iniciada exitosamente. Redirigiendo...
-        </Alert>
-      )}
-
-      {isGuest && (
-        <Card className="pagina-carrito-info-card mb-4">
-          <Card.Body className="d-flex align-items-center justify-content-between">
-            <div className="d-flex align-items-center">
-              <Info className="me-3 text-info" size={24} />
+    <>
+      <Header />
+      <Container className="pagina-carrito-container">
+        <Card className="pagina-carrito-header-card mb-4">
+          <Card.Body>
+            <div className="pagina-carrito-header">
+              <ShoppingBag className="pagina-carrito-header-icon" size={32} />
               <div>
-                <strong>Modo Invitado</strong>
-                <p className="mb-0 text-muted small">Para completar tu compra, necesitas tener una cuenta.</p>
+                <h2 className="pagina-carrito-titulo">Carrito de Compras</h2>
+                <p className="pagina-carrito-subtitulo">
+                  {isGuest ? (
+                    <>
+                      <Badge bg="info" className="me-2">
+                        Invitado
+                      </Badge>
+                      Inicia sesión para completar tu compra
+                    </>
+                  ) : (
+                    'Revisa tus entradas antes de pagar'
+                  )}
+                </p>
               </div>
             </div>
-            <Button variant="outline-primary" onClick={() => navigate('/login')}>
-              Iniciar Sesión
-            </Button>
           </Card.Body>
         </Card>
-      )}
 
-      {loading && !resumen && !isGuest ? (
-        <div className="pagina-carrito-loading d-flex flex-column align-items-center justify-content-center">
-          <Spinner animation="border" variant="primary" role="status" className="mb-3">
-            <span className="visually-hidden">Cargando...</span>
-          </Spinner>
-          <p className="text-muted">Cargando tu carrito...</p>
-        </div>
-      ) : guestIsEmpty && isGuest ? (
-        <div className="pagina-carrito-vacio">
-          <div className="pagina-carrito-vacio-icono">
-            <ShoppingBag size={64} />
+        {error && (
+          <Alert
+            variant="danger"
+            className="pagina-carrito-alerta d-flex align-items-center"
+          >
+            <Info className="me-2" size={20} />
+            <div>{error}</div>
+          </Alert>
+        )}
+
+        {checkoutSuccess && (
+          <Alert variant="success" className="pagina-carrito-alerta">
+            Reserva iniciada exitosamente. Redirigiendo...
+          </Alert>
+        )}
+
+        {isGuest && (
+          <Card className="pagina-carrito-info-card mb-4">
+            <Card.Body className="d-flex align-items-center justify-content-between">
+              <div className="d-flex align-items-center">
+                <Info className="me-3 text-info" size={24} />
+                <div>
+                  <strong>Modo Invitado</strong>
+                  <p className="mb-0 text-muted small">
+                    Para completar tu compra, necesitas tener una cuenta.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline-primary"
+                onClick={() => navigate('/login')}
+              >
+                Iniciar Sesión
+              </Button>
+            </Card.Body>
+          </Card>
+        )}
+
+        {loading && !resumen && !isGuest ? (
+          <div className="pagina-carrito-loading d-flex flex-column align-items-center justify-content-center">
+            <Spinner
+              animation="border"
+              variant="primary"
+              role="status"
+              className="mb-3"
+            >
+              <span className="visually-hidden">Cargando...</span>
+            </Spinner>
+            <p className="text-muted">Cargando tu carrito...</p>
           </div>
-          <h3 className="pagina-carrito-vacio-texto">Tu carrito está vacío</h3>
-          <Button variant="primary" className="pagina-carrito-boton-inicio" onClick={() => navigate('/home')}>
-            Explorar Eventos
-          </Button>
-        </div>
-      ) : (
-        <Row className="pagina-carrito-contenido">
-          <Col lg={8} className="pagina-carrito-entradas mb-4 mb-lg-0">
-            <ListaEntradasCarrito
-              entradas={cartItems}
-              onEliminar={handleEliminarEntrada}
-              onRenovar={!isGuest ? handleRenovarReserva : undefined}
-              puedeRenovar={!isGuest && resumen?.puedeRenovarReserva}
-              loading={loading}
-            />
-          </Col>
-          <Col lg={4} className="pagina-carrito-resumen">
-            <ResumenCarrito
-              resumen={isGuest ? { items: cartItems, subtotal, montoDonacion: donacion, total } : (resumen || carritoCreado)}
-              onCheckout={isGuest ? handleGuestCheckout : (carritoCreado ? handleCheckout : undefined)}
-              loading={loading}
-              isGuest={isGuest}
-            />
-          </Col>
-        </Row>
-      )}
-    </Container>
+        ) : guestIsEmpty && isGuest ? (
+          <div className="pagina-carrito-vacio">
+            <div className="pagina-carrito-vacio-icono">
+              <ShoppingBag size={64} />
+            </div>
+            <h3 className="pagina-carrito-vacio-texto">
+              Tu carrito está vacío
+            </h3>
+            <Button
+              variant="primary"
+              className="pagina-carrito-boton-inicio"
+              onClick={() => navigate('/home')}
+            >
+              Explorar Eventos
+            </Button>
+          </div>
+        ) : (
+          <Row className="pagina-carrito-contenido">
+            <Col lg={8} className="pagina-carrito-entradas mb-4 mb-lg-0">
+              <ListaEntradasCarrito
+                entradas={cartItems}
+                onEliminar={handleEliminarEntrada}
+                onRenovar={!isGuest ? handleRenovarReserva : undefined}
+                puedeRenovar={!isGuest && resumen?.puedeRenovarReserva}
+                loading={loading}
+              />
+            </Col>
+            <Col lg={4} className="pagina-carrito-resumen">
+              <ResumenCarrito
+                resumen={
+                  isGuest
+                    ? {
+                        items: cartItems,
+                        subtotal,
+                        montoDonacion: donacion,
+                        total,
+                      }
+                    : resumen || carritoCreado
+                }
+                onCheckout={
+                  isGuest
+                    ? handleGuestCheckout
+                    : carritoCreado
+                      ? handleCheckout
+                      : undefined
+                }
+                loading={loading}
+                isGuest={isGuest}
+              />
+            </Col>
+          </Row>
+        )}
+      </Container>
+      <Footer />
+    </>
   );
 };
-
 export default PaginaCarrito;
