@@ -148,22 +148,26 @@ const PaginaCarrito = () => {
 
   return (
     <Container className="pagina-carrito-container">
-      <div className="pagina-carrito-header">
-        <ShoppingBag className="pagina-carrito-header-icon" size={32} />
-        <div>
-          <h2 className="pagina-carrito-titulo">Carrito de Compras</h2>
-          <p className="pagina-carrito-subtitulo">
-            {isGuest ? (
-              <>
-                <Badge bg="info" className="me-2">Invitado</Badge>
-                Inicia sesión para completar tu compra
-              </>
-            ) : (
-              'Revisa tus entradas antes de pagar'
-            )}
-          </p>
-        </div>
-      </div>
+      <Card className="pagina-carrito-header-card mb-4">
+        <Card.Body>
+          <div className="pagina-carrito-header">
+            <ShoppingBag className="pagina-carrito-header-icon" size={32} />
+            <div>
+              <h2 className="pagina-carrito-titulo">Carrito de Compras</h2>
+              <p className="pagina-carrito-subtitulo">
+                {isGuest ? (
+                  <>
+                    <Badge bg="info" className="me-2">Invitado</Badge>
+                    Inicia sesión para completar tu compra
+                  </>
+                ) : (
+                  'Revisa tus entradas antes de pagar'
+                )}
+              </p>
+            </div>
+          </div>
+        </Card.Body>
+      </Card>
 
       {error && (
         <Alert variant="danger" className="pagina-carrito-alerta d-flex align-items-center">
