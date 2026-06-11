@@ -66,20 +66,23 @@ const ProductCard = ({
   const [imgError, setImgError] = useState(false);
 
   // Prioriza la imagen del evento; cae al placeholder solo si hay error o no hay imagen
-  const imgSrc = (imagen && !imgError) ? imagen : imagenPlaceholder;
+  const imgSrc = imagen && !imgError ? imagen : imagenPlaceholder;
 
   const handleCardClick = useCallback(() => {
     if (id != null) navigate(`/evento/${id}`);
   }, [id, navigate]);
 
-  const handleComprar = useCallback((e) => {
-    e?.stopPropagation();
-    if (onComprar) {
-      onComprar(id);
-    } else if (id != null) {
-      navigate(`/evento/${id}`);
-    }
-  }, [id, navigate, onComprar]);
+  const handleComprar = useCallback(
+    (e) => {
+      e?.stopPropagation();
+      if (onComprar) {
+        onComprar(id);
+      } else if (id != null) {
+        navigate(`/evento/${id}`);
+      }
+    },
+    [id, navigate, onComprar]
+  );
 
   return (
     <Card
@@ -94,9 +97,7 @@ const ProductCard = ({
       aria-label={`Ver detalle de ${titulo}`}
     >
       {/* Imagen del evento con fallback */}
-      <div
-        className="position-relative overflow-hidden product-card__media"
-      >
+      <div className="position-relative overflow-hidden product-card__media">
         <Card.Img
           variant="top"
           src={imgSrc}
@@ -106,7 +107,6 @@ const ProductCard = ({
           data-testid="product-card-img"
           onError={() => setImgError(true)}
         />
-
       </div>
 
       {/* Contenido */}

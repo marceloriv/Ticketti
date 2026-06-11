@@ -20,10 +20,19 @@ import '../styles/components/PaginaCarrito.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 
+/**
+ * Página que renderiza la vista principal del Carrito de compras.
+ * Soporta dos flujos de compra:
+ * 1. Usuario Invitado: Almacenado local en localStorage mediante {@link useCarritoGuest}.
+ * 2. Usuario Autenticado: Almacenado persistente en base de datos mediante {@link useCarrito}.
+ *
+ * @returns {React.JSX.Element} Vista de la página de administración del carrito.
+ */
 const PaginaCarrito = () => {
   const { carritoId } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+
   const {
     resumen,
     carritoCreado,
@@ -35,6 +44,7 @@ const PaginaCarrito = () => {
     iniciarCheckout,
     limpiarError,
   } = useCarrito(carritoId);
+
   const {
     cart: guestCart,
     eliminarEntrada: guestEliminarEntrada,
@@ -43,34 +53,36 @@ const PaginaCarrito = () => {
     total: guestTotal,
     isEmpty: guestIsEmpty,
   } = useCarritoGuest();
+
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
 
-  /** Indica si el usuario es un invitado (no autenticado) */
+  /** Indica si el usuario actual navega sin autenticación */
   const isGuest = !isAuthenticated;
-  /** Items del carrito (localStorage para invitados, backend para autenticados) */
+  /** Listado unificado de ítems según tipo de usuario */
   const cartItems = isGuest ? guestCart : resumen?.items || [];
-  /** Subtotal de las entradas (sin donación) */
+  /** Subtotal consolidado */
   const subtotal = isGuest ? guestSubtotal : resumen?.subtotal || 0;
-  /** Monto de donación (10% del subtotal) */
+  /** Monto destinado a causas benéficas */
   const donacion = isGuest ? guestDonacion : (resumen?.montoDonacion ?? 0);
-  /** Total a pagar (subtotal + donación) */
+  /** Monto total consolidado a facturar */
   const total = isGuest ? guestTotal : (resumen?.total ?? 0);
 
+  // Carga inicial del resumen del carrito si el usuario está autenticado
   useEffect(() => {
     if (carritoId && !isGuest) {
       obtenerResumen().catch((err) => {
-        console.error('[PaginaCarrito] Error al obtener resumen:', err);
+        console.error('[PaginaCarrito] Error al cargar resumen inicial:', err);
       });
     }
   }, [carritoId, obtenerResumen, isGuest]);
 
   /**
-   * Maneja la eliminación de una entrada del carrito
-   * Para usuarios invitados, elimina del localStorage usando eventoId
-   * Para usuarios autenticados, elimina del backend usando detalleId
+   * Procesa la eliminación de una entrada del carrito.
+   * Si es invitado, la borra usando el ID de evento en el estado local.
+   * Si es cliente registrado, invoca el borrado técnico en base de datos.
    *
-   * @param {number} detalleId - ID del detalle de la entrada a eliminar (autenticados)
-   * @param {Object} item - Objeto completo del item (para obtener eventoId en invitados)
+   * @param {number|string} detalleId - ID de detalle en el backend.
+   * @param {Object} item - Objeto de datos del ítem a eliminar.
    */
   const handleEliminarEntrada = async (detalleId, item) => {
     if (isGuest) {
@@ -88,22 +100,23 @@ const PaginaCarrito = () => {
   };
 
   /**
-   * Maneja la renovación de la reserva del carrito
-   * Solo disponible para usuarios autenticados
+   * Renueva temporalmente el bloqueo o reserva de las entradas en el servidor.
    */
   const handleRenovarReserva = async () => {
     try {
       await renovarReserva();
     } catch (err) {
-      console.error('[PaginaCarrito] Error al renovar reserva:', err);
+      console.error(
+        '[PaginaCarrito] Error al renovar reserva de entradas:',
+        err
+      );
     }
   };
 
   /**
-   * Maneja el proceso de checkout del carrito
-   * Solo disponible para usuarios autenticados
+   * Finaliza la reserva del carrito asociándola a una causa benéfica específica.
    *
-   * @param {Event} e - Evento del formulario
+   * @param {React.FormEvent} e - Evento de formulario.
    */
   const handleCheckout = async (e) => {
     e.preventDefault();
@@ -117,72 +130,91 @@ const PaginaCarrito = () => {
         navigate('/perfil');
       }, 2500);
     } catch (err) {
-      console.error('[PaginaCarrito] Error al iniciar checkout:', err);
+      console.error('[PaginaCarrito] Error al realizar checkout:', err);
     }
   };
 
   /**
-   * Maneja el checkout para usuarios invitados
-   * Redirige a la página de login para que el usuario se registre
+   * Redirige al login si un invitado intenta pagar sin estar autenticado.
    */
   const handleGuestCheckout = () => {
     navigate('/login');
   };
 
+  // Renderizar estado vacío si aplica
   if (isGuest && guestIsEmpty) {
     return (
-      <Container className="py-5 pagina-carrito-ticketti">
-        <div className="pagina-carrito-vacio">
-          <div className="pagina-carrito-vacio-icono">
-            <ShoppingBag size={64} />
+      <>
+        <Header />
+        <Container className="py-5 pagina-carrito-container">
+          <div className="pagina-carrito-vacio shadow-sm">
+            <div className="pagina-carrito-vacio-icono">
+              <ShoppingBag size={64} />
+            </div>
+            <h2 className="pagina-carrito-vacio-titulo">Carrito Vacío</h2>
+            <p className="pagina-carrito-vacio-texto">
+              Aún no has agregado entradas a tu carrito. ¡Explora eventos y
+              reserva las tuyas!
+            </p>
+            <Button
+              variant="primary"
+              className="pagina-carrito-boton-inicio px-4 py-2"
+              onClick={() => navigate('/home')}
+            >
+              Explorar Eventos
+            </Button>
           </div>
-          <h2 className="pagina-carrito-vacio-titulo">Carrito de Compras</h2>
-          <p className="pagina-carrito-vacio-texto">
-            Tu carrito está vacío. Agrega entradas para comenzar tu compra.
-          </p>
-          <Button
-            variant="primary"
-            className="pagina-carrito-boton-inicio"
-            onClick={() => navigate('/home')}
-          >
-            Explorar Eventos
-          </Button>
-        </div>
-      </Container>
+        </Container>
+        <Footer />
+      </>
     );
   }
 
   if (!isGuest && !carritoId) {
     return (
-      <Container className="py-5">
-        <Alert variant="warning" className="d-flex align-items-center">
-          <Info className="me-2" size={20} />
-          <div>No se ha especificado un ID de carrito.</div>
-        </Alert>
-      </Container>
+      <>
+        <Header />
+        <Container className="py-5 pagina-carrito-container">
+          <Alert
+            variant="warning"
+            className="d-flex align-items-center rounded-3 shadow-sm"
+          >
+            <Info className="me-3 text-warning" size={24} />
+            <div>
+              <span className="fw-bold">Atención:</span> No se ha provisto
+              ningún identificador de carrito válido.
+            </div>
+          </Alert>
+        </Container>
+        <Footer />
+      </>
     );
   }
 
   return (
     <>
       <Header />
-      <Container className="pagina-carrito-container">
-        <Card className="pagina-carrito-header-card mb-4">
-          <Card.Body>
-            <div className="pagina-carrito-header">
-              <ShoppingBag className="pagina-carrito-header-icon" size={32} />
+      <Container className="pagina-carrito-container py-5">
+        <Card className="pagina-carrito-header-card border-0 shadow-sm mb-4">
+          <Card.Body className="p-4">
+            <div className="pagina-carrito-header d-flex align-items-center gap-3">
+              <div className="p-3 bg-light rounded-3">
+                <ShoppingBag className="pagina-carrito-header-icon" size={32} />
+              </div>
               <div>
-                <h2 className="pagina-carrito-titulo">Carrito de Compras</h2>
-                <p className="pagina-carrito-subtitulo">
+                <h2 className="pagina-carrito-titulo mb-1">
+                  Carrito de Compras
+                </h2>
+                <p className="pagina-carrito-subtitulo text-muted mb-0">
                   {isGuest ? (
                     <>
-                      <Badge bg="info" className="me-2">
+                      <Badge bg="secondary" className="me-2 px-2 py-1">
                         Invitado
                       </Badge>
-                      Inicia sesión para completar tu compra
+                      Inicia sesión para finalizar tu compra de forma segura
                     </>
                   ) : (
-                    'Revisa tus entradas antes de pagar'
+                    'Revisa tus reservas de entradas antes de proceder al pago'
                   )}
                 </p>
               </div>
@@ -193,7 +225,7 @@ const PaginaCarrito = () => {
         {error && (
           <Alert
             variant="danger"
-            className="pagina-carrito-alerta d-flex align-items-center"
+            className="pagina-carrito-alerta d-flex align-items-center shadow-sm"
           >
             <Info className="me-2" size={20} />
             <div>{error}</div>
@@ -201,35 +233,38 @@ const PaginaCarrito = () => {
         )}
 
         {checkoutSuccess && (
-          <Alert variant="success" className="pagina-carrito-alerta">
-            Reserva iniciada exitosamente. Redirigiendo...
+          <Alert variant="success" className="pagina-carrito-alerta shadow-sm">
+            ¡Reserva de entradas procesada exitosamente! Redirigiendo a tu
+            perfil...
           </Alert>
         )}
 
         {isGuest && (
-          <Card className="pagina-carrito-info-card mb-4">
-            <Card.Body className="d-flex align-items-center justify-content-between">
+          <Card className="pagina-carrito-info-card border-0 mb-4 shadow-sm">
+            <Card.Body className="d-flex align-items-center justify-content-between p-4">
               <div className="d-flex align-items-center">
-                <Info className="me-3 text-info" size={24} />
+                <Info className="me-3 text-info" size={28} />
                 <div>
-                  <strong>Modo Invitado</strong>
+                  <strong className="text-dark">Paso requerido</strong>
                   <p className="mb-0 text-muted small">
-                    Para completar tu compra, necesitas tener una cuenta.
+                    Para registrar la reserva y donación del 10%, necesitas
+                    crear una cuenta o iniciar sesión.
                   </p>
                 </div>
               </div>
               <Button
-                variant="outline-primary"
+                variant="primary"
                 onClick={() => navigate('/login')}
+                className="px-4"
               >
-                Iniciar Sesión
+                Acceder / Registrarse
               </Button>
             </Card.Body>
           </Card>
         )}
 
         {loading && !resumen && !isGuest ? (
-          <div className="pagina-carrito-loading d-flex flex-column align-items-center justify-content-center">
+          <div className="pagina-carrito-loading d-flex flex-column align-items-center justify-content-center py-5">
             <Spinner
               animation="border"
               variant="primary"
@@ -238,23 +273,9 @@ const PaginaCarrito = () => {
             >
               <span className="visually-hidden">Cargando...</span>
             </Spinner>
-            <p className="text-muted">Cargando tu carrito...</p>
-          </div>
-        ) : guestIsEmpty && isGuest ? (
-          <div className="pagina-carrito-vacio">
-            <div className="pagina-carrito-vacio-icono">
-              <ShoppingBag size={64} />
-            </div>
-            <h3 className="pagina-carrito-vacio-texto">
-              Tu carrito está vacío
-            </h3>
-            <Button
-              variant="primary"
-              className="pagina-carrito-boton-inicio"
-              onClick={() => navigate('/home')}
-            >
-              Explorar Eventos
-            </Button>
+            <p className="text-muted">
+              Estableciendo conexión con el microservicio de carrito...
+            </p>
           </div>
         ) : (
           <Row className="pagina-carrito-contenido">
@@ -297,4 +318,5 @@ const PaginaCarrito = () => {
     </>
   );
 };
+
 export default PaginaCarrito;

@@ -1,192 +1,159 @@
 /**
- * Estilos para el resumen del carrito de compras
+ * Estilos premium para el panel de Resumen de Compras (Checkout) de Ticketti.
  */
 
 .resumen-carrito-container {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e9ecef;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.03) !important;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
 }
 
-.resumen-carrito-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #e9ecef;
-}
-
-.resumen-carrito-header-icon {
-  color: #2cacad;
-  flex-shrink: 0;
+.resumen-carrito-container:hover {
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
 }
 
 .resumen-carrito-titulo {
   font-size: 1.25rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 0;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.3px;
 }
 
+/* Sección de Estados */
 .resumen-carrito-estados {
   display: flex;
   gap: 0.5rem;
-  flex-wrap: wrap;
 }
 
-.resumen-carrito-estado-badge {
+.resumen-carrito-estados .badge {
+  font-size: 0.75rem;
   font-weight: 600;
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
+  letter-spacing: 0.2px;
 }
 
+/* Detalles de Precios */
 .resumen-carrito-detalles {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 1rem;
-  border: 1px solid #e9ecef;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
 .resumen-carrito-fila {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 0;
-  margin-bottom: 0.5rem;
-  border-bottom: 1px solid #f1f3f4;
-}
-
-.resumen-carrito-fila:last-of-type {
-  border-bottom: none;
+  font-size: 0.95rem;
 }
 
 .resumen-carrito-etiqueta {
-  font-size: 0.95rem;
-  color: #6c757d;
-  font-weight: 500;
+  color: #475569;
 }
 
 .resumen-carrito-valor {
-  font-size: 1rem;
-  color: #2c3e50;
-  font-weight: 600;
+  color: #0f172a;
 }
 
-.resumen-carrito-donacion {
-  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-  padding: 1rem;
-  border-radius: 10px;
-  margin: 1rem 0;
-  border-left: 4px solid #ff9800;
+/* Caja de Donación */
+.resumen-carrito-donacion-info {
+  background: #fffbeb !important;
+  border-left: 3px solid #f59e0b !important;
+  transition: transform 0.2s ease;
 }
 
-.resumen-carrito-donacion-icon {
-  color: #ff9800;
-  flex-shrink: 0;
-  margin-top: 2px;
+.resumen-carrito-donacion-info:hover {
+  transform: scale(1.01);
 }
 
-.resumen-carrito-donacion-texto {
-  font-size: 0.9rem;
-  color: #e65100;
-  font-weight: 500;
-  line-height: 1.4;
+.resumen-carrito-donacion-info p {
+  color: #b45309;
 }
 
+/* Total */
 .resumen-carrito-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem 0;
-  margin-top: 1rem;
-  border-top: 2px solid #2cacad;
+  padding-top: 1rem;
 }
 
 .resumen-carrito-total-etiqueta {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #2c3e50;
+  font-size: 1.1rem;
+  color: #0f172a;
 }
 
 .resumen-carrito-total-valor {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #2cacad 0%, #1a8a8b 100%);
+  background: linear-gradient(135deg, #2cacad 0%, #166a6b 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
+/* Select de Causa Social */
 .resumen-carrito-label {
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
+  font-weight: 700;
+  color: #334155;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .resumen-carrito-select {
-  border-radius: 8px;
-  border-color: #dee2e6;
-  padding: 0.6rem;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  font-weight: 500;
+  color: #334155;
+  transition: all 0.2s ease;
 }
 
 .resumen-carrito-select:focus {
   border-color: #2cacad;
-  box-shadow: 0 0 0 0.2rem rgba(44, 172, 173, 0.15);
+  box-shadow: 0 0 0 4px rgba(44, 172, 173, 0.12);
 }
 
+/* Botón de Checkout */
 .resumen-carrito-boton-checkout {
   width: 100%;
   padding: 1rem;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   background: linear-gradient(135deg, #2cacad 0%, #1a8a8b 100%);
   border: none;
-  border-radius: 10px;
-  color: white;
-  transition: all 0.3s ease;
-  margin-top: 1rem;
+  border-radius: 12px;
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(44, 172, 173, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.resumen-carrito-boton-checkout:hover {
+.resumen-carrito-boton-checkout:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(44, 172, 173, 0.4);
+  box-shadow: 0 8px 25px rgba(44, 172, 173, 0.4);
   background: linear-gradient(135deg, #1a8a8b 0%, #0f6a6b 100%);
 }
 
+.resumen-carrito-boton-checkout:active:not(:disabled) {
+  transform: translateY(0);
+}
+
 .resumen-carrito-boton-checkout:disabled {
-  background: #bdc3c7;
+  background: #cbd5e1;
+  color: #94a3b8;
   cursor: not-allowed;
-  transform: none;
   box-shadow: none;
 }
 
+/* Botón de Checkout para Invitados */
 .resumen-carrito-boton-checkout-invitado {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
 }
 
-.resumen-carrito-boton-checkout-invitado:hover {
-  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
-  background: linear-gradient(135deg, #2980b9 0%, #1a5276 100%);
+.resumen-carrito-boton-checkout-invitado:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
 }
 
+/* Alertas internas */
 .resumen-carrito-alerta {
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  border-radius: 8px;
-}
-
-.resumen-carrito-footer {
-  text-align: center;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e9ecef;
-}
-
-.resumen-carrito-items-badge {
+  border-radius: 10px;
   font-weight: 600;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
+  font-size: 0.9rem;
+  border: none;
 }

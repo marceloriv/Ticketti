@@ -78,7 +78,9 @@
 }
 
 .hover-lift {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .hover-lift:hover {
@@ -315,7 +317,11 @@
 .nosotros-hero-ticketti__overlay {
   top: 0;
   left: 0;
-  background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  background: radial-gradient(
+    circle at 20% 50%,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 50%
+  );
   z-index: 0;
 }
 
@@ -407,7 +413,9 @@
 .inicio-causa-card {
   background: #fff;
   border-left: 4px solid var(--ticketti-primary);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .inicio-causa-card:hover {
@@ -633,7 +641,7 @@ opciones
 /* Fondo a pantalla completa */
 .loginContainer::before,
 .containerRegistro::before {
-  content: "";
+  content: '';
   position: fixed;
   inset: 0;
   background-image: url('/img/loginimagen2.jpg');

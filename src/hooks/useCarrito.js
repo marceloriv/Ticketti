@@ -1,61 +1,53 @@
-import api from '@api/api';
 import { useCallback, useState } from 'react';
+import carritoApi from '../api/carritoApi';
 
 /**
  * Hook personalizado para gestionar el carrito de compras de usuarios autenticados.
- * Proporciona funciones para crear, obtener, actualizar y manipular carritos de compras.
+ * Proporciona funciones y estados reactivos para interactuar con el microservicio de carrito del backend.
  *
- * @param {number|null} carritoId - ID del carrito de compras (opcional)
- * @returns {Object} Objeto con las funciones y estado del carrito
- * @returns {Object} resumen - Resumen del carrito con items y totales
- * @returns {Object} carritoCreado - Carrito recién creado
- * @returns {boolean} loading - Indica si está cargando
- * @returns {string|null} error - Mensaje de error si existe
- * @returns {Function} limpiarError - Función para limpiar el error
- * @returns {Function} crearCarrito - Función para crear un nuevo carrito
- * @returns {Function} inicializarCarrito - Función para buscar o crear carrito activo
- * @returns {Function} obtenerCarrito - Función para obtener un carrito por ID
- * @returns {Function} obtenerResumen - Función para obtener el resumen del carrito
- * @returns {Function} agregarEntrada - Función para agregar una entrada al carrito
- * @returns {Function} eliminarEntrada - Función para eliminar una entrada del carrito
- * @returns {Function} actualizarCarrito - Función para actualizar el carrito
- * @returns {Function} iniciarCheckout - Función para iniciar el proceso de checkout
- * @returns {Function} renovarReserva - Función para renovar la reserva del carrito
- * @returns {Function} listarCarritos - Función para listar todos los carritos del usuario
+ * @param {number|null} carritoId - Identificador único del carrito de compras (opcional).
+ * @returns {Object} Estados y funciones para la administración del carrito.
+ * @returns {Object|null} resumen - Resumen consolidado del carrito (ítems, totales, causas).
+ * @returns {Object|null} carritoCreado - Objeto del carrito cuando se crea un nuevo registro.
+ * @returns {boolean} loading - Indica si hay una operación asíncrona en curso.
+ * @returns {string|null} error - Mensaje descriptivo si ocurre algún error durante las peticiones.
+ * @returns {Function} limpiarError - Restablece el estado del mensaje de error a null.
+ * @returns {Function} crearCarrito - Crea un nuevo registro de carrito de compras en el backend.
+ * @returns {Function} inicializarCarrito - Busca un carrito activo en estado 'CREADO' o inicia uno nuevo.
+ * @returns {Function} obtenerCarrito - Obtiene el detalle técnico de un carrito por su ID.
+ * @returns {Function} obtenerResumen - Actualiza y obtiene los montos y productos del carrito.
+ * @returns {Function} agregarEntrada - Añade entradas de un evento específico al carrito.
+ * @returns {Function} eliminarEntrada - Remueve un ítem del desglose del carrito.
+ * @returns {Function} actualizarCarrito - Modifica la información general de la compra en el carrito.
+ * @returns {Function} iniciarCheckout - Inicia el flujo de pago asociándolo a una causa social.
+ * @returns {Function} renovarReserva - Extiende la vigencia del bloqueo temporal de las entradas.
+ * @returns {Function} listarCarritos - Retorna todos los carritos históricos del cliente autenticado.
  */
-export const useCarrito = (initialCarritoId) => {
-  /** Indica si una operación está en curso */
+export const useCarrito = (carritoId) => {
   const [loading, setLoading] = useState(false);
-  /** Mensaje de error si existe */
   const [error, setError] = useState(null);
-  /** Resumen del carrito con items y totales */
   const [resumen, setResumen] = useState(null);
-  /** Carrito recién creado */
   const [carritoCreado, setCarritoCreado] = useState(null);
-  /** ID del carrito actual */
-  const [carritoId, setCarritoId] = useState(initialCarritoId);
 
   /**
-   * Limpia el mensaje de error
+   * Limpia el mensaje de error activo en el estado.
    */
   const limpiarError = useCallback(() => setError(null), []);
 
-  // ── POST /Carrito/crear ──────────────────────────────────────────────
   /**
-   * Crea un nuevo carrito de compras
+   * Crea un nuevo carrito en el backend.
    *
-   * @returns {Promise<Object>} Promesa que resuelve con el carrito creado
-   * @throws {Error} Si hay un error al crear el carrito
+   * @returns {Promise<Object>} Datos del carrito creado.
    */
   const crearCarrito = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.post('/Carrito/crear');
-      const carrito = response.data?.data;
+      const carrito = await carritoApi.crearCarrito();
       return carrito;
     } catch (err) {
-      const msg = err.response?.data?.mensaje || 'Error al crear carrito';
+      const msg =
+        err.response?.data?.mensaje || err.message || 'Error al crear carrito';
       setError(msg);
       throw new Error(msg);
     } finally {
@@ -63,25 +55,25 @@ export const useCarrito = (initialCarritoId) => {
     }
   }, []);
 
-  // ── GET /Carrito/obtener/{id} ─────────────────────────────────────────
   /**
-   * Obtiene un carrito por su ID
+   * Obtiene la estructura técnica del carrito por su ID.
    *
-   * @param {number} id - ID del carrito a obtener
-   * @returns {Promise<Object|null>} Promesa que resuelve con el carrito o null
-   * @throws {Error} Si hay un error al obtener el carrito
+   * @param {number|string} id - ID del carrito.
+   * @returns {Promise<Object|null>} Carrito obtenido o null.
    */
   const obtenerCarrito = useCallback(async (id) => {
     if (!id) return null;
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get(`/Carrito/obtener/${id}`);
-      const carrito = response.data?.data;
+      const carrito = await carritoApi.obtenerCarrito(id);
       setCarritoCreado(carrito);
       return carrito;
-    } catch {
-      const msg = 'Error al obtener carrito';
+    } catch (err) {
+      const msg =
+        err.response?.data?.mensaje ||
+        err.message ||
+        'Error al obtener carrito';
       setError(msg);
       throw new Error(msg);
     } finally {
@@ -89,49 +81,25 @@ export const useCarrito = (initialCarritoId) => {
     }
   }, []);
 
-  // ── GET /Carrito/resumen/{id} ─────────────────────────────────────────
   /**
-   * Obtiene el resumen del carrito actual con items y totales
+   * Obtiene el resumen de montos y totales del carrito activo (`carritoId`).
    *
-   * @returns {Promise<Object>} Promesa que resuelve con el resumen del carrito
-   * @throws {Error} Si hay un error al obtener el resumen
+   * @returns {Promise<Object>} Resumen del carrito.
    */
-  const obtenerResumen = useCallback(async (targetCarritoId = null) => {
-    const idCarrito = targetCarritoId || carritoId;
-    if (!idCarrito) return;
-
+  const obtenerResumen = useCallback(async () => {
+    if (!carritoId) return;
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get(`/Carrito/resumen/${idCarrito}`);
-      // respuesta envuelta en ApiRespuestaDto → { exito, mensaje, data }
-      setResumen(response.data?.data || null);
+      const datos = await carritoApi.obtenerResumen(carritoId);
+      setResumen(datos || null);
       setCarritoCreado(null);
-      return response.data?.data;
+      return datos;
     } catch (err) {
-      // Si el carrito no existe (404), crear uno nuevo
-      if (err.response?.status === 404) {
-        console.log('[Carrito] Carrito no encontrado, creando nuevo carrito');
-        try {
-          const responseCrear = await api.post('/Carrito/crear');
-          const nuevoCarrito = responseCrear.data?.data;
-          if (nuevoCarrito) {
-            const nuevoId = nuevoCarrito?.idCarrito || nuevoCarrito?.id;
-            setCarritoId(nuevoId);
-            localStorage.setItem('carritoId', nuevoId);
-            // Intentar obtener el resumen del nuevo carrito
-            const response = await api.get(`/Carrito/resumen/${nuevoId}`);
-            setResumen(response.data?.data || null);
-            setCarritoCreado(null);
-            return response.data?.data;
-          }
-        } catch (crearErr) {
-          console.error('[Carrito] Error al crear nuevo carrito:', crearErr);
-        }
-      }
       const msg =
         err.response?.data?.mensaje ||
         err.response?.data?.message ||
+        err.message ||
         'Error al obtener resumen del carrito';
       setError(msg);
       throw new Error(msg);
@@ -140,40 +108,26 @@ export const useCarrito = (initialCarritoId) => {
     }
   }, [carritoId]);
 
-  // ── POST /Carrito/{id}/entradas ───────────────────────────────────────
   /**
-   * Agrega una entrada al carrito
+   * Agrega una entrada al carrito activo.
    *
-   * @param {Object} entradaData - Datos de la entrada a agregar
-   * @param {number} entradaData.eventoId - ID del evento
-   * @param {string} entradaData.tipoEntrada - Tipo de entrada
-   * @param {number} entradaData.cantidad - Cantidad de entradas
-   * @param {number} entradaData.precioUnitario - Precio unitario
-   * @param {number} targetCarritoId - ID del carrito (opcional, usa el estado interno si no se proporciona)
-   * @returns {Promise<Object>} Promesa que resuelve con la entrada agregada
-   * @throws {Error} Si hay un error al agregar la entrada
+   * @param {Object} entradaData - Estructura de la entrada (eventoId, tipo, cantidad, precio).
+   * @returns {Promise<Object>} Respuesta del servidor.
    */
   const agregarEntrada = useCallback(
-    async (entradaData, targetCarritoId = null) => {
-      const idCarrito = targetCarritoId || carritoId;
-      if (!idCarrito) {
-        throw new Error('No hay carrito disponible para agregar entradas');
-      }
-
+    async (entradaData) => {
+      if (!carritoId) return;
       setLoading(true);
       setError(null);
       try {
-        const response = await api.post(
-          `/Carrito/${idCarrito}/entradas`,
-          entradaData
-        );
-        // respuesta envuelta en ApiRespuestaDto
-        await obtenerResumen(idCarrito);
-        return response.data?.data;
+        const datos = await carritoApi.agregarEntrada(carritoId, entradaData);
+        await obtenerResumen();
+        return datos;
       } catch (err) {
         const msg =
           err.response?.data?.mensaje ||
           err.response?.data?.message ||
+          err.message ||
           'Error al agregar entrada al carrito';
         setError(msg);
         throw new Error(msg);
@@ -184,31 +138,26 @@ export const useCarrito = (initialCarritoId) => {
     [carritoId, obtenerResumen]
   );
 
-  // ── DELETE /Carrito/{id}/entradas/{detalleId} ──────────────────────────
   /**
-   * Elimina una entrada del carrito
+   * Elimina un ítem específico del desglose del carrito activo.
    *
-   * @param {number} detalleId - ID del detalle de la entrada a eliminar
-   * @returns {Promise<Object>} Promesa que resuelve con el resultado
-   * @throws {Error} Si hay un error al eliminar la entrada
+   * @param {number|string} detalleId - ID de detalle del ítem.
+   * @returns {Promise<Object>} Respuesta del servidor.
    */
   const eliminarEntrada = useCallback(
     async (detalleId) => {
       if (!carritoId) return;
-
       setLoading(true);
       setError(null);
       try {
-        const response = await api.delete(
-          `/Carrito/${carritoId}/entradas/${detalleId}`
-        );
-        // respuesta envuelta en ApiRespuestaDto
+        const datos = await carritoApi.eliminarEntrada(carritoId, detalleId);
         await obtenerResumen();
-        return response.data?.data;
+        return datos;
       } catch (err) {
         const msg =
           err.response?.data?.mensaje ||
           err.response?.data?.message ||
+          err.message ||
           'Error al eliminar entrada del carrito';
         setError(msg);
         throw new Error(msg);
@@ -219,31 +168,29 @@ export const useCarrito = (initialCarritoId) => {
     [carritoId, obtenerResumen]
   );
 
-  // ── PUT /Carrito/actualizar/{id} ───────────────────────────────────────
   /**
-   * Actualiza el carrito con nuevos datos
+   * Actualiza la información o estado general del carrito activo.
    *
-   * @param {Object} entradaData - Datos para actualizar el carrito
-   * @returns {Promise<Object>} Promesa que resuelve con el carrito actualizado
-   * @throws {Error} Si hay un error al actualizar el carrito
+   * @param {Object} entradaData - Datos a actualizar.
+   * @returns {Promise<Object>} Carrito actualizado.
    */
   const actualizarCarrito = useCallback(
     async (entradaData) => {
       if (!carritoId) return;
-
       setLoading(true);
       setError(null);
       try {
-        const response = await api.put(
-          `/Carrito/actualizar/${carritoId}`,
+        const datos = await carritoApi.actualizarCarrito(
+          carritoId,
           entradaData
         );
         await obtenerResumen();
-        return response.data?.data;
+        return datos;
       } catch (err) {
         const msg =
           err.response?.data?.mensaje ||
           err.response?.data?.message ||
+          err.message ||
           'Error al actualizar el carrito';
         setError(msg);
         throw new Error(msg);
@@ -254,36 +201,33 @@ export const useCarrito = (initialCarritoId) => {
     [carritoId, obtenerResumen]
   );
 
-  // ── POST /Carrito/checkout/{id} ────────────────────────────────────────
   /**
-   * Inicia el proceso de checkout del carrito
+   * Inicia el flujo de checkout vinculando la compra a una causa social.
    *
-   * @param {string|number} causaSocialId - ID de la causa social seleccionada
-   * @returns {Promise<Object>} Promesa que resuelve con el resultado del checkout
-   * @throws {Error} Si hay un error al iniciar el checkout
+   * @param {number|string} causaSocialId - ID de la causa social seleccionada.
+   * @returns {Promise<Object>} Transacción o respuesta de checkout iniciada.
    */
   const iniciarCheckout = useCallback(
     async (causaSocialId) => {
       if (!carritoId) return;
-
       setLoading(true);
       setError(null);
       try {
-        // Generar idempotencyKey más robusto usando timestamp + random + carritoId
         const idempotencyKey =
-          `checkout-${carritoId}-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 10)}`;
-        const response = await api.post(
-          `/Carrito/checkout/${carritoId}`,
-          {
-            causaSocialId: parseInt(causaSocialId, 10),
-            idempotencyKey,
-          }
-        );
-        return response.data?.data;
+          'kilo-' +
+          Date.now().toString(36) +
+          Math.random().toString(36).substring(2, 10);
+
+        const datos = await carritoApi.iniciarCheckout(carritoId, {
+          causaSocialId,
+          idempotencyKey,
+        });
+        return datos;
       } catch (err) {
         const msg =
           err.response?.data?.mensaje ||
           err.response?.data?.message ||
+          err.message ||
           'Error al iniciar checkout';
         setError(msg);
         throw new Error(msg);
@@ -294,26 +238,24 @@ export const useCarrito = (initialCarritoId) => {
     [carritoId]
   );
 
-  // ── POST /Carrito/renovar/{id} ─────────────────────────────────────────
   /**
-   * Renueva la reserva del carrito para extender el tiempo de reserva
+   * Renueva el bloqueo temporal de entradas (reserva) del carrito activo.
    *
-   * @returns {Promise<Object>} Promesa que resuelve con el resultado de la renovación
-   * @throws {Error} Si hay un error al renovar la reserva
+   * @returns {Promise<Object>} Datos actualizados.
    */
   const renovarReserva = useCallback(async () => {
     if (!carritoId) return;
-
     setLoading(true);
     setError(null);
     try {
-      const response = await api.post(`/Carrito/renovar/${carritoId}`);
+      const datos = await carritoApi.renovarReserva(carritoId);
       await obtenerResumen();
-      return response.data?.data;
+      return datos;
     } catch (err) {
       const msg =
         err.response?.data?.mensaje ||
         err.response?.data?.message ||
+        err.message ||
         'Error al renovar reserva';
       setError(msg);
       throw new Error(msg);
@@ -322,21 +264,22 @@ export const useCarrito = (initialCarritoId) => {
     }
   }, [carritoId, obtenerResumen]);
 
-  // ── GET /Carrito/listar ────────────────────────────────────────────────
   /**
-   * Lista todos los carritos del usuario autenticado
+   * Lista todos los carritos asociados al usuario.
    *
-   * @returns {Promise<Array>} Promesa que resuelve con la lista de carritos
-   * @throws {Error} Si hay un error al listar los carritos
+   * @returns {Promise<Array>} Listado de carritos.
    */
   const listarCarritos = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get('/Carrito/listar');
-      return response.data?.data || [];
+      const datos = await carritoApi.listarCarritos();
+      return datos;
     } catch (err) {
-      const msg = err.response?.data?.mensaje || 'Error al listar carritos';
+      const msg =
+        err.response?.data?.mensaje ||
+        err.message ||
+        'Error al listar carritos';
       setError(msg);
       throw new Error(msg);
     } finally {
@@ -344,15 +287,12 @@ export const useCarrito = (initialCarritoId) => {
     }
   }, []);
 
-  // ── Buscar carrito activo del usuario, o crear uno nuevo ───────────────
   /**
-   * Busca un carrito activo (estado CREADO) del usuario o crea uno nuevo
+   * Busca un carrito activo en estado 'CREADO' del usuario o crea uno nuevo en su lugar.
    *
-   * @returns {Promise<Object>} Promesa que resuelve con { carritoId, carrito }
-   * @throws {Error} Si hay un error al buscar o crear el carrito
+   * @returns {Promise<Object>} Estructura conteniendo { carritoId, carrito }.
    */
   const inicializarCarrito = useCallback(async () => {
-    // 1. Intentar listar y buscar un carrito en estado CREADO
     try {
       const existentes = await listarCarritos();
       const activo = existentes.find(
@@ -362,26 +302,28 @@ export const useCarrito = (initialCarritoId) => {
         const id = activo.idCarrito || activo.id;
         return { carritoId: id, carrito: activo };
       }
-    } catch (err) {
-      console.warn('[Carrito] Error al listar carritos existentes:', err);
-      // Continuar intentando crear uno nuevo
+    } catch (e) {
+      console.warn(
+        '[Carrito] No se pudo recuperar carritos existentes:',
+        e.message || e
+      );
     }
 
-    // 2. No hay carrito activo → crear uno nuevo
     try {
       const nuevo = await crearCarrito();
       if (!nuevo) return { carritoId: null, carrito: null };
       const id = nuevo?.idCarrito || nuevo?.id;
       return { carritoId: id || null, carrito: nuevo };
-    } catch (err) {
-      console.error('[Carrito] Error al crear nuevo carrito:', err);
+    } catch (e) {
+      console.error(
+        '[Carrito] Error al crear nuevo carrito de compras:',
+        e.message || e
+      );
       return { carritoId: null, carrito: null };
     }
   }, [crearCarrito, listarCarritos]);
 
   return {
-    carritoId,
-    setCarritoId,
     resumen,
     carritoCreado,
     loading,

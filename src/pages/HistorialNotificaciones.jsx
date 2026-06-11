@@ -4,12 +4,12 @@ import Header from '@components/layout/Header';
 import { Mail, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import {
-    Alert,
-    Badge,
-    Button,
-    Container,
-    Spinner,
-    Table,
+  Alert,
+  Badge,
+  Button,
+  Container,
+  Spinner,
+  Table,
 } from 'react-bootstrap';
 
 const TIPO_LABELS = {
@@ -101,7 +101,10 @@ const HistorialNotificaciones = () => {
 
           {cargando ? (
             <div className="text-center py-5">
-              <Spinner animation="border" className="historial-notificaciones-spinner" />
+              <Spinner
+                animation="border"
+                className="historial-notificaciones-spinner"
+              />
             </div>
           ) : notificaciones.length === 0 ? (
             <Alert variant="info">

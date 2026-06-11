@@ -1,3 +1,6 @@
+import Footer from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
+
 const Nosotros = () => {
   const valores = [
     {
@@ -28,9 +31,8 @@ const Nosotros = () => {
 
   return (
     <>
-      <section
-        className="py-5 text-center position-relative overflow-hidden nosotros-hero-ticketti"
-      >
+      <Header />
+      <section className="py-5 text-center position-relative overflow-hidden nosotros-hero-ticketti">
         <div className="position-absolute w-100 h-100 nosotros-hero-ticketti__overlay" />
         <div className="container position-relative nosotros-hero-ticketti__content">
           <h1 className="display-4 fw-bold mb-3">Sobre Ticketti</h1>
@@ -139,6 +141,7 @@ const Nosotros = () => {
           </div>
         </div>
       </section>
+      <Footer />
     </>
   );
 };

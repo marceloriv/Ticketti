@@ -19,8 +19,6 @@ import HistorialNotificaciones from '@pages/HistorialNotificaciones';
 import PaginaCarrito from '@pages/PaginaCarrito';
 import PerfilCliente from '@pages/PerfilCliente';
 
-
-
 export default function AppRoutes() {
   const { isAuthenticated, loading } = useAuth();
 
@@ -42,12 +40,20 @@ export default function AppRoutes() {
 
       <Route
         path={ROUTES.LOGIN}
-        element={isAuthenticated ? <Navigate to={ROUTES.INICIO} replace /> : <Login />}
+        element={
+          isAuthenticated ? <Navigate to={ROUTES.INICIO} replace /> : <Login />
+        }
       />
 
       <Route
         path={ROUTES.REGISTRO}
-        element={isAuthenticated ? <Navigate to={ROUTES.INICIO} replace /> : <Registro />}
+        element={
+          isAuthenticated ? (
+            <Navigate to={ROUTES.INICIO} replace />
+          ) : (
+            <Registro />
+          )
+        }
       />
 
       {/* ========== RUTAS PÚBLICAS - EVENTOS ========== */}
@@ -102,5 +108,3 @@ export default function AppRoutes() {
     </Routes>
   );
 }
-
-

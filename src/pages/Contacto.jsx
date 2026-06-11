@@ -1,9 +1,7 @@
 const Contacto = () => {
   return (
     <>
-      <section
-        className="py-5 text-center contacto-hero-ticketti"
-      >
+      <section className="py-5 text-center contacto-hero-ticketti">
         <div className="container">
           <h1>Contacto</h1>
           <p>Estamos aquí para ayudarte</p>
@@ -108,8 +106,8 @@ const Contacto = () => {
                 <div className="card-body">
                   <h5 className="card-title">¿Cómo creo un evento?</h5>
                   <p className="card-text">
-                    Regístrate como organizador, completa tu perfil y utiliza
-                    la herramienta de creación de eventos desde tu dashboard.
+                    Regístrate como organizador, completa tu perfil y utiliza la
+                    herramienta de creación de eventos desde tu dashboard.
                   </p>
                 </div>
               </div>

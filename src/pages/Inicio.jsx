@@ -10,21 +10,43 @@ import { useCarritoGuest } from '@hooks/useCarritoGuest';
 import { Building2, Heart, Search } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import {
-    Alert,
-    Button,
-    Col,
-    Container,
-    Form,
-    InputGroup,
-    Row,
-    Spinner,
+  Alert,
+  Button,
+  Col,
+  Container,
+  Form,
+  InputGroup,
+  Row,
+  Spinner,
 } from 'react-bootstrap';
 
 const CATEGORIAS = [
   { id: 'todo', nombre: 'Todo', generos: [] },
-  { id: 'conciertos', nombre: 'Conciertos', generos: ['ROCK', 'JAZZ', 'POP', 'KPOP', 'METAL', 'RAP', 'RNB', 'INDIE', 'REGGAETOM'] },
-  { id: 'festivales', nombre: 'Festivales Culturales', generos: ['GASTRONOMIA', 'ARTE', 'ARTESANIA', 'FOLCLORE'] },
-  { id: 'cinemovil', nombre: 'Cine Móvil', generos: ['TERROR', 'COMEDIA', 'DRAMA', 'ACCION', 'ROMANCE', 'PARODIA'] },
+  {
+    id: 'conciertos',
+    nombre: 'Conciertos',
+    generos: [
+      'ROCK',
+      'JAZZ',
+      'POP',
+      'KPOP',
+      'METAL',
+      'RAP',
+      'RNB',
+      'INDIE',
+      'REGGAETOM',
+    ],
+  },
+  {
+    id: 'festivales',
+    nombre: 'Festivales Culturales',
+    generos: ['GASTRONOMIA', 'ARTE', 'ARTESANIA', 'FOLCLORE'],
+  },
+  {
+    id: 'cinemovil',
+    nombre: 'Cine Móvil',
+    generos: ['TERROR', 'COMEDIA', 'DRAMA', 'ACCION', 'ROMANCE', 'PARODIA'],
+  },
 ];
 
 const HERO_SLIDES = [
@@ -81,7 +103,7 @@ const Inicio = () => {
     } catch (err) {
       console.error('Error al cargar eventos:', err);
       setError(
-        'No se pudieron cargar los eventos. Por favor, intenta más tarde.',
+        'No se pudieron cargar los eventos. Por favor, intenta más tarde.'
       );
       setEventos([]);
       setEventosFiltrados([]);
@@ -141,7 +163,10 @@ const Inicio = () => {
           });
         } catch (backendError) {
           // Fallback: usar carrito de invitado si el backend falla
-          console.warn('Backend falló, usando carrito de invitado como fallback:', backendError);
+          console.warn(
+            'Backend falló, usando carrito de invitado como fallback:',
+            backendError
+          );
           guestAgregarEntrada({
             eventoId: evento.id,
             eventoNombre: evento.nombre,
@@ -177,17 +202,20 @@ const Inicio = () => {
     let filtrados = eventos;
 
     if (categoriaActiva !== 'todo') {
-      const categoriaSeleccionada = CATEGORIAS.find(c => c.id === categoriaActiva);
-      filtrados = filtrados.filter(evento =>
+      const categoriaSeleccionada = CATEGORIAS.find(
+        (c) => c.id === categoriaActiva
+      );
+      filtrados = filtrados.filter((evento) =>
         categoriaSeleccionada.generos.includes(evento.genero)
       );
     }
 
     if (busqueda.trim()) {
       const termino = busqueda.toLowerCase();
-      filtrados = filtrados.filter(evento =>
-        evento.nombre?.toLowerCase().includes(termino) ||
-        evento.recinto?.ubicacion?.toLowerCase().includes(termino)
+      filtrados = filtrados.filter(
+        (evento) =>
+          evento.nombre?.toLowerCase().includes(termino) ||
+          evento.recinto?.ubicacion?.toLowerCase().includes(termino)
       );
     }
 
@@ -273,7 +301,9 @@ const Inicio = () => {
                         imagen: evento.imagenUrl || '/assets/hero.png',
                         titulo: evento.nombre || 'Evento sin nombre',
                         fecha: evento.fecha,
-                        ubicacion: evento.recinto?.ubicacion || 'Ubicación por confirmar',
+                        ubicacion:
+                          evento.recinto?.ubicacion ||
+                          'Ubicación por confirmar',
                         precio: evento.precioEntrada || 0,
                       }}
                       onComprar={() => handleAddToCart(evento)}
@@ -356,4 +386,3 @@ const Inicio = () => {
 };
 
 export default Inicio;
-

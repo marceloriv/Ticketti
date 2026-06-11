@@ -1,193 +1,142 @@
 /**
- * Estilos para la lista de entradas del carrito
+ * Estilos premium e interactivos para la lista de ítems reservados en el carrito.
  */
 
 .lista-entradas-ticketti {
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  overflow: hidden;
   background: #ffffff;
-  margin: 0;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
+  overflow: hidden;
 }
 
 .lista-entradas-ticketti:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  border-color: #2cacad;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06) !important;
+  border-color: rgba(44, 172, 173, 0.2) !important;
 }
 
-.lista-entradas-ticketti .card-body {
-  background: #ffffff;
-  padding: 1.25rem 1.5rem;
-}
-
-.lista-entradas-row {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.lista-entradas-col {
-  flex: 1;
-}
-
-.lista-entradas-col-info {
-  flex: 2;
-}
-
-.lista-entradas-col-precio {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.lista-entradas-col-total {
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
-}
-
-@media (max-width: 768px) {
-  .lista-entradas-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-
-  .lista-entradas-col {
-    flex: none;
-    width: 100%;
-  }
-
-  .lista-entradas-col-info {
-    flex: none;
-  }
-
-  .lista-entradas-col-precio {
-    justify-content: flex-start;
-  }
-
-  .lista-entradas-col-total {
-    justify-content: flex-start;
-    align-items: flex-start;
-  }
-}
-
-.lista-entradas-vacio {
-  border: 2px dashed #dee2e6;
-  border-radius: 12px;
-  background: #f8f9fa;
-}
-
+/* Filas y columnas del ítem */
 .lista-entradas-icono {
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  border-radius: 8px;
-  padding: 0.75rem;
-  flex-shrink: 0;
+  background: rgba(44, 172, 173, 0.08);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.lista-entradas-ticketti:hover .lista-entradas-icono {
+  background: rgba(44, 172, 173, 0.15);
+  transform: rotate(-5deg);
 }
 
 .lista-entradas-nombre {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-  transition: color 0.3s ease;
+  color: #0f172a;
+  line-height: 1.3;
 }
 
-.lista-entradas-ticketti:hover .lista-entradas-nombre {
-  color: #2cacad;
-}
-
+/* Badge de Bootstrap */
 .lista-entradas-badge {
-  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-  border: 1px solid #81c784;
-  color: #2e7d32;
+  font-size: 0.75rem;
   font-weight: 600;
-  padding: 0.35rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
 }
 
-.lista-entradas-cantidad-badge {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  color: #495057;
-  font-weight: 600;
-  padding: 0.35rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-}
-
-.lista-entradas-precio-container {
-  padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 8px;
-  text-align: center;
-  min-width: 120px;
-}
-
+/* Ajustes de precios */
 .lista-entradas-precio {
   font-size: 1.15rem;
-  font-weight: 700;
-  color: #2c3e50;
+  color: #334155;
+  letter-spacing: -0.2px;
 }
 
 .lista-entradas-total {
-  font-size: 1.4rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #2cacad 0%, #1a8a8b 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+  letter-spacing: -0.5px;
+}
+
+/* Acciones y Botones */
+.lista-entradas-boton-eliminar,
+.lista-entradas-boton-renovar {
+  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s ease;
 }
 
 .lista-entradas-boton-eliminar {
-  border: 2px solid #e74c3c;
-  color: #e74c3c;
-  font-weight: 600;
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
 }
 
 .lista-entradas-boton-eliminar:hover {
-  background: #e74c3c;
-  color: white;
+  background: #ef4444 !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
-}
-
-.lista-entradas-boton-eliminar:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
 }
 
 .lista-entradas-boton-renovar {
-  border: 2px solid #2cacad;
   color: #2cacad;
-  font-weight: 600;
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  border-color: rgba(44, 172, 173, 0.2);
 }
 
 .lista-entradas-boton-renovar:hover {
-  background: #2cacad;
-  color: white;
+  background: #2cacad !important;
+  border-color: #2cacad !important;
+  color: #ffffff !important;
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(44, 172, 173, 0.3);
 }
 
-.lista-entradas-boton-renovar:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
+/* Estado Vacío de Lista de entradas */
+.lista-entradas-vacio {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px dashed #cbd5e1;
+}
+
+.lista-entradas-vacio .rounded-circle {
+  width: 80px;
+  height: 80px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lista-entradas-vacio h5 {
+  color: #334155;
+  font-size: 1.2rem;
+}
+
+.lista-entradas-vacio p {
+  color: #64748b;
+}
+
+/* Responsive Grid adaptaciones */
+@media (max-width: 768px) {
+  .lista-entradas-row {
+    text-align: left;
+  }
+
+  .lista-entradas-col-precio {
+    padding-top: 0.5rem;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .lista-entradas-col-total {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f1f5f9;
+    width: 100%;
+  }
 }
