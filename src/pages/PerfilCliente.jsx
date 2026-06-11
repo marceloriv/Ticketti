@@ -266,7 +266,12 @@ function MisComprasTab({ usuarioId }) {
       const res = await api.get('/Carrito/listar', {
         headers: { 'X-Usuario-Id': usuarioId },
       });
-      setCarritos(res.data?.data || []);
+      const carritos = res.data?.data || [];
+      // Filtrar solo carritos con estado PAGADO
+      const carritosPagados = carritos.filter(
+        (c) => (c.estadoCarrito || c.estado || '').toString().toUpperCase() === 'PAGADO'
+      );
+      setCarritos(carritosPagados);
     } catch {
       setError('No se pudieron cargar las compras.');
     } finally {
@@ -368,7 +373,7 @@ function MisComprasTab({ usuarioId }) {
                 <td>
                   <Button
                     as={Link}
-                    to="/carrito"
+                    to={`/carrito/${idCarrito}`}
                     variant="outline-primary"
                     size="sm"
                   >

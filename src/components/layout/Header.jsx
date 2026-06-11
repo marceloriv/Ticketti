@@ -1,6 +1,7 @@
 import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
 import { useCarritoGuest } from '@hooks/useCarritoGuest';
+import { jwtDecode } from 'jwt-decode';
 import { LogOut, ShoppingCart, Ticket, User } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
 import { Button, Container, Nav, Navbar, Stack } from 'react-bootstrap';
@@ -45,7 +46,7 @@ const Header = () => {
     if (!token) return null;
 
     try {
-      return JSON.parse(atob(token.split('.')[1]));
+      return jwtDecode(token);
     } catch {
       return null;
     }
@@ -100,8 +101,8 @@ const Header = () => {
 
   /**
    * Maneja la navegación al carrito de compras
-   * Solución temporal: navegar siempre a /carrito (carrito de invitado)
-   * hasta que el backend esté arreglado
+   * Para usuarios autenticados, navega a /carrito/{id}
+   * Para usuarios invitados, navega a /carrito
    */
   const handleIrCarrito = useCallback(async () => {
     console.log('[Carrito] Click en icono carrito', {
@@ -110,12 +111,46 @@ const Header = () => {
       isAuthenticated,
     });
 
-    // Solución temporal: navegar siempre a /carrito (carrito de invitado)
-    console.log('[Carrito] Navegando a /carrito (carrito de invitado)');
-    navigate('/carrito');
+    if (isAuthenticated) {
+      let id = carritoId;
+
+      if (!id) {
+        try {
+          console.log('[Carrito] Sin carritoId, inicializando...');
+          const resultado = await inicializarCarrito();
+
+          console.log('[Carrito] Carrito inicializado:', resultado);
+
+          if (resultado?.carritoId) {
+            establecerCarritoId(resultado.carritoId);
+            id = resultado.carritoId;
+          }
+        } catch (e) {
+          console.error('[Carrito] Error al inicializar carrito:', e);
+          // Fallback: navegar a /carrito (carrito de invitado) si el backend falla
+          console.log('[Carrito] Backend falló, navegando a /carrito (carrito de invitado)');
+          navigate('/carrito');
+          return;
+        }
+      }
+
+      if (id) {
+        console.log('[Carrito] Navegando a:', `/carrito/${id}`);
+        navigate(`/carrito/${id}`);
+      } else {
+        console.warn('[Carrito] No hay carritoId después de inicializar, usando carrito de invitado');
+        navigate('/carrito');
+      }
+    } else {
+      // Usuario invitado: navegar a /carrito (sin ID)
+      console.log('[Carrito] Usuario invitado, navegando a /carrito');
+      navigate('/carrito');
+    }
   }, [
-    navigate,
     carritoId,
+    inicializarCarrito,
+    establecerCarritoId,
+    navigate,
     usuario?.rol,
     isAuthenticated,
   ]);

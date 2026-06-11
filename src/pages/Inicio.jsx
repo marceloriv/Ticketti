@@ -126,15 +126,42 @@ const Inicio = () => {
     if (addingToCart) return;
     setAddingToCart(true);
     try {
-      // Solución temporal: usar siempre carrito de invitado hasta que el backend esté arreglado
-      guestAgregarEntrada({
-        eventoId: evento.id,
-        eventoNombre: evento.nombre,
-        imagenUrl: evento.imagenUrl,
-        tipoEntrada: 'General',
-        cantidad: 1,
-        precioUnitario: evento.precioEntrada || 0,
-      });
+      if (isAuthenticated) {
+        // Usuario autenticado: intentar usar backend con fallback a carrito de invitado
+        try {
+          const { carritoId: newCarritoId } = await inicializarCarrito();
+          if (!newCarritoId) throw new Error('No se pudo obtener el carrito');
+          setCarritoId(newCarritoId);
+          establecerCarritoId(newCarritoId);
+          await agregarEntrada({
+            eventoId: evento.id,
+            tipoEntrada: 'General',
+            cantidad: 1,
+            precioUnitario: evento.precioEntrada || 0,
+          });
+        } catch (backendError) {
+          // Fallback: usar carrito de invitado si el backend falla
+          console.warn('Backend falló, usando carrito de invitado como fallback:', backendError);
+          guestAgregarEntrada({
+            eventoId: evento.id,
+            eventoNombre: evento.nombre,
+            imagenUrl: evento.imagenUrl,
+            tipoEntrada: 'General',
+            cantidad: 1,
+            precioUnitario: evento.precioEntrada || 0,
+          });
+        }
+      } else {
+        // Usuario invitado: usar localStorage
+        guestAgregarEntrada({
+          eventoId: evento.id,
+          eventoNombre: evento.nombre,
+          imagenUrl: evento.imagenUrl,
+          tipoEntrada: 'General',
+          cantidad: 1,
+          precioUnitario: evento.precioEntrada || 0,
+        });
+      }
       setMessage(`Entrada agregada al carrito: ${evento.nombre}`);
       setTimeout(() => setMessage(''), 3000);
     } catch (err) {

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 /**
  * URL base de la API
@@ -42,7 +43,29 @@ api.interceptors.request.use(
     const token = localStorage.getItem('token');
     if (token && !esRutaPublica(config)) {
       config.headers.Authorization = `Bearer ${token}`;
+
+      // Decodificar JWT para extraer usuarioId
+      try {
+        const decoded = jwtDecode(token);
+        console.log('[API] JWT decodificado:', decoded);
+        if (decoded.usuarioId) {
+          // El JWT tiene el usuarioId en el claim "usuarioId"
+          // Convertir a Number para asegurar que el backend reciba un Long
+          const usuarioId = Number(decoded.usuarioId);
+          if (!Number.isNaN(usuarioId)) {
+            config.headers['X-Usuario-Id'] = usuarioId;
+            console.log('[API] X-Usuario-Id header agregado:', usuarioId);
+          } else {
+            console.warn('[API] usuarioId no es un número válido:', decoded.usuarioId);
+          }
+        } else {
+          console.warn('[API] JWT no tiene claim usuarioId. Claims disponibles:', Object.keys(decoded));
+        }
+      } catch (e) {
+        console.error('[API] Error decodificando JWT:', e);
+      }
     }
+
     return config;
   },
   (error) => {
@@ -62,11 +85,7 @@ api.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           console.error('Sesión expirada o no autorizada');
-          // Solo redirigir si realmente habia una sesion activa.
-          if (localStorage.getItem('token')) {
-            localStorage.removeItem('token');
-            globalThis.location.href = '/login';
-          }
+          // No eliminar token ni redirigir automáticamente para evitar deslogueos indeseados
           break;
         case 403:
           console.error('Acceso prohibido');

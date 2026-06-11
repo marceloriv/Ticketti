@@ -1,5 +1,6 @@
 import api from '@api/api';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 import { useCallback, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 
@@ -35,13 +36,37 @@ export function AuthProvider({ children }) {
     const tokenGuardado = localStorage.getItem(TOKEN_KEY);
     if (tokenGuardado) {
       setToken(tokenGuardado);
-    }
-    const usuarioGuardado = localStorage.getItem(USER_KEY);
-    if (usuarioGuardado) {
-      try {
-        setUsuario(JSON.parse(usuarioGuardado));
-      } catch {
-        localStorage.removeItem(USER_KEY);
+
+      // Decodificar token para extraer usuarioId si no hay usuario guardado
+      const usuarioGuardado = localStorage.getItem(USER_KEY);
+      if (!usuarioGuardado) {
+        try {
+          const decodedToken = jwtDecode(tokenGuardado);
+          const usuarioData = {
+            rol: decodedToken.rol || 'CLIENTE',
+            id: decodedToken.usuarioId || null,
+            correo: decodedToken.sub || null,
+          };
+          localStorage.setItem(USER_KEY, JSON.stringify(usuarioData));
+          setUsuario(usuarioData);
+        } catch (e) {
+          console.warn('No se pudo decodificar el token JWT:', e);
+        }
+      } else {
+        try {
+          setUsuario(JSON.parse(usuarioGuardado));
+        } catch {
+          localStorage.removeItem(USER_KEY);
+        }
+      }
+    } else {
+      const usuarioGuardado = localStorage.getItem(USER_KEY);
+      if (usuarioGuardado) {
+        try {
+          setUsuario(JSON.parse(usuarioGuardado));
+        } catch {
+          localStorage.removeItem(USER_KEY);
+        }
       }
     }
     setLoading(false);
@@ -80,16 +105,34 @@ export function AuthProvider({ children }) {
         throw new Error(data?.mensaje || 'Token no recibido');
       }
 
-      const usuarioData = data.usuario || { rol: 'CLIENTE', id: null };
+      // Decodificar JWT para extraer usuarioId
+      let decodedToken = {};
+      try {
+        decodedToken = jwtDecode(data.token);
+      } catch (e) {
+        console.warn('No se pudo decodificar el token JWT:', e);
+      }
+
+      const usuarioData = data.usuario || {
+        rol: decodedToken.rol || 'CLIENTE',
+        id: decodedToken.usuarioId || null,
+        correo: decodedToken.sub || null,
+      };
 
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(USER_KEY, JSON.stringify(usuarioData));
 
+      // Limpiar carritoId del localStorage para forzar que se busque un nuevo carrito activo
+      localStorage.removeItem(CARRITO_ID_KEY);
+      setCarritoIdState(null);
+
       setToken(data.token);
       setUsuario(usuarioData);
 
-      // Solución temporal: no migrar carrito de invitado hasta que el backend esté arreglado
-      // migrarCarritoInvitado(usuarioData.id);
+      // Migrar carrito de invitado al backend si existe (fire-and-forget)
+      migrarCarritoInvitado().catch((err) => {
+        console.error('[AuthProvider] Error migrando carrito de invitado:', err);
+      });
 
       return data.token;
     } catch (err) {
@@ -109,10 +152,9 @@ export function AuthProvider({ children }) {
    * 3. Agrega cada entrada del carrito de invitado al carrito del backend
    * 4. Limpia el localStorage después de una migración exitosa
    *
-   * @param {number} usuarioId - ID del usuario autenticado
    * @returns {Promise<void>} Promesa que se resuelve cuando la migración se completa
    */
-  const migrarCarritoInvitado = async (usuarioId) => {
+  const migrarCarritoInvitado = async () => {
     /** Clave utilizada para almacenar el carrito de invitado en localStorage */
     const GUEST_CART_KEY = 'guestCart';
     try {
@@ -122,18 +164,13 @@ export function AuthProvider({ children }) {
       const guestCart = JSON.parse(guestCartStr);
       if (!guestCart || guestCart.length === 0) return;
 
-      // Crear carrito para el usuario
-      const carritoResponse = await api.post('/Carrito/crear', null, {
-        headers: {
-          'X-Usuario-Id': usuarioId,
-          'X-Rol-Usuario-Id': 'CLIENTE',
-        },
-      });
+      // Crear carrito para el usuario (el interceptor agrega headers automáticamente)
+      const carritoResponse = await api.post('/Carrito/crear', null);
 
       const carritoId = carritoResponse.data?.data?.idCarrito;
       if (!carritoId) return;
 
-      // Agregar cada entrada del carrito de invitado
+      // Agregar cada entrada del carrito de invitado (el interceptor agrega headers automáticamente)
       for (const entrada of guestCart) {
         try {
           await api.post(`/Carrito/${carritoId}/entradas`, {
@@ -141,10 +178,6 @@ export function AuthProvider({ children }) {
             tipoEntrada: entrada.tipoEntrada,
             cantidad: entrada.cantidad,
             precioUnitario: entrada.precioUnitario,
-          }, {
-            headers: {
-              'X-Usuario-Id': usuarioId,
-            },
           });
         } catch (err) {
           console.error('Error migrando entrada:', err);

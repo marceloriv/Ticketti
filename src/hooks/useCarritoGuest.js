@@ -37,7 +37,11 @@ export const useCarritoGuest = () => {
    */
   const saveCart = useCallback((newCart) => {
     setCart(newCart);
-    localStorage.setItem(GUEST_CART_KEY, JSON.stringify(newCart));
+    try {
+      localStorage.setItem(GUEST_CART_KEY, JSON.stringify(newCart));
+    } catch (err) {
+      console.error('[useCarritoGuest] Error guardando carrito en localStorage:', err);
+    }
   }, []);
 
   /**
