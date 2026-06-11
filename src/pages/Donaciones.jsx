@@ -1,27 +1,27 @@
 import {
-    crearOrganizacion,
-    getCausasPorOrganizacion,
-    getOrganizaciones,
-    getTotalPorOrganizacion,
+  crearOrganizacion,
+  getCausasPorOrganizacion,
+  getOrganizaciones,
+  getTotalPorOrganizacion,
 } from '@api/donacionesApi';
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
 import { Building2, Eye, Heart, Plus, TrendingUp } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import {
-    Alert,
-    Badge,
-    Button,
-    Card,
-    Col,
-    Container,
-    Form,
-    Modal,
-    Row,
-    Spinner,
-    Tab,
-    Table,
-    Tabs,
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Col,
+  Container,
+  Form,
+  Modal,
+  Row,
+  Spinner,
+  Tab,
+  Table,
+  Tabs,
 } from 'react-bootstrap';
 
 const Donaciones = () => {
@@ -154,9 +154,7 @@ const Donaciones = () => {
           <Row xs={1} md={2} lg={3} className="g-4">
             {organizaciones.map((org) => (
               <Col key={org.idOrganizacion}>
-                <Card
-                  className="h-100 border-0 shadow-sm donaciones-card"
-                >
+                <Card className="h-100 border-0 shadow-sm donaciones-card">
                   <Card.Body className="p-4">
                     <div className="d-flex align-items-center gap-2 mb-3">
                       <Building2 size={22} className="text-ticketti" />
@@ -255,10 +253,7 @@ const Donaciones = () => {
               </Tab>
               <Tab eventKey="total" title="Monto Recaudado">
                 <div className="text-center py-4">
-                  <TrendingUp
-                    size={48}
-                    className="text-ticketti mb-3"
-                  />
+                  <TrendingUp size={48} className="text-ticketti mb-3" />
                   <h3 className="fw-bold">
                     {total !== null
                       ? new Intl.NumberFormat('es-CL', {
@@ -353,7 +348,11 @@ const Donaciones = () => {
                 disabled={guardando}
                 className="btn-ticketti"
               >
-                {guardando ? <Spinner size="sm" className="spinner-ticketti" /> : 'Guardar'}
+                {guardando ? (
+                  <Spinner size="sm" className="spinner-ticketti" />
+                ) : (
+                  'Guardar'
+                )}
               </Button>
             </div>
           </Form>
