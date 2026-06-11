@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import carritoApi from '../api/carritoApi';
 
 /**
@@ -28,6 +28,14 @@ export const useCarrito = (carritoId) => {
   const [error, setError] = useState(null);
   const [resumen, setResumen] = useState(null);
   const [carritoCreado, setCarritoCreado] = useState(null);
+  const [activeCarritoId, setActiveCarritoId] = useState(carritoId);
+
+  // Sincronizar el ID del carrito si cambia el parámetro inicial del hook
+  useEffect(() => {
+    if (carritoId) {
+      setActiveCarritoId(carritoId);
+    }
+  }, [carritoId]);
 
   /**
    * Limpia el mensaje de error activo en el estado.
@@ -68,6 +76,7 @@ export const useCarrito = (carritoId) => {
     try {
       const carrito = await carritoApi.obtenerCarrito(id);
       setCarritoCreado(carrito);
+      setActiveCarritoId(id);
       return carrito;
     } catch (err) {
       const msg =
@@ -82,16 +91,18 @@ export const useCarrito = (carritoId) => {
   }, []);
 
   /**
-   * Obtiene el resumen de montos y totales del carrito activo (`carritoId`).
+   * Obtiene el resumen de montos y totales del carrito activo.
    *
+   * @param {number|string} [alternateCarritoId] - ID de carrito alternativo para el flujo de inicialización.
    * @returns {Promise<Object>} Resumen del carrito.
    */
-  const obtenerResumen = useCallback(async () => {
-    if (!carritoId) return;
+  const obtenerResumen = useCallback(async (alternateCarritoId) => {
+    const targetId = alternateCarritoId || activeCarritoId;
+    if (!targetId) return;
     setLoading(true);
     setError(null);
     try {
-      const datos = await carritoApi.obtenerResumen(carritoId);
+      const datos = await carritoApi.obtenerResumen(targetId);
       setResumen(datos || null);
       setCarritoCreado(null);
       return datos;
@@ -106,22 +117,28 @@ export const useCarrito = (carritoId) => {
     } finally {
       setLoading(false);
     }
-  }, [carritoId]);
+  }, [activeCarritoId]);
 
   /**
    * Agrega una entrada al carrito activo.
    *
    * @param {Object} entradaData - Estructura de la entrada (eventoId, tipo, cantidad, precio).
+   * @param {number|string} [alternateCarritoId] - ID de carrito alternativo.
    * @returns {Promise<Object>} Respuesta del servidor.
    */
   const agregarEntrada = useCallback(
-    async (entradaData) => {
-      if (!carritoId) return;
+    async (entradaData, alternateCarritoId) => {
+      const targetId = alternateCarritoId || activeCarritoId;
+      if (!targetId) {
+        const errorMsg = 'No hay un ID de carrito activo para agregar entradas.';
+        setError(errorMsg);
+        throw new Error(errorMsg);
+      }
       setLoading(true);
       setError(null);
       try {
-        const datos = await carritoApi.agregarEntrada(carritoId, entradaData);
-        await obtenerResumen();
+        const datos = await carritoApi.agregarEntrada(targetId, entradaData);
+        await obtenerResumen(targetId);
         return datos;
       } catch (err) {
         const msg =
@@ -135,23 +152,25 @@ export const useCarrito = (carritoId) => {
         setLoading(false);
       }
     },
-    [carritoId, obtenerResumen]
+    [activeCarritoId, obtenerResumen]
   );
 
   /**
    * Elimina un ítem específico del desglose del carrito activo.
    *
    * @param {number|string} detalleId - ID de detalle del ítem.
+   * @param {number|string} [alternateCarritoId] - ID de carrito alternativo.
    * @returns {Promise<Object>} Respuesta del servidor.
    */
   const eliminarEntrada = useCallback(
-    async (detalleId) => {
-      if (!carritoId) return;
+    async (detalleId, alternateCarritoId) => {
+      const targetId = alternateCarritoId || activeCarritoId;
+      if (!targetId) return;
       setLoading(true);
       setError(null);
       try {
-        const datos = await carritoApi.eliminarEntrada(carritoId, detalleId);
-        await obtenerResumen();
+        const datos = await carritoApi.eliminarEntrada(targetId, detalleId);
+        await obtenerResumen(targetId);
         return datos;
       } catch (err) {
         const msg =
@@ -165,26 +184,28 @@ export const useCarrito = (carritoId) => {
         setLoading(false);
       }
     },
-    [carritoId, obtenerResumen]
+    [activeCarritoId, obtenerResumen]
   );
 
   /**
    * Actualiza la información o estado general del carrito activo.
    *
    * @param {Object} entradaData - Datos a actualizar.
+   * @param {number|string} [alternateCarritoId] - ID de carrito alternativo.
    * @returns {Promise<Object>} Carrito actualizado.
    */
   const actualizarCarrito = useCallback(
-    async (entradaData) => {
-      if (!carritoId) return;
+    async (entradaData, alternateCarritoId) => {
+      const targetId = alternateCarritoId || activeCarritoId;
+      if (!targetId) return;
       setLoading(true);
       setError(null);
       try {
         const datos = await carritoApi.actualizarCarrito(
-          carritoId,
+          targetId,
           entradaData
         );
-        await obtenerResumen();
+        await obtenerResumen(targetId);
         return datos;
       } catch (err) {
         const msg =
@@ -198,18 +219,20 @@ export const useCarrito = (carritoId) => {
         setLoading(false);
       }
     },
-    [carritoId, obtenerResumen]
+    [activeCarritoId, obtenerResumen]
   );
 
   /**
    * Inicia el flujo de checkout vinculando la compra a una causa social.
    *
    * @param {number|string} causaSocialId - ID de la causa social seleccionada.
+   * @param {number|string} [alternateCarritoId] - ID de carrito alternativo.
    * @returns {Promise<Object>} Transacción o respuesta de checkout iniciada.
    */
   const iniciarCheckout = useCallback(
-    async (causaSocialId) => {
-      if (!carritoId) return;
+    async (causaSocialId, alternateCarritoId) => {
+      const targetId = alternateCarritoId || activeCarritoId;
+      if (!targetId) return;
       setLoading(true);
       setError(null);
       try {
@@ -218,7 +241,7 @@ export const useCarrito = (carritoId) => {
           Date.now().toString(36) +
           Math.random().toString(36).substring(2, 10);
 
-        const datos = await carritoApi.iniciarCheckout(carritoId, {
+        const datos = await carritoApi.iniciarCheckout(targetId, {
           causaSocialId,
           idempotencyKey,
         });
@@ -235,21 +258,23 @@ export const useCarrito = (carritoId) => {
         setLoading(false);
       }
     },
-    [carritoId]
+    [activeCarritoId]
   );
 
   /**
    * Renueva el bloqueo temporal de entradas (reserva) del carrito activo.
    *
+   * @param {number|string} [alternateCarritoId] - ID de carrito alternativo.
    * @returns {Promise<Object>} Datos actualizados.
    */
-  const renovarReserva = useCallback(async () => {
-    if (!carritoId) return;
+  const renovarReserva = useCallback(async (alternateCarritoId) => {
+    const targetId = alternateCarritoId || activeCarritoId;
+    if (!targetId) return;
     setLoading(true);
     setError(null);
     try {
-      const datos = await carritoApi.renovarReserva(carritoId);
-      await obtenerResumen();
+      const datos = await carritoApi.renovarReserva(targetId);
+      await obtenerResumen(targetId);
       return datos;
     } catch (err) {
       const msg =
@@ -262,7 +287,7 @@ export const useCarrito = (carritoId) => {
     } finally {
       setLoading(false);
     }
-  }, [carritoId, obtenerResumen]);
+  }, [activeCarritoId, obtenerResumen]);
 
   /**
    * Lista todos los carritos asociados al usuario.
@@ -300,6 +325,7 @@ export const useCarrito = (carritoId) => {
       );
       if (activo?.idCarrito || activo?.id) {
         const id = activo.idCarrito || activo.id;
+        setActiveCarritoId(id);
         return { carritoId: id, carrito: activo };
       }
     } catch (e) {
@@ -313,6 +339,7 @@ export const useCarrito = (carritoId) => {
       const nuevo = await crearCarrito();
       if (!nuevo) return { carritoId: null, carrito: null };
       const id = nuevo?.idCarrito || nuevo?.id;
+      setActiveCarritoId(id);
       return { carritoId: id || null, carrito: nuevo };
     } catch (e) {
       console.error(
