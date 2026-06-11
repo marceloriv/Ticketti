@@ -19,7 +19,9 @@ class ErrorBoundary extends Component {
       return (
         <div className="error-boundary-ticketti">
           <h1>Algo salió mal</h1>
-          <p><strong>Error:</strong> {this.state.error?.message}</p>
+          <p>
+            <strong>Error:</strong> {this.state.error?.message}
+          </p>
           <pre className="error-boundary-ticketti__stack">
             {this.state.error?.stack}
           </pre>
