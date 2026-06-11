@@ -56,10 +56,16 @@ api.interceptors.request.use(
             config.headers['X-Usuario-Id'] = usuarioId;
             console.log('[API] X-Usuario-Id header agregado:', usuarioId);
           } else {
-            console.warn('[API] usuarioId no es un número válido:', decoded.usuarioId);
+            console.warn(
+              '[API] usuarioId no es un número válido:',
+              decoded.usuarioId
+            );
           }
         } else {
-          console.warn('[API] JWT no tiene claim usuarioId. Claims disponibles:', Object.keys(decoded));
+          console.warn(
+            '[API] JWT no tiene claim usuarioId. Claims disponibles:',
+            Object.keys(decoded)
+          );
         }
       } catch (e) {
         console.error('[API] Error decodificando JWT:', e);
