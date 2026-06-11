@@ -1,13 +1,19 @@
-import api from '@api/api';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
 import { useCallback, useEffect, useState } from 'react';
+import clienteApi from '../../api/clienteApi';
+import usuariosApi from '../../api/usuariosApi';
 import { AuthContext } from './AuthContext';
 
+/** Clave de localStorage para el JWT Token */
 const TOKEN_KEY = 'token';
+/** Clave de localStorage para los datos serializados del usuario */
 const USER_KEY = 'user';
+/** Clave de localStorage para el ID del carrito activo */
 const CARRITO_ID_KEY = 'carritoId';
 
+/**
+ * Cliente Axios configurado localmente para el microservicio de autenticación (/auth).
+ */
 const authApi = axios.create({
   baseURL: '/auth',
   timeout: 10000,
@@ -18,9 +24,12 @@ const authApi = axios.create({
 });
 
 /**
- * AuthProvider — Gestiona autenticación y expone carritoId al resto de la app.
- * No importa useCarrito aqui para no violar las reglas de React Hooks
- * (los hooks solo se llaman en el nivel superior de componentes o hooks personalizados).
+ * Proveedor de contexto para la autenticación y estado del usuario.
+ * Controla el ciclo de vida de la sesión (login, registro, logout) y gestiona la migración del carrito.
+ *
+ * @param {Object} props - Propiedades del componente.
+ * @param {React.ReactNode} props.children - Elementos hijos.
+ * @returns {React.JSX.Element} AuthContext Provider.
  */
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
@@ -31,48 +40,30 @@ export function AuthProvider({ children }) {
   });
   const [loading, setLoading] = useState(true);
 
-  // Al cargar, intentar recuperar usuario desde localStorage
+  // Al cargar, recuperar credenciales almacenadas del localStorage
   useEffect(() => {
     const tokenGuardado = localStorage.getItem(TOKEN_KEY);
     if (tokenGuardado) {
       setToken(tokenGuardado);
-
-      // Decodificar token para extraer usuarioId si no hay usuario guardado
-      const usuarioGuardado = localStorage.getItem(USER_KEY);
-      if (!usuarioGuardado) {
-        try {
-          const decodedToken = jwtDecode(tokenGuardado);
-          const usuarioData = {
-            rol: decodedToken.rol || 'CLIENTE',
-            id: decodedToken.usuarioId || null,
-            correo: decodedToken.sub || null,
-          };
-          localStorage.setItem(USER_KEY, JSON.stringify(usuarioData));
-          setUsuario(usuarioData);
-        } catch (e) {
-          console.warn('No se pudo decodificar el token JWT:', e);
-        }
-      } else {
-        try {
-          setUsuario(JSON.parse(usuarioGuardado));
-        } catch {
-          localStorage.removeItem(USER_KEY);
-        }
-      }
-    } else {
-      const usuarioGuardado = localStorage.getItem(USER_KEY);
-      if (usuarioGuardado) {
-        try {
-          setUsuario(JSON.parse(usuarioGuardado));
-        } catch {
-          localStorage.removeItem(USER_KEY);
-        }
+    }
+    const usuarioGuardado = localStorage.getItem(USER_KEY);
+    if (usuarioGuardado) {
+      try {
+        setUsuario(JSON.parse(usuarioGuardado));
+      } catch {
+        localStorage.removeItem(USER_KEY);
       }
     }
     setLoading(false);
   }, []);
 
-  // Registrar usuario
+  /**
+   * Registra un nuevo usuario en el sistema.
+   * Utiliza el módulo usuariosApi para llamar al microservicio.
+   *
+   * @param {Object} form - Datos del formulario.
+   * @returns {Promise<Object>} Datos del usuario registrado devueltos por la API.
+   */
   const register = async (form) => {
     const datosRegistro = {
       nombre: form.nombre || form.username || '',
@@ -83,18 +74,29 @@ export function AuthProvider({ children }) {
       rol: form.rol || 'CLIENTE',
     };
     try {
-      const resp = await api.post('/usuarios', datosRegistro, { skipAuth: true });
-      return resp.data;
+      const data = await usuariosApi.registrarUsuario(datosRegistro);
+      return data;
     } catch (err) {
-      const msg = err.response?.data?.mensaje || 'Error al registrar usuario';
+      const msg =
+        err.response?.data?.mensaje ||
+        err.message ||
+        'Error al registrar usuario';
       throw new Error(msg);
     }
   };
 
-  // Iniciar sesión
+  /**
+   * Inicia sesión autenticando al usuario contra el microservicio /auth/login.
+   * Al autenticar exitosamente, se almacena el JWT en el localStorage
+   * y se migra el carrito del invitado si existe.
+   *
+   * @param {Object} credentials - Credenciales del formulario.
+   * @returns {Promise<string>} Token JWT obtenido.
+   */
   const login = async (credentials) => {
     const payload = {
-      correo: credentials.correo || credentials.email || credentials.username || '',
+      correo:
+        credentials.correo || credentials.email || credentials.username || '',
       contrasena: credentials.contrasena || credentials.password || '',
     };
     try {
@@ -102,60 +104,35 @@ export function AuthProvider({ children }) {
       const data = resp.data;
 
       if (!data || !data.token) {
-        throw new Error(data?.mensaje || 'Token no recibido');
+        throw new Error(data?.mensaje || 'Token no recibido del servidor');
       }
 
-      // Decodificar JWT para extraer usuarioId
-      let decodedToken = {};
-      try {
-        decodedToken = jwtDecode(data.token);
-      } catch (e) {
-        console.warn('No se pudo decodificar el token JWT:', e);
-      }
-
-      const usuarioData = data.usuario || {
-        rol: decodedToken.rol || 'CLIENTE',
-        id: decodedToken.usuarioId || null,
-        correo: decodedToken.sub || null,
-      };
+      const usuarioData = data.usuario || { rol: 'CLIENTE', id: null };
 
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(USER_KEY, JSON.stringify(usuarioData));
 
-      // Limpiar carritoId del localStorage para forzar que se busque un nuevo carrito activo
-      localStorage.removeItem(CARRITO_ID_KEY);
-      setCarritoIdState(null);
-
       setToken(data.token);
       setUsuario(usuarioData);
 
-      // Migrar carrito de invitado al backend si existe (fire-and-forget)
-      migrarCarritoInvitado().catch((err) => {
-        console.error('[AuthProvider] Error migrando carrito de invitado:', err);
-      });
+      // Migrar carrito de invitado al backend si existe
+      migrarCarritoInvitado(usuarioData.id);
 
       return data.token;
     } catch (err) {
-      const msg = err.response?.data?.mensaje || 'Error al iniciar sesión';
+      const msg =
+        err.response?.data?.mensaje || err.message || 'Error al iniciar sesión';
       throw new Error(msg);
     }
   };
 
-  // Migrar carrito de localStorage al backend
   /**
-   * Migra el carrito de compras de un usuario invitado al backend
-   * cuando el usuario inicia sesión por primera vez.
+   * Migra las entradas guardadas localmente en localStorage (modo invitado)
+   * hacia un carrito persistente en el backend al iniciar sesión.
    *
-   * Este método:
-   * 1. Lee el carrito del localStorage
-   * 2. Crea un nuevo carrito en el backend para el usuario autenticado
-   * 3. Agrega cada entrada del carrito de invitado al carrito del backend
-   * 4. Limpia el localStorage después de una migración exitosa
-   *
-   * @returns {Promise<void>} Promesa que se resuelve cuando la migración se completa
+   * @param {number|string} usuarioId - ID del usuario autenticado.
    */
-  const migrarCarritoInvitado = async () => {
-    /** Clave utilizada para almacenar el carrito de invitado en localStorage */
+  const migrarCarritoInvitado = async (usuarioId) => {
     const GUEST_CART_KEY = 'guestCart';
     try {
       const guestCartStr = localStorage.getItem(GUEST_CART_KEY);
@@ -164,34 +141,52 @@ export function AuthProvider({ children }) {
       const guestCart = JSON.parse(guestCartStr);
       if (!guestCart || guestCart.length === 0) return;
 
-      // Crear carrito para el usuario (el interceptor agrega headers automáticamente)
-      const carritoResponse = await api.post('/Carrito/crear', null);
+      // Crear un nuevo carrito en el backend asociado al usuario
+      const carritoResponse = await clienteApi.post('/Carrito/crear', null, {
+        headers: {
+          'X-Usuario-Id': usuarioId,
+          'X-Rol-Usuario-Id': 'CLIENTE',
+        },
+      });
 
-      const carritoId = carritoResponse.data?.data?.idCarrito;
-      if (!carritoId) return;
+      const idNuevoCarrito = carritoResponse.data?.data?.idCarrito;
+      if (!idNuevoCarrito) return;
 
-      // Agregar cada entrada del carrito de invitado (el interceptor agrega headers automáticamente)
+      // Migrar cada entrada secuencialmente
       for (const entrada of guestCart) {
         try {
-          await api.post(`/Carrito/${carritoId}/entradas`, {
-            eventoId: entrada.eventoId,
-            tipoEntrada: entrada.tipoEntrada,
-            cantidad: entrada.cantidad,
-            precioUnitario: entrada.precioUnitario,
-          });
+          await clienteApi.post(
+            `/Carrito/${idNuevoCarrito}/entradas`,
+            {
+              eventoId: entrada.eventoId,
+              tipoEntrada: entrada.tipoEntrada,
+              cantidad: entrada.cantidad,
+              precioUnitario: entrada.precioUnitario,
+            },
+            {
+              headers: {
+                'X-Usuario-Id': usuarioId,
+              },
+            }
+          );
         } catch (err) {
-          console.error('Error migrando entrada:', err);
+          console.error(
+            '[AuthProvider] Error migrando entrada individual:',
+            err
+          );
         }
       }
 
-      // Limpiar carrito de invitado después de migrar
+      // Limpiar el carrito local tras la migración exitosa
       localStorage.removeItem(GUEST_CART_KEY);
     } catch (err) {
-      console.error('Error migrando carrito de invitado:', err);
+      console.error('[AuthProvider] Error al migrar carrito de invitado:', err);
     }
   };
 
-  // Cerrar sesión
+  /**
+   * Cierra la sesión activa eliminando los tokens y datos de usuario locales.
+   */
   const logout = () => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
@@ -201,7 +196,9 @@ export function AuthProvider({ children }) {
     setCarritoIdState(null);
   };
 
-  // Establecer carritoId explicitamente
+  /**
+   * Guarda y establece el ID del carrito activo en el estado y localStorage.
+   */
   const establecerCarritoId = useCallback((id) => {
     const numId = Number(id);
     if (Number.isNaN(numId) || numId <= 0) return;
@@ -211,16 +208,16 @@ export function AuthProvider({ children }) {
 
   const isAuthenticated = !!token;
 
+  /**
+   * Helper para realizar peticiones autenticadas HTTP de forma directa
+   * inyectando las cabeceras JWT en la llamada.
+   */
   const authFetch = async (url, options = {}) => {
     const tokenActual = localStorage.getItem(TOKEN_KEY);
     const headers = { ...(options.headers || {}) };
     if (tokenActual) headers.Authorization = `Bearer ${tokenActual}`;
-    return api({ url, headers, ...options });
+    return clienteApi({ url, headers, ...options });
   };
-
-  // Los componentes hijos usan useCarrito directamente y llaman a
-  // establecerCarritoId(id) cuando obtienen el carrito del backend.
-  // Esto evita llamar a un hook dentro de un callback del contexto.
 
   const value = {
     token,
