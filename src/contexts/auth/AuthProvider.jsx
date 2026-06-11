@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useCallback, useEffect, useState } from 'react';
+import { jwtDecode } from 'jwt-decode';
 import clienteApi from '../../api/clienteApi';
 import usuariosApi from '../../api/usuariosApi';
 import { AuthContext } from './AuthContext';
@@ -107,7 +108,21 @@ export function AuthProvider({ children }) {
         throw new Error(data?.mensaje || 'Token no recibido del servidor');
       }
 
-      const usuarioData = data.usuario || { rol: 'CLIENTE', id: null };
+      // Decodificar el token para obtener el rol, id de usuario y correo
+      let usuarioData = { rol: 'CLIENTE', id: null, correo: payload.correo };
+      try {
+        const decoded = jwtDecode(data.token);
+        if (decoded) {
+          usuarioData = {
+            id: decoded.usuarioId || null,
+            rol: decoded.rol || 'CLIENTE',
+            correo: decoded.sub || decoded.correo || payload.correo,
+            nombre: decoded.nombre || payload.correo.split('@')[0]
+          };
+        }
+      } catch (decodeErr) {
+        console.warn('[AuthProvider] Error decodificando token tras login:', decodeErr);
+      }
 
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(USER_KEY, JSON.stringify(usuarioData));
@@ -116,7 +131,9 @@ export function AuthProvider({ children }) {
       setUsuario(usuarioData);
 
       // Migrar carrito de invitado al backend si existe
-      migrarCarritoInvitado(usuarioData.id);
+      if (usuarioData.id) {
+        migrarCarritoInvitado(usuarioData.id);
+      }
 
       return data.token;
     } catch (err) {
