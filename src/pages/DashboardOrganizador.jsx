@@ -30,9 +30,7 @@ const DashboardOrganizador = () => {
               </p>
             </div>
             {/* MSEventos: conectar botón con modal/página de crear evento */}
-            <Button
-              className="d-flex align-items-center gap-2 btn-ticketti"
-            >
+            <Button className="d-flex align-items-center gap-2 btn-ticketti">
               <Plus size={18} /> Crear evento
             </Button>
           </div>

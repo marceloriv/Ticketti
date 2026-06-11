@@ -9,7 +9,6 @@ import {
   Send,
 } from 'lucide-react';
 import '@/styles/components/Contacto.css';
-
 /**
  * Página de contacto de la plataforma Ticketti.
  * Proporciona un formulario para consultas y muestra información de contacto
@@ -27,11 +26,9 @@ const Contacto = () => {
     e.preventDefault();
     // Lógica futura para enviar el mensaje a un microservicio de contacto
   };
-
   return (
     <div className="contacto-page">
       <Header />
-
       {/* Hero Section */}
       <section className="contacto-hero-ticketti text-center py-5">
         <div className="container py-3">
@@ -42,7 +39,6 @@ const Contacto = () => {
           </p>
         </div>
       </section>
-
       {/* Main Content Section */}
       <section className="py-5 grow">
         <div className="container">
@@ -59,7 +55,6 @@ const Contacto = () => {
                     antes posible para ayudarte con tus entradas, eventos o soporte.
                   </p>
                 </div>
-
                 {/* Contact Info Card */}
                 <div className="contacto-info-card p-4 shadow-sm">
                   <h5 className="fw-bold mb-3 text-dark">Información de contacto</h5>
@@ -73,7 +68,6 @@ const Contacto = () => {
                         <strong className="text-dark">contacto@ticketti.org</strong>
                       </div>
                     </div>
-
                     <div className="d-flex align-items-center gap-3">
                       <div className="contacto-icon-wrapper">
                         <Phone size={18} />
@@ -83,7 +77,6 @@ const Contacto = () => {
                         <strong className="text-dark">+56 9 1234 5678</strong>
                       </div>
                     </div>
-
                     <div className="d-flex align-items-center gap-3">
                       <div className="contacto-icon-wrapper">
                         <MapPin size={18} />
@@ -95,7 +88,6 @@ const Contacto = () => {
                     </div>
                   </div>
                 </div>
-
                 {/* Working Hours Card */}
                 <div className="contacto-info-card p-4 shadow-sm">
                   <h5 className="fw-bold mb-3 text-dark">Horario de atención</h5>
@@ -120,7 +112,6 @@ const Contacto = () => {
                 </div>
               </div>
             </div>
-
             {/* Contact Form Card */}
             <div className="col-lg-7">
               <div className="contacto-form-card p-4 p-md-5 shadow-sm h-100">
@@ -139,7 +130,6 @@ const Contacto = () => {
                         required
                       />
                     </div>
-
                     <div className="col-md-6 mb-3">
                       <label htmlFor="email" className="form-label">
                         Correo electrónico
@@ -153,7 +143,6 @@ const Contacto = () => {
                       />
                     </div>
                   </div>
-
                   <div className="mb-3">
                     <label htmlFor="asunto" className="form-label">
                       Asunto
@@ -166,7 +155,6 @@ const Contacto = () => {
                       required
                     />
                   </div>
-
                   <div className="mb-4">
                     <label htmlFor="mensaje" className="form-label">
                       Mensaje
@@ -179,7 +167,6 @@ const Contacto = () => {
                       required
                     ></textarea>
                   </div>
-
                   <div className="text-end">
                     <button type="submit" className="btn btn-enviar-contacto">
                       <Send size={16} />
@@ -190,11 +177,9 @@ const Contacto = () => {
               </div>
             </div>
           </div>
-
           {/* FAQs Section */}
           <div className="pt-4">
             <h2 className="text-center faq-section-title">Preguntas Frecuentes</h2>
-
             <div className="row g-4">
               <div className="col-md-4">
                 <div className="faq-card p-4 shadow-sm">
@@ -210,7 +195,6 @@ const Contacto = () => {
                   </div>
                 </div>
               </div>
-
               <div className="col-md-4">
                 <div className="faq-card p-4 shadow-sm">
                   <div className="card-body p-0">
@@ -226,7 +210,6 @@ const Contacto = () => {
                   </div>
                 </div>
               </div>
-
               <div className="col-md-4">
                 <div className="faq-card p-4 shadow-sm">
                   <div className="card-body p-0">
@@ -245,10 +228,8 @@ const Contacto = () => {
           </div>
         </div>
       </section>
-
       <Footer />
     </div>
   );
 };
-
 export default Contacto;

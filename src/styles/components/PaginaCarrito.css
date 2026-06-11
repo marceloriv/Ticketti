@@ -1,118 +1,173 @@
 /**
- * Estilos para la página del carrito de compras
+ * Estilos refinados y premium para la página principal del carrito de compras de Ticketti.
  */
 
 .pagina-carrito-container {
-  padding: 2rem 1.5rem;
-  min-height: calc(100vh - 200px);
+  padding: 3rem 1.5rem;
+  min-height: calc(100vh - 180px);
   max-width: 1200px;
   margin: 0 auto;
 }
 
+/* Encabezado Principal */
 .pagina-carrito-header-card {
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e9ecef;
-}
-
-.pagina-carrito-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  transition: transform 0.3s ease;
 }
 
 .pagina-carrito-header-icon {
   color: #2cacad;
-  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.pagina-carrito-header-card:hover .pagina-carrito-header-icon {
+  transform: scale(1.1);
 }
 
 .pagina-carrito-titulo {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: -0.5px;
 }
 
 .pagina-carrito-subtitulo {
-  font-size: 1rem;
-  color: #343a40;
-  margin-bottom: 0;
+  font-size: 0.95rem;
+  color: #64748b;
   font-weight: 500;
 }
 
+/* Estado de Carga (Spinner) */
 .pagina-carrito-loading {
-  min-height: 300px;
-  padding: 3rem;
+  min-height: 350px;
+  padding: 4rem;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
+/* Estado Vacío del Carrito */
 .pagina-carrito-vacio {
   text-align: center;
-  padding: 4rem 3rem;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 16px;
+  padding: 5rem 3rem;
+  background: #ffffff;
+  border-radius: 20px;
   margin: 2rem 0;
-  border: 2px dashed #dee2e6;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
 }
 
 .pagina-carrito-vacio-icono {
-  color: #adb5bd;
+  color: #94a3b8;
   margin-bottom: 1.5rem;
+  display: inline-block;
+  padding: 1.5rem;
+  background: #f1f5f9;
+  border-radius: 50%;
+  animation: floatIcon 3s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 .pagina-carrito-vacio-titulo {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #495057;
-  margin-bottom: 1rem;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.75rem;
 }
 
 .pagina-carrito-vacio-texto {
   font-size: 1rem;
-  color: #6c757d;
-  margin-bottom: 1.5rem;
+  color: #64748b;
+  max-width: 400px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
 }
 
+/* Contenido Principal Grid */
 .pagina-carrito-contenido {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
 
 .pagina-carrito-entradas {
-  padding-right: 1rem;
-  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 
 .pagina-carrito-resumen {
   position: sticky;
-  top: 100px;
+  top: 90px;
   height: fit-content;
-  padding-left: 0.5rem;
+  z-index: 100;
 }
 
+/* Alertas Estilizadas */
 .pagina-carrito-alerta {
-  margin-bottom: 1.5rem;
-  border-radius: 8px;
-}
-
-.pagina-carrito-info-card {
-  border: 1px solid #dee2e6;
+  border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  border-color: #90caf9;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  font-weight: 500;
+  font-size: 0.95rem;
 }
 
-.pagina-carrito-boton-inicio {
-  margin-top: 1rem;
-  padding: 0.75rem 2rem;
+/* Tarjeta Informativa de Invitado */
+.pagina-carrito-info-card {
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.08);
+}
+
+.pagina-carrito-info-card strong {
+  color: #1e3a8a;
+  font-size: 1.05rem;
+}
+
+.pagina-carrito-info-card p {
+  color: #1e40af;
+}
+
+.pagina-carrito-info-card .btn {
+  background: #3b82f6;
+  border: none;
+  border-radius: 10px;
   font-weight: 600;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  padding: 0.6rem 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.pagina-carrito-info-card .btn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+/* Botón Volver / Explorar */
+.pagina-carrito-boton-inicio {
+  padding: 0.8rem 2.5rem;
+  font-weight: 700;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: linear-gradient(135deg, #2cacad 0%, #1a8a8b 100%);
   border: none;
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(44, 172, 173, 0.3);
 }
 
 .pagina-carrito-boton-inicio:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(44, 172, 173, 0.4);
+  box-shadow: 0 8px 25px rgba(44, 172, 173, 0.45);
   background: linear-gradient(135deg, #1a8a8b 0%, #0f6a6b 100%);
 }

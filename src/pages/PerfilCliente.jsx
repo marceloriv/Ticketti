@@ -5,15 +5,15 @@ import { useAuth } from '@hooks/useAuth';
 import { Heart, Mail, RefreshCw, ShoppingBag, User } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import {
-    Alert,
-    Badge,
-    Button,
-    Card,
-    Container,
-    Nav,
-    Spinner,
-    Tab,
-    Table,
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Container,
+  Nav,
+  Spinner,
+  Tab,
+  Table,
 } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
@@ -108,9 +108,7 @@ const PerfilCliente = () => {
                 <h4 className="fw-bold mb-1">
                   {usuario?.nombre || 'Mi perfil'}
                 </h4>
-                <Badge className="badge-ticketti">
-                  CLIENTE
-                </Badge>
+                <Badge className="badge-ticketti">CLIENTE</Badge>
               </div>
             </Card.Body>
           </Card>
@@ -227,8 +225,13 @@ const PerfilCliente = () => {
                   <Tab.Pane eventKey="donaciones">
                     <Alert variant="info" className="text-center py-4">
                       <Heart size={24} className="mb-2 text-ticketti" />
-                      <p className="mb-1 fw-semibold">Historial de donaciones próximamente</p>
-                      <p className="text-muted small mb-0">MSDonaciones — GET /api/donaciones/usuario/&#123;id&#125;</p>
+                      <p className="mb-1 fw-semibold">
+                        Historial de donaciones próximamente
+                      </p>
+                      <p className="text-muted small mb-0">
+                        MSDonaciones — GET
+                        /api/donaciones/usuario/&#123;id&#125;
+                      </p>
                     </Alert>
                   </Tab.Pane>
 
@@ -236,8 +239,12 @@ const PerfilCliente = () => {
                   <Tab.Pane eventKey="perfil">
                     <Alert variant="info" className="text-center py-4">
                       <User size={24} className="mb-2" />
-                      <p className="mb-1 fw-semibold">Edición de perfil próximamente</p>
-                      <p className="text-muted small mb-0">MSUsuarios — PUT /api/v1/usuarios/&#123;id&#125;</p>
+                      <p className="mb-1 fw-semibold">
+                        Edición de perfil próximamente
+                      </p>
+                      <p className="text-muted small mb-0">
+                        MSUsuarios — PUT /api/v1/usuarios/&#123;id&#125;
+                      </p>
                     </Alert>
                   </Tab.Pane>
                 </Tab.Content>
@@ -269,7 +276,9 @@ function MisComprasTab({ usuarioId }) {
       const carritos = res.data?.data || [];
       // Filtrar solo carritos con estado PAGADO
       const carritosPagados = carritos.filter(
-        (c) => (c.estadoCarrito || c.estado || '').toString().toUpperCase() === 'PAGADO'
+        (c) =>
+          (c.estadoCarrito || c.estado || '').toString().toUpperCase() ===
+          'PAGADO'
       );
       setCarritos(carritosPagados);
     } catch {
@@ -298,9 +307,7 @@ function MisComprasTab({ usuarioId }) {
     );
 
   if (carritos.length === 0)
-    return (
-      <Alert variant="info">Todavía no tienes compras registradas.</Alert>
-    );
+    return <Alert variant="info">Todavía no tienes compras registradas.</Alert>;
 
   // Cada carrito se convierte en una fila con el resumen de ítems
   const formatearItems = (carrito) => {
@@ -361,11 +368,15 @@ function MisComprasTab({ usuarioId }) {
                 </td>
                 <td>{totalEntradas(carrito)}</td>
                 <td className="small">{formatearItems(carrito)}</td>
-                <td className="fw-semibold">{formatearMoneda(carrito.total || 0)}</td>
+                <td className="fw-semibold">
+                  {formatearMoneda(carrito.total || 0)}
+                </td>
                 <td>
                   <Badge
                     bg={estadoVariantMap[estado] || 'secondary'}
-                    text={estadoVariantMap[estado] === 'light' ? 'dark' : undefined}
+                    text={
+                      estadoVariantMap[estado] === 'light' ? 'dark' : undefined
+                    }
                   >
                     {estadoLabelMap[estado] || estado}
                   </Badge>

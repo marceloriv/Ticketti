@@ -1,12 +1,6 @@
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
-import {
-  Building2,
-  Heart,
-  Plus,
-  ShoppingBag,
-  TrendingUp
-} from 'lucide-react';
+import { Building2, Heart, Plus, ShoppingBag, TrendingUp } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -38,10 +32,18 @@ const STAT_VARIANTS = {
 };
 
 // Tarjeta de estadística reutilizable
-const StatCard = ({ icon: Icon, titulo, valor, variant = 'brand', cargando }) => (
+const StatCard = ({
+  icon: Icon,
+  titulo,
+  valor,
+  variant = 'brand',
+  cargando,
+}) => (
   <Card className="border-0 shadow-sm h-100">
     <Card.Body className="d-flex align-items-center gap-3 p-4">
-      <div className={`dashboard-stat-icon ${STAT_VARIANTS[variant] || STAT_VARIANTS.brand}`}>
+      <div
+        className={`dashboard-stat-icon ${STAT_VARIANTS[variant] || STAT_VARIANTS.brand}`}
+      >
         {Icon ? <Icon size={24} /> : null}
       </div>
       <div>
@@ -58,9 +60,7 @@ const StatCard = ({ icon: Icon, titulo, valor, variant = 'brand', cargando }) =>
 
 // Placeholder para secciones de otros microservicios
 const Placeholder = ({ ms, descripcion }) => (
-  <Card
-    className="border-0 border-dashed shadow-sm dashboard-placeholder-card"
-  >
+  <Card className="border-0 border-dashed shadow-sm dashboard-placeholder-card">
     <Card.Body className="text-center py-5">
       <p className="text-muted mb-1 fw-semibold">🔧 Pendiente — {ms}</p>
       <p className="text-muted small mb-0">{descripcion}</p>
@@ -471,12 +471,12 @@ const DashboardAdmin = () => {
               >
                 Cancelar
               </Button>
-              <Button
-                type="submit"
-                disabled={guardando}
-                variant="primary"
-              >
-                {guardando ? <Spinner size="sm" className="spinner-ticketti" /> : 'Guardar'}
+              <Button type="submit" disabled={guardando} variant="primary">
+                {guardando ? (
+                  <Spinner size="sm" className="spinner-ticketti" />
+                ) : (
+                  'Guardar'
+                )}
               </Button>
             </div>
           </Form>
@@ -576,12 +576,12 @@ const DashboardAdmin = () => {
               >
                 Cancelar
               </Button>
-              <Button
-                type="submit"
-                disabled={guardando}
-                variant="primary"
-              >
-                {guardando ? <Spinner size="sm" className="spinner-ticketti" /> : 'Guardar'}
+              <Button type="submit" disabled={guardando} variant="primary">
+                {guardando ? (
+                  <Spinner size="sm" className="spinner-ticketti" />
+                ) : (
+                  'Guardar'
+                )}
               </Button>
             </div>
           </Form>

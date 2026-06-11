@@ -175,7 +175,10 @@ export default function Registro() {
                   </Form.Group>
                 </Row>
 
-                <Form.Group className="mb-3" controlId="formGridPasswordConfirm">
+                <Form.Group
+                  className="mb-3"
+                  controlId="formGridPasswordConfirm"
+                >
                   <Form.Label>Confirmar Contraseña</Form.Label>
                   <Form.Control
                     type="password"
