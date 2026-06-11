@@ -40,7 +40,10 @@ export const useCarritoGuest = () => {
     try {
       localStorage.setItem(GUEST_CART_KEY, JSON.stringify(newCart));
     } catch (err) {
-      console.error('[useCarritoGuest] Error guardando carrito en localStorage:', err);
+      console.error(
+        '[useCarritoGuest] Error guardando carrito en localStorage:',
+        err
+      );
     }
   }, []);
 
@@ -56,39 +59,45 @@ export const useCarritoGuest = () => {
    * @param {string} [entrada.eventoNombre] - Nombre del evento (opcional)
    * @throws {Error} Si se intenta agregar más de 4 entradas del mismo evento
    */
-  const agregarEntrada = useCallback((entrada) => {
-    const newCart = [...cart];
-    const existingIndex = newCart.findIndex(
-      (item) => item.eventoId === entrada.eventoId
-    );
+  const agregarEntrada = useCallback(
+    (entrada) => {
+      const newCart = [...cart];
+      const existingIndex = newCart.findIndex(
+        (item) => item.eventoId === entrada.eventoId
+      );
 
-    if (existingIndex >= 0) {
-      // Actualizar cantidad si ya existe
-      const newCantidad = newCart[existingIndex].cantidad + entrada.cantidad;
-      if (newCantidad > 4) {
-        throw new Error('Máximo 4 entradas por compra');
+      if (existingIndex >= 0) {
+        // Actualizar cantidad si ya existe
+        const newCantidad = newCart[existingIndex].cantidad + entrada.cantidad;
+        if (newCantidad > 4) {
+          throw new Error('Máximo 4 entradas por compra');
+        }
+        newCart[existingIndex].cantidad = newCantidad;
+      } else {
+        // Agregar nueva entrada
+        if (entrada.cantidad > 4) {
+          throw new Error('Máximo 4 entradas por compra');
+        }
+        newCart.push(entrada);
       }
-      newCart[existingIndex].cantidad = newCantidad;
-    } else {
-      // Agregar nueva entrada
-      if (entrada.cantidad > 4) {
-        throw new Error('Máximo 4 entradas por compra');
-      }
-      newCart.push(entrada);
-    }
 
-    saveCart(newCart);
-  }, [cart, saveCart]);
+      saveCart(newCart);
+    },
+    [cart, saveCart]
+  );
 
   /**
    * Elimina una entrada del carrito de invitado
    *
    * @param {number} eventoId - ID del evento cuya entrada se desea eliminar
    */
-  const eliminarEntrada = useCallback((eventoId) => {
-    const newCart = cart.filter((item) => item.eventoId !== eventoId);
-    saveCart(newCart);
-  }, [cart, saveCart]);
+  const eliminarEntrada = useCallback(
+    (eventoId) => {
+      const newCart = cart.filter((item) => item.eventoId !== eventoId);
+      saveCart(newCart);
+    },
+    [cart, saveCart]
+  );
 
   /**
    * Actualiza la cantidad de una entrada específica en el carrito
@@ -97,16 +106,19 @@ export const useCarritoGuest = () => {
    * @param {number} cantidad - Nueva cantidad (debe ser entre 1 y 4)
    * @throws {Error} Si la cantidad no está entre 1 y 4
    */
-  const actualizarCantidad = useCallback((eventoId, cantidad) => {
-    if (cantidad < 1 || cantidad > 4) {
-      throw new Error('Cantidad debe ser entre 1 y 4');
-    }
+  const actualizarCantidad = useCallback(
+    (eventoId, cantidad) => {
+      if (cantidad < 1 || cantidad > 4) {
+        throw new Error('Cantidad debe ser entre 1 y 4');
+      }
 
-    const newCart = cart.map((item) =>
-      item.eventoId === eventoId ? { ...item, cantidad } : item
-    );
-    saveCart(newCart);
-  }, [cart, saveCart]);
+      const newCart = cart.map((item) =>
+        item.eventoId === eventoId ? { ...item, cantidad } : item
+      );
+      saveCart(newCart);
+    },
+    [cart, saveCart]
+  );
 
   /**
    * Limpia completamente el carrito de invitado
@@ -116,7 +128,10 @@ export const useCarritoGuest = () => {
   }, [saveCart]);
 
   const totalEntradas = cart.reduce((sum, item) => sum + item.cantidad, 0);
-  const subtotal = cart.reduce((sum, item) => sum + (item.precioUnitario * item.cantidad), 0);
+  const subtotal = cart.reduce(
+    (sum, item) => sum + item.precioUnitario * item.cantidad,
+    0
+  );
   const donacion = subtotal * 0.1;
   const total = subtotal + donacion;
 
