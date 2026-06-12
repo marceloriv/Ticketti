@@ -28,7 +28,7 @@ import Footer from '@/components/layout/Footer';
 const PaginaCarrito = () => {
   const { carritoId } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, establecerCarritoId } = useAuth();
 
   const {
     resumen,
@@ -40,6 +40,7 @@ const PaginaCarrito = () => {
     renovarReserva,
     iniciarCheckout,
     limpiarError,
+    inicializarCarrito,
   } = useCarrito(carritoId);
 
   const {
@@ -69,9 +70,23 @@ const PaginaCarrito = () => {
     if (carritoId && !isGuest) {
       obtenerResumen().catch((err) => {
         console.error('[PaginaCarrito] Error al cargar resumen inicial:', err);
+        const errorStr = err.message || '';
+        if (
+          errorStr.includes('no pertenece') ||
+          errorStr.includes('400') ||
+          errorStr.includes('404')
+        ) {
+          console.log('[PaginaCarrito] ID de carrito inválido o ajeno. Redirigiendo a uno nuevo...');
+          inicializarCarrito().then((res) => {
+            if (res?.carritoId) {
+              establecerCarritoId(res.carritoId);
+              navigate(`/carrito/${res.carritoId}`, { replace: true });
+            }
+          });
+        }
       });
     }
-  }, [carritoId, obtenerResumen, isGuest]);
+  }, [carritoId, obtenerResumen, isGuest, inicializarCarrito, establecerCarritoId, navigate]);
 
   /**
    * Procesa la eliminación de una entrada del carrito.
