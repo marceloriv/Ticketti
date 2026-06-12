@@ -155,12 +155,15 @@ const Inicio = () => {
           if (!newCarritoId) throw new Error('No se pudo obtener el carrito');
           setCarritoId(newCarritoId);
           establecerCarritoId(newCarritoId);
-          await agregarEntrada({
-            eventoId: evento.id,
-            tipoEntrada: 'General',
-            cantidad: 1,
-            precioUnitario: evento.precioEntrada || 0,
-          });
+          await agregarEntrada(
+            {
+              eventoId: evento.id,
+              tipoEntrada: 'General',
+              cantidad: 1,
+              precioUnitario: evento.precioEntrada || 0,
+            },
+            newCarritoId
+          );
         } catch (backendError) {
           // Fallback: usar carrito de invitado si el backend falla
           console.warn(
