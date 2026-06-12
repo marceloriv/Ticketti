@@ -94,9 +94,9 @@ export const useCarrito = (carritoId) => {
   const inicializarCarrito = useCallback(async () => {
     try {
       const existentes = await listarCarritos();
-      const activo = existentes.find(
-        (c) => (c.estadoCarrito || c.estado) === 'CREADO'
-      );
+      const activo = Array.isArray(existentes)
+        ? existentes.find((c) => (c.estadoCarrito || c.estado) === 'CREADO')
+        : null;
       if (activo?.idCarrito || activo?.id) {
         const id = activo.idCarrito || activo.id;
         setActiveCarritoId(id);
@@ -173,31 +173,12 @@ export const useCarrito = (carritoId) => {
         err.response?.data?.message ||
         err.message ||
         'Error al obtener resumen del carrito';
-
-      // Si el carrito no pertenece al usuario o da error 400/404, reinicializar
-      if (
-        !alternateCarritoId &&
-        (msg.includes('no pertenece') ||
-          err.response?.status === 400 ||
-          err.response?.status === 404)
-      ) {
-        console.log('[useCarrito] ID de carrito inválido o ajeno detectado. Reinicializando...');
-        try {
-          const res = await inicializarCarrito();
-          if (res?.carritoId) {
-            return await obtenerResumen(res.carritoId);
-          }
-        } catch (initErr) {
-          console.error('[useCarrito] Error al re-inicializar el carrito:', initErr);
-        }
-      }
-
       setError(msg);
       throw new Error(msg);
     } finally {
       setLoading(false);
     }
-  }, [activeCarritoId, inicializarCarrito]);
+  }, [activeCarritoId]);
 
   /**
    * Agrega una entrada al carrito activo.
