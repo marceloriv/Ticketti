@@ -31,9 +31,22 @@ const Header = () => {
     if (carritoId) {
       obtenerResumenRef.current().catch((e) => {
         console.error('[Carrito] Error al obtener resumen:', e);
+        const errorStr = e.message || '';
+        if (
+          errorStr.includes('no pertenece') ||
+          errorStr.includes('400') ||
+          errorStr.includes('404')
+        ) {
+          console.log('[Carrito] ID de carrito inválido o ajeno detectado. Reinicializando...');
+          inicializarCarrito().then((res) => {
+            if (res?.carritoId) {
+              establecerCarritoId(res.carritoId);
+            }
+          });
+        }
       });
     }
-  }, [carritoId]);
+  }, [carritoId, establecerCarritoId, inicializarCarrito]);
 
   /**
    * Obtiene el payload del token JWT del localStorage
