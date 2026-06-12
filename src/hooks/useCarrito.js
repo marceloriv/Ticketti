@@ -64,6 +64,67 @@ export const useCarrito = (carritoId) => {
   }, []);
 
   /**
+   * Lista todos los carritos asociados al usuario.
+   *
+   * @returns {Promise<Array>} Listado de carritos.
+   */
+  const listarCarritos = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const datos = await carritoApi.listarCarritos();
+      return datos;
+    } catch (err) {
+      const msg =
+        err.response?.data?.mensaje ||
+        err.message ||
+        'Error al listar carritos';
+      setError(msg);
+      throw new Error(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /**
+   * Busca un carrito activo en estado 'CREADO' del usuario o crea uno nuevo en su lugar.
+   *
+   * @returns {Promise<Object>} Estructura conteniendo { carritoId, carrito }.
+   */
+  const inicializarCarrito = useCallback(async () => {
+    try {
+      const existentes = await listarCarritos();
+      const activo = existentes.find(
+        (c) => (c.estadoCarrito || c.estado) === 'CREADO'
+      );
+      if (activo?.idCarrito || activo?.id) {
+        const id = activo.idCarrito || activo.id;
+        setActiveCarritoId(id);
+        return { carritoId: id, carrito: activo };
+      }
+    } catch (e) {
+      console.warn(
+        '[Carrito] No se pudo recuperar carritos existentes:',
+        e.message || e
+      );
+    }
+
+    try {
+      const nuevo = await crearCarrito();
+      if (!nuevo) return { carritoId: null, carrito: null };
+      const id = nuevo?.idCarrito || nuevo?.id;
+      setActiveCarritoId(id);
+      return { carritoId: id || null, carrito: nuevo };
+    } catch (e) {
+      console.error(
+        '[Carrito] Error al crear nuevo carrito de compras:',
+        e.message || e
+      );
+      return { carritoId: null, carrito: null };
+    }
+  }, [crearCarrito, listarCarritos]);
+
+  /**
    * Obtiene la estructura técnica del carrito por su ID.
    *
    * @param {number|string} id - ID del carrito.
@@ -112,12 +173,31 @@ export const useCarrito = (carritoId) => {
         err.response?.data?.message ||
         err.message ||
         'Error al obtener resumen del carrito';
+
+      // Si el carrito no pertenece al usuario o da error 400/404, reinicializar
+      if (
+        !alternateCarritoId &&
+        (msg.includes('no pertenece') ||
+          err.response?.status === 400 ||
+          err.response?.status === 404)
+      ) {
+        console.log('[useCarrito] ID de carrito inválido o ajeno detectado. Reinicializando...');
+        try {
+          const res = await inicializarCarrito();
+          if (res?.carritoId) {
+            return await obtenerResumen(res.carritoId);
+          }
+        } catch (initErr) {
+          console.error('[useCarrito] Error al re-inicializar el carrito:', initErr);
+        }
+      }
+
       setError(msg);
       throw new Error(msg);
     } finally {
       setLoading(false);
     }
-  }, [activeCarritoId]);
+  }, [activeCarritoId, inicializarCarrito]);
 
   /**
    * Agrega una entrada al carrito activo.
@@ -289,66 +369,7 @@ export const useCarrito = (carritoId) => {
     }
   }, [activeCarritoId, obtenerResumen]);
 
-  /**
-   * Lista todos los carritos asociados al usuario.
-   *
-   * @returns {Promise<Array>} Listado de carritos.
-   */
-  const listarCarritos = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const datos = await carritoApi.listarCarritos();
-      return datos;
-    } catch (err) {
-      const msg =
-        err.response?.data?.mensaje ||
-        err.message ||
-        'Error al listar carritos';
-      setError(msg);
-      throw new Error(msg);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
-  /**
-   * Busca un carrito activo en estado 'CREADO' del usuario o crea uno nuevo en su lugar.
-   *
-   * @returns {Promise<Object>} Estructura conteniendo { carritoId, carrito }.
-   */
-  const inicializarCarrito = useCallback(async () => {
-    try {
-      const existentes = await listarCarritos();
-      const activo = existentes.find(
-        (c) => (c.estadoCarrito || c.estado) === 'CREADO'
-      );
-      if (activo?.idCarrito || activo?.id) {
-        const id = activo.idCarrito || activo.id;
-        setActiveCarritoId(id);
-        return { carritoId: id, carrito: activo };
-      }
-    } catch (e) {
-      console.warn(
-        '[Carrito] No se pudo recuperar carritos existentes:',
-        e.message || e
-      );
-    }
-
-    try {
-      const nuevo = await crearCarrito();
-      if (!nuevo) return { carritoId: null, carrito: null };
-      const id = nuevo?.idCarrito || nuevo?.id;
-      setActiveCarritoId(id);
-      return { carritoId: id || null, carrito: nuevo };
-    } catch (e) {
-      console.error(
-        '[Carrito] Error al crear nuevo carrito de compras:',
-        e.message || e
-      );
-      return { carritoId: null, carrito: null };
-    }
-  }, [crearCarrito, listarCarritos]);
 
   return {
     resumen,
