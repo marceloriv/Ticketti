@@ -76,9 +76,10 @@ const PaginaCarrito = () => {
         }
       }).catch((err) => {
         console.error('[PaginaCarrito] Error al cargar resumen inicial:', err);
-        const errorStr = err.message || '';
+        const errorStr = (err.message || '').toLowerCase();
         if (
           errorStr.includes('no pertenece') ||
+          errorStr.includes('no encontrado') ||
           errorStr.includes('400') ||
           errorStr.includes('404')
         ) {

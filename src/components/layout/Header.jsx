@@ -36,9 +36,10 @@ const Header = () => {
         }
       }).catch((e) => {
         console.error('[Carrito] Error al obtener resumen:', e);
-        const errorStr = e.message || '';
+        const errorStr = (e.message || '').toLowerCase();
         if (
           errorStr.includes('no pertenece') ||
+          errorStr.includes('no encontrado') ||
           errorStr.includes('400') ||
           errorStr.includes('404')
         ) {
