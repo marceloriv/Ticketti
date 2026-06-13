@@ -297,10 +297,7 @@ export const useCarrito = (carritoId) => {
       setLoading(true);
       setError(null);
       try {
-        const idempotencyKey =
-          'kilo-' +
-          Date.now().toString(36) +
-          Math.random().toString(36).substring(2, 10);
+        const idempotencyKey = crypto.randomUUID();
 
         const datos = await carritoApi.iniciarCheckout(targetId, {
           causaSocialId,
