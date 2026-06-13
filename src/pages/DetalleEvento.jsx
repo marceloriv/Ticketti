@@ -3,6 +3,7 @@ import Header from '@components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
 import { eventosApi } from '@api/index';
+import { ROUTES } from '@utils/routes';
 import { jwtDecode } from 'jwt-decode';
 import { AlertCircle, Calendar, MapPin, Ticket, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -224,7 +225,7 @@ const DetalleEvento = () => {
               {error ||
                 'El evento especificado no existe o no se encuentra disponible.'}
             </p>
-            <Button variant="outline-danger" onClick={() => navigate('/home')}>
+            <Button variant="outline-danger" onClick={() => navigate(ROUTES.INICIO)}>
               Volver al inicio
             </Button>
           </Alert>
@@ -245,7 +246,7 @@ const DetalleEvento = () => {
               try {
                 navigate(-1);
               } catch {
-                navigate('/home');
+                navigate(ROUTES.INICIO);
               }
             }}
             className="mb-4 p-0 text-decoration-none text-ticketti"

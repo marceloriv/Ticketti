@@ -1,4 +1,5 @@
 import { useAuth } from '@hooks/useAuth';
+import { ROUTES } from '@utils/routes';
 import { useEffect, useState } from 'react';
 import {
   Alert,
@@ -24,7 +25,7 @@ export default function Login() {
   // Si ya está autenticado, mandarlo al home
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/home');
+      navigate(ROUTES.INICIO);
     }
   }, [isAuthenticated, navigate]);
 
@@ -40,7 +41,7 @@ export default function Login() {
       });
 
       // Después del login, todos van al home
-      navigate('/home');
+      navigate(ROUTES.INICIO);
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión');
     } finally {

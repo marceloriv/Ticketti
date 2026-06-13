@@ -14,6 +14,7 @@ import ResumenCarrito from '../components/ResumenCarrito';
 import { useAuth } from '../hooks/useAuth';
 import { useCarrito } from '../hooks/useCarrito';
 import { useCarritoGuest } from '../hooks/useCarritoGuest';
+import { ROUTES } from '../utils/routes';
 import '../styles/components/PaginaCarrito.css';
 
 /**
@@ -169,7 +170,7 @@ const PaginaCarrito = () => {
             <Button
               variant="primary"
               className="pagina-carrito-boton-inicio"
-              onClick={() => navigate('/home')}
+              onClick={() => navigate(ROUTES.INICIO)}
             >
               Explorar Eventos
             </Button>
