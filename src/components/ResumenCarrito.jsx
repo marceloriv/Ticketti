@@ -1,4 +1,4 @@
-import { CheckCircle, ArrowRight, Heart } from 'lucide-react';
+import { ArrowRight, CheckCircle, Heart } from 'lucide-react';
 import { useState } from 'react';
 import { Alert, Badge, Button, Form } from 'react-bootstrap';
 import '../styles/components/ResumenCarrito.css';
@@ -34,7 +34,7 @@ const ESTADO_CARRITO_VARIANT = {
  * Componente que muestra el panel con el desglose final y el checkout del carrito de compras.
  * La donación del 10% es OBLIGATORIA — no es opcional. Se calcula sobre el subtotal.
  */
-const ResumenCarrito = ({ resumen, onCheckout, loading, isGuest = false }) => {
+const ResumenCarrito = ({ resumen, onCheckout, loading, isGuest = false, esCarritoPagado = false }) => {
   const [causaSocialId, setCausaSocialId] = useState('1');
   const [error, setError] = useState('');
 
@@ -56,7 +56,9 @@ const ResumenCarrito = ({ resumen, onCheckout, loading, isGuest = false }) => {
 
   const esReservado = estadoCarrito === 'RESERVADO';
   const yaPagado = estadoCarrito === 'PAGADO';
-  const puedePagar = !yaPagado && cantidadTotal > 0 && !loading;
+  const pagoPendiente = estadoPago === 'PENDIENTE';
+  // Puede pagar si no está pagado, tiene items, no está cargando, y si está reservado el pago debe estar pendiente
+  const puedePagar = !yaPagado && cantidadTotal > 0 && !loading && (!esReservado || pagoPendiente);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -145,7 +147,7 @@ const ResumenCarrito = ({ resumen, onCheckout, loading, isGuest = false }) => {
             <Form.Select
               value={causaSocialId}
               onChange={(e) => setCausaSocialId(e.target.value)}
-              disabled={loading || esReservado}
+              disabled={loading || esReservado || esCarritoPagado}
               className="resumen-carrito-select-causa"
               required
             >
@@ -181,13 +183,11 @@ const ResumenCarrito = ({ resumen, onCheckout, loading, isGuest = false }) => {
         <Form onSubmit={handleSubmit}>
           <Button
             type="submit"
-            disabled={loading || esReservado || (!isGuest && !causaSocialId)}
+            disabled={loading || (esReservado && !pagoPendiente) || (!isGuest && !causaSocialId)}
             className="resumen-carrito-btn-checkout"
           >
             {isGuest ? (
               <span>Iniciar sesión para comprar</span>
-            ) : esReservado ? (
-              <span>Reserva activa</span>
             ) : loading ? (
               <span>Procesando...</span>
             ) : (

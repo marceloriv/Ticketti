@@ -1,11 +1,12 @@
+import Footer from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
 import { Info, ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
-  Alert,
-  Badge,
-  Button,
-  Container,
-  Spinner,
+    Alert,
+    Button,
+    Container,
+    Spinner
 } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import ListaEntradasCarrito from '../components/ListaEntradasCarrito';
@@ -14,8 +15,6 @@ import { useAuth } from '../hooks/useAuth';
 import { useCarrito } from '../hooks/useCarrito';
 import { useCarritoGuest } from '../hooks/useCarritoGuest';
 import '../styles/components/PaginaCarrito.css';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 
 /**
  * Página que renderiza la vista principal del Carrito de compras.
@@ -56,6 +55,8 @@ const PaginaCarrito = () => {
 
   /** Indica si el usuario actual navega sin autenticación */
   const isGuest = !isAuthenticated;
+  /** Indica si el carrito está pagado */
+  const esCarritoPagado = resumen?.estadoCarrito === 'PAGADO';
   /** Listado unificado de ítems según tipo de usuario */
   const cartItems = isGuest ? guestCart : resumen?.items || [];
   /** Subtotal consolidado */
@@ -68,7 +69,12 @@ const PaginaCarrito = () => {
   // Carga inicial del resumen del carrito si el usuario está autenticado
   useEffect(() => {
     if (carritoId && !isGuest) {
-      obtenerResumen().catch((err) => {
+      obtenerResumen().then((res) => {
+        if (res && (res.estadoCarrito || res.estado) === 'PAGADO') {
+          console.log('[PaginaCarrito] El carrito cargado está PAGADO. Limpiando ID de contexto...');
+          establecerCarritoId(null);
+        }
+      }).catch((err) => {
         console.error('[PaginaCarrito] Error al cargar resumen inicial:', err);
         const errorStr = err.message || '';
         if (
@@ -123,16 +129,12 @@ const PaginaCarrito = () => {
     }
   };
 
-  /**
-   * Finaliza la reserva del carrito asociándola a una causa benéfica específica.
-   *
-   * @param {React.FormEvent} e - Evento de formulario.
-   */
   const handleCheckout = async (causaSocialId) => {
     limpiarError();
     try {
       await iniciarCheckout(causaSocialId);
       setCheckoutSuccess(true);
+      establecerCarritoId(null);
       setTimeout(() => {
         navigate('/perfil');
       }, 2500);
@@ -268,6 +270,7 @@ const PaginaCarrito = () => {
                   onRenovar={!isGuest ? handleRenovarReserva : undefined}
                   puedeRenovar={!isGuest && resumen?.puedeRenovarReserva}
                   loading={loading}
+                  esCarritoPagado={esCarritoPagado}
                 />
               </div>
 
@@ -291,6 +294,7 @@ const PaginaCarrito = () => {
                   }
                   loading={loading}
                   isGuest={isGuest}
+                  esCarritoPagado={esCarritoPagado}
                 />
               </div>
             </div>

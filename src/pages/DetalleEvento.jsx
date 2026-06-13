@@ -194,8 +194,7 @@ const DetalleEvento = () => {
         err
       );
       setErrorCarrito(
-        err.response?.data?.mensaje ||
-          err.response?.data?.message ||
+        err.message ||
           'No se pudo agregar el ítem al carrito del servidor. Inténtalo de nuevo.'
       );
     }

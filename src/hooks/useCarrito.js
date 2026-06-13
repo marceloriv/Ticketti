@@ -32,8 +32,9 @@ export const useCarrito = (carritoId) => {
 
   // Sincronizar el ID del carrito si cambia el parámetro inicial del hook
   useEffect(() => {
-    if (carritoId) {
-      setActiveCarritoId(carritoId);
+    setActiveCarritoId(carritoId);
+    if (!carritoId) {
+      setResumen(null);
     }
   }, [carritoId]);
 
@@ -88,19 +89,22 @@ export const useCarrito = (carritoId) => {
 
   /**
    * Busca un carrito activo en estado 'CREADO' del usuario o crea uno nuevo en su lugar.
+   * Si existe un carrito de invitado en localStorage, fusiona sus items con el carrito autenticado.
    *
    * @returns {Promise<Object>} Estructura conteniendo { carritoId, carrito }.
    */
   const inicializarCarrito = useCallback(async () => {
+    let targetId = null;
+    let targetCarrito = null;
+
     try {
       const existentes = await listarCarritos();
       const activo = Array.isArray(existentes)
         ? existentes.find((c) => (c.estadoCarrito || c.estado) === 'CREADO')
         : null;
       if (activo?.idCarrito || activo?.id) {
-        const id = activo.idCarrito || activo.id;
-        setActiveCarritoId(id);
-        return { carritoId: id, carrito: activo };
+        targetId = activo.idCarrito || activo.id;
+        targetCarrito = activo;
       }
     } catch (e) {
       console.warn(
@@ -109,19 +113,54 @@ export const useCarrito = (carritoId) => {
       );
     }
 
-    try {
-      const nuevo = await crearCarrito();
-      if (!nuevo) return { carritoId: null, carrito: null };
-      const id = nuevo?.idCarrito || nuevo?.id;
-      setActiveCarritoId(id);
-      return { carritoId: id || null, carrito: nuevo };
-    } catch (e) {
-      console.error(
-        '[Carrito] Error al crear nuevo carrito de compras:',
-        e.message || e
-      );
-      return { carritoId: null, carrito: null };
+    if (!targetId) {
+      try {
+        const nuevo = await crearCarrito();
+        if (nuevo) {
+          targetId = nuevo?.idCarrito || nuevo?.id;
+          targetCarrito = nuevo;
+        }
+      } catch (e) {
+        console.error(
+          '[Carrito] Error al crear nuevo carrito de compras:',
+          e.message || e
+        );
+      }
     }
+
+    if (targetId) {
+      setActiveCarritoId(targetId);
+
+      // Fusionar carrito de invitado si existe
+      try {
+        const savedGuest = localStorage.getItem('guestCart');
+        if (savedGuest) {
+          const guestItems = JSON.parse(savedGuest);
+          if (Array.isArray(guestItems) && guestItems.length > 0) {
+            console.log('[Carrito] Fusionando carrito de invitado en carrito autenticado:', targetId);
+            for (const item of guestItems) {
+              try {
+                await carritoApi.agregarEntrada(targetId, {
+                  eventoId: item.eventoId || item.idEvento,
+                  tipoEntrada: item.tipoEntrada || 'General',
+                  cantidad: item.cantidad || 1,
+                  precioUnitario: item.precioUnitario || 0,
+                });
+              } catch (addErr) {
+                console.error('[Carrito] Error migrando item invitado:', addErr);
+              }
+            }
+            localStorage.removeItem('guestCart');
+          }
+        }
+      } catch (mergeErr) {
+        console.error('[Carrito] Error leyendo guestCart para fusión:', mergeErr);
+      }
+
+      return { carritoId: targetId, carrito: targetCarrito };
+    }
+
+    return { carritoId: null, carrito: null };
   }, [crearCarrito, listarCarritos]);
 
   /**
@@ -303,6 +342,10 @@ export const useCarrito = (carritoId) => {
           causaSocialId,
           idempotencyKey,
         });
+
+        // El pago se procesa automáticamente en el backend durante el checkout
+        // No es necesario llamar al pago manual desde el frontend
+
         return datos;
       } catch (err) {
         const msg =

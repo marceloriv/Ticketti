@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { RefreshCw, Ticket, Trash } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Badge, Button, Card } from 'react-bootstrap';
 import { buscarEvento } from '../api/eventosApi';
 import '../styles/components/ListaEntradasCarrito.css';
@@ -32,6 +32,7 @@ const ItemEntradaCarrito = ({
   onRenovar,
   puedeRenovar,
   loading,
+  esCarritoPagado = false,
 }) => {
   const [eventInfo, setEventInfo] = useState(null);
 
@@ -124,15 +125,17 @@ const ItemEntradaCarrito = ({
                 <RefreshCw size={18} />
               </Button>
             )}
-            <Button
-              variant="link"
-              onClick={() => onEliminar && onEliminar(detalleId, item)}
-              disabled={loading}
-              className="lista-entradas-boton-eliminar"
-              title="Eliminar de carrito"
-            >
-              <Trash size={18} />
-            </Button>
+            {!esCarritoPagado && (
+              <Button
+                variant="link"
+                onClick={() => onEliminar && onEliminar(detalleId, item)}
+                disabled={loading}
+                className="lista-entradas-boton-eliminar"
+                title="Eliminar de carrito"
+              >
+                <Trash size={18} />
+              </Button>
+            )}
           </div>
         </div>
       </Card.Body>
@@ -149,6 +152,7 @@ const ListaEntradasCarrito = ({
   onRenovar,
   puedeRenovar,
   loading,
+  esCarritoPagado = false,
 }) => {
   let items = [];
   if (Array.isArray(entradas)) {
@@ -190,6 +194,7 @@ const ListaEntradasCarrito = ({
             onRenovar={onRenovar}
             puedeRenovar={puedeRenovar}
             loading={loading}
+            esCarritoPagado={esCarritoPagado}
           />
         );
       })}
