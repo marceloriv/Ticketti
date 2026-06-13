@@ -20,13 +20,15 @@
 export const ROUTES = {
   // Públicas
   HOME: '/',
-  INICIO: '/home',
+  INICIO: '/inicio',
   LOGIN: '/login',
   REGISTRO: '/registro',
   EVENTO_DETALLE: (id) => `/evento/${id}`,
+  EVENTOS: '/eventos',
   DONACIONES: '/donaciones',
   NOSOTROS: '/nosotros',
-  CONTACTO: '/contact',
+  CONTACTO: '/contacto',
+
 
   // Cliente autenticado
   PERFIL: '/perfil',

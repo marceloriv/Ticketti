@@ -1,6 +1,7 @@
 import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
 import { useCarritoGuest } from '@hooks/useCarritoGuest';
+import { ROUTES } from '@utils/routes';
 import { jwtDecode } from 'jwt-decode';
 import { LogOut, ShoppingCart, Ticket, User } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
@@ -176,10 +177,10 @@ const Header = () => {
 
   const navLinksPublicos = [
     /** Enlaces de navegación públicos */
-    { name: 'Inicio', to: '/home' },
-    { name: 'Eventos', to: '/events' },
-    { name: 'Sobre Ticketti', to: '/nosotros' },
-    { name: 'Contacto', to: '/contact' },
+    { name: 'Inicio', to: ROUTES.INICIO },
+    { name: 'Eventos', to: ROUTES.EVENTOS },
+    { name: 'Sobre Ticketti', to: ROUTES.NOSOTROS },
+    { name: 'Contacto', to: ROUTES.CONTACTO },
   ];
 
   /** Rol actual del usuario (desde token o contexto) */
@@ -197,7 +198,7 @@ const Header = () => {
       <Container>
         <Navbar.Brand
           as="a"
-          href="/home"
+          href={ROUTES.HOME}
           className="d-flex align-items-center gap-2"
         >
           <Ticket size={28} />

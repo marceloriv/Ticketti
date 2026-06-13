@@ -1,4 +1,5 @@
 import { useAuth } from '@hooks/useAuth';
+import { ROUTES } from '@utils/routes';
 import { Navigate } from 'react-router-dom';
 
 /**
@@ -21,12 +22,12 @@ export default function ProtectedRoute({ element, requiredRole = null }) {
 
   // Si no está autenticado o no hay token, redirigir a login
   if (!isAuthenticated || !token) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
   // Si se requiere un rol específico y no coincide, mandarlo al home
   if (requiredRole && rol !== requiredRole) {
-    return <Navigate to="/home" replace />;
+    return <Navigate to={ROUTES.INICIO} replace />;
   }
 
   return element;

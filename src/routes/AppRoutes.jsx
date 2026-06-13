@@ -58,10 +58,10 @@ export default function AppRoutes() {
 
       {/* ========== RUTAS PÚBLICAS - EVENTOS ========== */}
       <Route path="/evento/:id" element={<DetalleEvento />} />
-      <Route path="/events" element={<Inicio />} />
+      <Route path={ROUTES.EVENTOS} element={<Inicio />} />
       <Route path={ROUTES.DONACIONES} element={<Donaciones />} />
-      <Route path="/nosotros" element={<Nosotros />} />
-      <Route path="/contact" element={<Contacto />} />
+      <Route path={ROUTES.NOSOTROS} element={<Nosotros />} />
+      <Route path={ROUTES.CONTACTO} element={<Contacto />} />
 
       {/* ========== RUTAS PROTEGIDAS - CLIENTE ========== */}
       <Route
