@@ -217,6 +217,11 @@ export function AuthProvider({ children }) {
    * Guarda y establece el ID del carrito activo en el estado y localStorage.
    */
   const establecerCarritoId = useCallback((id) => {
+    if (id === null || id === undefined || id === '') {
+      setCarritoIdState(null);
+      localStorage.removeItem(CARRITO_ID_KEY);
+      return;
+    }
     const numId = Number(id);
     if (Number.isNaN(numId) || numId <= 0) return;
     setCarritoIdState(numId);

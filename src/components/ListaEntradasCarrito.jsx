@@ -1,5 +1,7 @@
 import { RefreshCw, Ticket, Trash } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Badge, Button, Card } from 'react-bootstrap';
+import { buscarEvento } from '../api/eventosApi';
 import '../styles/components/ListaEntradasCarrito.css';
 
 /**
@@ -20,15 +22,129 @@ const PRECIO_MONEDA = new Intl.NumberFormat('es-CL', {
 const formatearMoneda = (valor) => PRECIO_MONEDA.format(valor || 0);
 
 /**
- * Componente que renderiza el desglose en formato lista de los ítems de reserva.
- *
- * @param {Object} props - Propiedades del componente.
- * @param {Array|Object} props.entradas - Lista de entradas a mostrar.
- * @param {Function} props.onEliminar - Handler para procesar la eliminación.
- * @param {Function} [props.onRenovar] - Handler para solicitar la extensión de bloqueo de las entradas.
- * @param {boolean} [props.puedeRenovar=false] - Define si la renovación es elegible actualmente.
- * @param {boolean} props.loading - Indica si hay procesos HTTP ejecutándose en segundo plano.
- * @returns {React.JSX.Element} Lista de elementos del carrito.
+ * Componente interno que representa un único ítem de entrada.
+ * Resuelve de forma dinámica los detalles adicionales del evento desde la API de eventos si no están presentes.
+ */
+const ItemEntradaCarrito = ({
+  item,
+  index,
+  onEliminar,
+  onRenovar,
+  puedeRenovar,
+  loading,
+  esCarritoPagado = false,
+}) => {
+  const [eventInfo, setEventInfo] = useState(null);
+
+  const detalleId = item.detalleId ?? item.idDetalleCarrito ?? item.id;
+  const eventoId = item.eventoId ?? item.idEvento;
+  const tipoEntrada = item.tipoEntrada ?? item.tipoEntradaNombre ?? 'General';
+  const cantidad = item.cantidad ?? 0;
+  const precioUnitario = item.precioUnitario ?? item.precio ?? 0;
+
+  // Cargar información faltante del evento desde el microservicio
+  useEffect(() => {
+    if (!item.eventoNombre || !item.imagenUrl) {
+      buscarEvento(eventoId)
+        .then((data) => {
+          setEventInfo(data);
+        })
+        .catch((err) => {
+          console.warn('[ListaEntradasCarrito] Error cargando info del evento:', err);
+        });
+    }
+  }, [eventoId, item]);
+
+  const eventoNombre = item.eventoNombre ?? eventInfo?.nombre ?? `Evento #${eventoId}`;
+  const imagenUrl = item.imagenUrl ?? eventInfo?.imagenUrl ?? 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=300';
+  const genero = eventInfo?.genero ?? 'CONCIERTO';
+  const fecha = eventInfo?.fecha
+    ? new Date(eventInfo.fecha).toLocaleDateString('es-CL', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : 'Fecha por confirmar';
+  const recintoNombre = eventInfo?.recinto?.nombre ?? 'Recinto por confirmar';
+  const recintoUbicacion = eventInfo?.recinto?.ubicacion ?? 'Ubicación por confirmar';
+
+  return (
+    <Card className="lista-entradas-ticketti border-0 shadow-sm mb-3">
+      <Card.Body className="p-3">
+        <div className="lista-entradas-row d-flex gap-3 position-relative">
+          {/* Imagen y Badge de Index */}
+          <div className="lista-entradas-media-container">
+            <img
+              src={imagenUrl}
+              alt={eventoNombre}
+              className="lista-entradas-img"
+            />
+            <div className="lista-entradas-index-badge">{index + 1}</div>
+          </div>
+
+          {/* Información del Evento */}
+          <div className="lista-entradas-info">
+            <h6 className="lista-entradas-nombre fw-bold text-dark">
+              {eventoNombre}
+            </h6>
+            <p className="lista-entradas-meta">
+              {genero} · {fecha}
+            </p>
+            <p className="lista-entradas-recinto text-muted small">
+              {recintoNombre} ({recintoUbicacion})
+            </p>
+            <Badge className="lista-entradas-tipo-badge mt-1">
+              {tipoEntrada}
+            </Badge>
+
+            {/* Controles de Precio y Cantidad en Fila Inferior */}
+            <div className="lista-entradas-footer">
+              <div className="lista-entradas-precio">
+                {formatearMoneda(precioUnitario)}
+              </div>
+              <div className="lista-entradas-qty-control">
+                <span>Cant:</span>
+                <div className="d-flex align-items-center gap-2">
+                  <span className="lista-entradas-qty-val">{cantidad}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Botones de acción flotantes en la esquina superior derecha */}
+          <div className="d-flex gap-1">
+            {onRenovar && puedeRenovar && (
+              <Button
+                variant="link"
+                onClick={onRenovar}
+                disabled={loading}
+                className="lista-entradas-boton-renovar"
+                title="Renovar reserva temporal"
+              >
+                <RefreshCw size={18} />
+              </Button>
+            )}
+            {!esCarritoPagado && (
+              <Button
+                variant="link"
+                onClick={() => onEliminar && onEliminar(detalleId, item)}
+                disabled={loading}
+                className="lista-entradas-boton-eliminar"
+                title="Eliminar de carrito"
+              >
+                <Trash size={18} />
+              </Button>
+            )}
+          </div>
+        </div>
+      </Card.Body>
+    </Card>
+  );
+};
+
+/**
+ * Componente que renderiza la lista de entradas agregadas al carrito.
  */
 const ListaEntradasCarrito = ({
   entradas,
@@ -36,8 +152,8 @@ const ListaEntradasCarrito = ({
   onRenovar,
   puedeRenovar,
   loading,
+  esCarritoPagado = false,
 }) => {
-  /** Items normalizados del carrito */
   let items = [];
   if (Array.isArray(entradas)) {
     items = entradas;
@@ -62,92 +178,24 @@ const ListaEntradasCarrito = ({
   }
 
   return (
-    <div className="d-flex flex-column gap-3">
+    <div className="d-flex flex-column">
       {items.map((item, index) => {
         const detalleId = item.detalleId ?? item.idDetalleCarrito ?? item.id;
         const eventoId = item.eventoId ?? item.idEvento;
-        const tipoEntrada =
-          item.tipoEntrada ?? item.tipoEntradaNombre ?? 'General';
-        const cantidad = item.cantidad ?? 0;
-        const precioUnitario = item.precioUnitario ?? item.precio ?? 0;
-        const subtotal = precioUnitario * cantidad;
-        const eventoNombre =
-          item.eventoNombre ?? item.nombreEvento ?? `Evento #${eventoId}`;
+        const tipoEntrada = item.tipoEntrada ?? item.tipoEntradaNombre ?? 'General';
         const uniqueKey = detalleId || `${eventoId}-${tipoEntrada}-${index}`;
 
         return (
-          <Card
+          <ItemEntradaCarrito
             key={uniqueKey}
-            className="lista-entradas-ticketti border-0 shadow-sm"
-          >
-            <Card.Body className="p-4">
-              <div className="lista-entradas-row d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-                <div className="lista-entradas-col lista-entradas-col-info d-flex align-items-center gap-3">
-                  <div className="lista-entradas-icono p-3 rounded-3 bg-light">
-                    <Ticket size={24} className="text-primary" />
-                  </div>
-                  <div>
-                    <h6 className="lista-entradas-nombre mb-1 fw-bold text-dark">
-                      {eventoNombre}
-                    </h6>
-                    <div className="d-flex align-items-center gap-2">
-                      <Badge
-                        bg="light"
-                        text="dark"
-                        className="border px-2 py-1"
-                      >
-                        {tipoEntrada}
-                      </Badge>
-                      <Badge bg="primary" className="px-2 py-1">
-                        Cant: {cantidad}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="lista-entradas-col lista-entradas-col-precio text-md-center">
-                  <div className="lista-entradas-precio fw-semibold">
-                    {formatearMoneda(precioUnitario)}
-                  </div>
-                  <small className="text-muted">precio unitario</small>
-                </div>
-
-                <div className="lista-entradas-col lista-entradas-col-total d-flex align-items-center justify-content-between justify-content-md-end gap-4">
-                  <div className="text-end">
-                    <div className="lista-entradas-total fw-bold text-primary fs-5">
-                      {formatearMoneda(subtotal)}
-                    </div>
-                    <small className="text-muted d-block">subtotal</small>
-                  </div>
-
-                  <div className="d-flex gap-2">
-                    {onRenovar && puedeRenovar && (
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={onRenovar}
-                        disabled={loading}
-                        className="lista-entradas-boton-renovar p-2 rounded-3"
-                        title="Renovar reserva temporal"
-                      >
-                        <RefreshCw size={16} />
-                      </Button>
-                    )}
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      onClick={() => onEliminar && onEliminar(detalleId, item)}
-                      disabled={loading}
-                      className="lista-entradas-boton-eliminar p-2 rounded-3"
-                      title="Eliminar de carrito"
-                    >
-                      <Trash size={16} />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </Card.Body>
-          </Card>
+            item={item}
+            index={index}
+            onEliminar={onEliminar}
+            onRenovar={onRenovar}
+            puedeRenovar={puedeRenovar}
+            loading={loading}
+            esCarritoPagado={esCarritoPagado}
+          />
         );
       })}
     </div>

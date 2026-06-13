@@ -126,6 +126,18 @@ export const listarCarritos = async () => {
   return response.data?.data || [];
 };
 
+/**
+ * Procesa un pago manual (simulado) para actualizar el estado del carrito a PAGADO.
+ * Esta función usa el endpoint de pago manual diseñado para desarrollo/pruebas.
+ *
+ * @param {number|string} carritoId - ID del carrito.
+ * @returns {Promise<Object>} Datos del carrito actualizado.
+ */
+export const procesarPagoManual = async (carritoId) => {
+  const response = await clienteApi.post(`/Carrito/pago-manual/${carritoId}`);
+  return response.data?.data;
+};
+
 export default {
   crearCarrito,
   obtenerCarrito,
@@ -136,4 +148,5 @@ export default {
   iniciarCheckout,
   renovarReserva,
   listarCarritos,
+  procesarPagoManual,
 };

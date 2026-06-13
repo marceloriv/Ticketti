@@ -1,14 +1,12 @@
+import Footer from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
 import { Info, ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
-  Alert,
-  Badge,
-  Button,
-  Card,
-  Col,
-  Container,
-  Row,
-  Spinner,
+    Alert,
+    Button,
+    Container,
+    Spinner
 } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import ListaEntradasCarrito from '../components/ListaEntradasCarrito';
@@ -17,8 +15,6 @@ import { useAuth } from '../hooks/useAuth';
 import { useCarrito } from '../hooks/useCarrito';
 import { useCarritoGuest } from '../hooks/useCarritoGuest';
 import '../styles/components/PaginaCarrito.css';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 
 /**
  * Página que renderiza la vista principal del Carrito de compras.
@@ -31,7 +27,7 @@ import Footer from '@/components/layout/Footer';
 const PaginaCarrito = () => {
   const { carritoId } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, establecerCarritoId } = useAuth();
 
   const {
     resumen,
@@ -43,6 +39,7 @@ const PaginaCarrito = () => {
     renovarReserva,
     iniciarCheckout,
     limpiarError,
+    inicializarCarrito,
   } = useCarrito(carritoId);
 
   const {
@@ -58,6 +55,8 @@ const PaginaCarrito = () => {
 
   /** Indica si el usuario actual navega sin autenticación */
   const isGuest = !isAuthenticated;
+  /** Indica si el carrito está pagado */
+  const esCarritoPagado = resumen?.estadoCarrito === 'PAGADO';
   /** Listado unificado de ítems según tipo de usuario */
   const cartItems = isGuest ? guestCart : resumen?.items || [];
   /** Subtotal consolidado */
@@ -70,16 +69,33 @@ const PaginaCarrito = () => {
   // Carga inicial del resumen del carrito si el usuario está autenticado
   useEffect(() => {
     if (carritoId && !isGuest) {
-      obtenerResumen().catch((err) => {
+      obtenerResumen().then((res) => {
+        if (res && (res.estadoCarrito || res.estado) === 'PAGADO') {
+          console.log('[PaginaCarrito] El carrito cargado está PAGADO. Limpiando ID de contexto...');
+          establecerCarritoId(null);
+        }
+      }).catch((err) => {
         console.error('[PaginaCarrito] Error al cargar resumen inicial:', err);
+        const errorStr = err.message || '';
+        if (
+          errorStr.includes('no pertenece') ||
+          errorStr.includes('400') ||
+          errorStr.includes('404')
+        ) {
+          console.log('[PaginaCarrito] ID de carrito inválido o ajeno. Redirigiendo a uno nuevo...');
+          inicializarCarrito().then((res) => {
+            if (res?.carritoId) {
+              establecerCarritoId(res.carritoId);
+              navigate(`/carrito/${res.carritoId}`, { replace: true });
+            }
+          });
+        }
       });
     }
-  }, [carritoId, obtenerResumen, isGuest]);
+  }, [carritoId, obtenerResumen, isGuest, inicializarCarrito, establecerCarritoId, navigate]);
 
   /**
    * Procesa la eliminación de una entrada del carrito.
-   * Si es invitado, la borra usando el ID de evento en el estado local.
-   * Si es cliente registrado, invoca el borrado técnico en base de datos.
    *
    * @param {number|string} detalleId - ID de detalle en el backend.
    * @param {Object} item - Objeto de datos del ítem a eliminar.
@@ -113,19 +129,12 @@ const PaginaCarrito = () => {
     }
   };
 
-  /**
-   * Finaliza la reserva del carrito asociándola a una causa benéfica específica.
-   *
-   * @param {React.FormEvent} e - Evento de formulario.
-   */
-  const handleCheckout = async (e) => {
-    e.preventDefault();
+  const handleCheckout = async (causaSocialId) => {
     limpiarError();
-    const causaSocialId = e.target?.causaSocial?.value;
-    if (!causaSocialId) return;
     try {
       await iniciarCheckout(causaSocialId);
       setCheckoutSuccess(true);
+      establecerCarritoId(null);
       setTimeout(() => {
         navigate('/perfil');
       }, 2500);
@@ -144,7 +153,7 @@ const PaginaCarrito = () => {
   // Renderizar estado vacío si aplica
   if (isGuest && guestIsEmpty) {
     return (
-      <>
+      <div className="contacto-page">
         <Header />
         <Container className="py-5 pagina-carrito-container">
           <div className="pagina-carrito-vacio shadow-sm">
@@ -158,7 +167,7 @@ const PaginaCarrito = () => {
             </p>
             <Button
               variant="primary"
-              className="pagina-carrito-boton-inicio px-4 py-2"
+              className="pagina-carrito-boton-inicio"
               onClick={() => navigate('/home')}
             >
               Explorar Eventos
@@ -166,13 +175,13 @@ const PaginaCarrito = () => {
           </div>
         </Container>
         <Footer />
-      </>
+      </div>
     );
   }
 
   if (!isGuest && !carritoId) {
     return (
-      <>
+      <div className="contacto-page">
         <Header />
         <Container className="py-5 pagina-carrito-container">
           <Alert
@@ -187,135 +196,113 @@ const PaginaCarrito = () => {
           </Alert>
         </Container>
         <Footer />
-      </>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="contacto-page">
       <Header />
       <Container className="pagina-carrito-container py-5">
-        <Card className="pagina-carrito-header-card border-0 shadow-sm mb-4">
-          <Card.Body className="p-4">
-            <div className="pagina-carrito-header d-flex align-items-center gap-3">
-              <div className="p-3 bg-light rounded-3">
-                <ShoppingBag className="pagina-carrito-header-icon" size={32} />
-              </div>
+        <div className="pagina-carrito-glass-card shadow-lg">
+          {/* Header del Carrito */}
+          <h2 className="pagina-carrito-titulo">Mi Carrito de Compras</h2>
+          <p className="pagina-carrito-items-count">
+            {cartItems.length} {cartItems.length === 1 ? 'artículo' : 'artículos'}
+          </p>
+
+          {error && (
+            <Alert
+              variant="danger"
+              className="pagina-carrito-alerta d-flex align-items-center shadow-sm"
+            >
+              <Info className="me-2" size={20} />
+              <div>{error}</div>
+            </Alert>
+          )}
+
+          {checkoutSuccess && (
+            <Alert variant="success" className="pagina-carrito-alerta shadow-sm">
+              ¡Reserva de entradas procesada exitosamente! Redirigiendo a tu
+              perfil...
+            </Alert>
+          )}
+
+          {isGuest && (
+            <div className="pagina-carrito-info-card shadow-sm">
               <div>
-                <h2 className="pagina-carrito-titulo mb-1">
-                  Carrito de Compras
-                </h2>
-                <p className="pagina-carrito-subtitulo text-muted mb-0">
-                  {isGuest ? (
-                    <>
-                      <Badge bg="secondary" className="me-2 px-2 py-1">
-                        Invitado
-                      </Badge>
-                      Inicia sesión para finalizar tu compra de forma segura
-                    </>
-                  ) : (
-                    'Revisa tus reservas de entradas antes de proceder al pago'
-                  )}
+                <strong>Paso requerido</strong>
+                <p className="mb-0 text-muted small">
+                  Para registrar la reserva y la donación del 10%, necesitas
+                  crear una cuenta o iniciar sesión.
                 </p>
-              </div>
-            </div>
-          </Card.Body>
-        </Card>
-
-        {error && (
-          <Alert
-            variant="danger"
-            className="pagina-carrito-alerta d-flex align-items-center shadow-sm"
-          >
-            <Info className="me-2" size={20} />
-            <div>{error}</div>
-          </Alert>
-        )}
-
-        {checkoutSuccess && (
-          <Alert variant="success" className="pagina-carrito-alerta shadow-sm">
-            ¡Reserva de entradas procesada exitosamente! Redirigiendo a tu
-            perfil...
-          </Alert>
-        )}
-
-        {isGuest && (
-          <Card className="pagina-carrito-info-card border-0 mb-4 shadow-sm">
-            <Card.Body className="d-flex align-items-center justify-content-between p-4">
-              <div className="d-flex align-items-center">
-                <Info className="me-3 text-info" size={28} />
-                <div>
-                  <strong className="text-dark">Paso requerido</strong>
-                  <p className="mb-0 text-muted small">
-                    Para registrar la reserva y donación del 10%, necesitas
-                    crear una cuenta o iniciar sesión.
-                  </p>
-                </div>
               </div>
               <Button
                 variant="primary"
                 onClick={() => navigate('/login')}
-                className="px-4"
               >
                 Acceder / Registrarse
               </Button>
-            </Card.Body>
-          </Card>
-        )}
+            </div>
+          )}
 
-        {loading && !resumen && !isGuest ? (
-          <div className="pagina-carrito-loading d-flex flex-column align-items-center justify-content-center py-5">
-            <Spinner
-              animation="border"
-              variant="primary"
-              role="status"
-              className="mb-3"
-            >
-              <span className="visually-hidden">Cargando...</span>
-            </Spinner>
-            <p className="text-muted">
-              Estableciendo conexión con el microservicio de carrito...
-            </p>
-          </div>
-        ) : (
-          <Row className="pagina-carrito-contenido">
-            <Col lg={8} className="pagina-carrito-entradas mb-4 mb-lg-0">
-              <ListaEntradasCarrito
-                entradas={cartItems}
-                onEliminar={handleEliminarEntrada}
-                onRenovar={!isGuest ? handleRenovarReserva : undefined}
-                puedeRenovar={!isGuest && resumen?.puedeRenovarReserva}
-                loading={loading}
-              />
-            </Col>
-            <Col lg={4} className="pagina-carrito-resumen">
-              <ResumenCarrito
-                resumen={
-                  isGuest
-                    ? {
-                        items: cartItems,
-                        subtotal,
-                        montoDonacion: donacion,
-                        total,
-                      }
-                    : resumen || carritoCreado
-                }
-                onCheckout={
-                  isGuest
-                    ? handleGuestCheckout
-                    : carritoCreado
-                      ? handleCheckout
-                      : undefined
-                }
-                loading={loading}
-                isGuest={isGuest}
-              />
-            </Col>
-          </Row>
-        )}
+          {loading && !resumen && !isGuest ? (
+            <div className="pagina-carrito-loading py-5">
+              <Spinner
+                animation="border"
+                variant="primary"
+                role="status"
+                className="mb-3 spinner-ticketti"
+              >
+                <span className="visually-hidden">Cargando...</span>
+              </Spinner>
+              <p className="text-muted">
+                Estableciendo conexión con el microservicio de carrito...
+              </p>
+            </div>
+          ) : (
+            <div className="pagina-carrito-grid">
+              {/* Lista de entradas */}
+              <div className="pagina-carrito-entradas">
+                <ListaEntradasCarrito
+                  entradas={cartItems}
+                  onEliminar={handleEliminarEntrada}
+                  onRenovar={!isGuest ? handleRenovarReserva : undefined}
+                  puedeRenovar={!isGuest && resumen?.puedeRenovarReserva}
+                  loading={loading}
+                  esCarritoPagado={esCarritoPagado}
+                />
+              </div>
+
+              {/* Panel de Resumen */}
+              <div className="pagina-carrito-resumen">
+                <ResumenCarrito
+                  resumen={
+                    isGuest
+                      ? {
+                          items: cartItems,
+                          subtotal,
+                          montoDonacion: donacion,
+                          total,
+                        }
+                      : resumen || carritoCreado
+                  }
+                  onCheckout={
+                    isGuest
+                      ? handleGuestCheckout
+                      : handleCheckout
+                  }
+                  loading={loading}
+                  isGuest={isGuest}
+                  esCarritoPagado={esCarritoPagado}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </Container>
       <Footer />
-    </>
+    </div>
   );
 };
 

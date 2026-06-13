@@ -280,7 +280,13 @@ function MisComprasTab({ usuarioId }) {
           (c.estadoCarrito || c.estado || '').toString().toUpperCase() ===
           'PAGADO'
       );
-      setCarritos(carritosPagados);
+      // Ordenar por fecha de creación (ascendente) para asignar número secuencial
+      const carritosOrdenados = carritosPagados.sort((a, b) => {
+        const fechaA = new Date(a.fechaCreacion || a.createdAt || 0);
+        const fechaB = new Date(b.fechaCreacion || b.createdAt || 0);
+        return fechaA - fechaB;
+      });
+      setCarritos(carritosOrdenados);
     } catch {
       setError('No se pudieron cargar las compras.');
     } finally {
@@ -344,7 +350,7 @@ function MisComprasTab({ usuarioId }) {
       <Table hover responsive>
         <thead className="table-light">
           <tr>
-            <th>ID</th>
+            <th>#</th>
             <th>Fecha</th>
             <th>Entradas</th>
             <th>Tipo</th>
@@ -354,15 +360,16 @@ function MisComprasTab({ usuarioId }) {
           </tr>
         </thead>
         <tbody>
-          {carritos.map((carrito) => {
+          {carritos.map((carrito, index) => {
             const idCarrito = carrito.idCarrito || carrito.id;
             const estado =
               (carrito.estadoCarrito || carrito.estado || '—')
                 .toString()
                 .toUpperCase() || 'CREADO';
+            const numeroCompra = index + 1;
             return (
               <tr key={idCarrito}>
-                <td className="fw-semibold">#{idCarrito}</td>
+                <td className="fw-semibold">Compra #{numeroCompra}</td>
                 <td className="text-muted small">
                   {formatearFecha(carrito.fechaCreacion || carrito.createdAt)}
                 </td>
