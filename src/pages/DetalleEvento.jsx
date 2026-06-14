@@ -333,19 +333,38 @@ const DetalleEvento = () => {
                   <h3 className="detalle-evento-precio-valor mb-3">
                     {formatearMoneda(evento.precioEntrada)}
                   </h3>
-                  <Button
-                    size="lg"
-                    className="detalle-evento-boton-agregar w-100 py-3 d-flex align-items-center justify-content-center gap-2"
-                    onClick={() => setShowModal(true)}
-                    disabled={evento.stock <= 0}
-                  >
-                    <Ticket size={22} />
-                    {evento.stock > 0 ? 'Comprar entrada' : 'Agotado'}
-                  </Button>
-                  {evento.stock > 0 && (
-                    <p className="text-muted small text-center mb-0 mt-3">
-                      Límite de 4 entradas por transacción.
-                    </p>
+                  {usuario?.rol === 'ORGANIZADOR' && Number(evento.organizadorId) === Number(usuario?.id) ? (
+                    <>
+                      <Button
+                        size="lg"
+                        variant="warning"
+                        className="w-100 py-3 d-flex align-items-center justify-content-center gap-2 cursor-not-allowed"
+                        disabled
+                      >
+                        <Ticket size={22} />
+                        Eres el Organizador
+                      </Button>
+                      <p className="text-warning text-center small mb-0 mt-3 fw-semibold">
+                        No puedes comprar entradas para un evento creado por ti mismo.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        size="lg"
+                        className="detalle-evento-boton-agregar w-100 py-3 d-flex align-items-center justify-content-center gap-2"
+                        onClick={() => setShowModal(true)}
+                        disabled={evento.stock <= 0}
+                      >
+                        <Ticket size={22} />
+                        {evento.stock > 0 ? 'Comprar entrada' : 'Agotado'}
+                      </Button>
+                      {evento.stock > 0 && (
+                        <p className="text-muted small text-center mb-0 mt-3">
+                          Límite de 4 entradas por transacción.
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
