@@ -24,6 +24,31 @@ export const registrarUsuario = async (datosRegistro) => {
   return response.data;
 };
 
+/**
+ * Obtiene los detalles completos de un usuario por su ID.
+ *
+ * @param {number|string} id - ID del usuario.
+ * @returns {Promise<Object>} Datos del usuario obtenidos.
+ */
+export const obtenerUsuario = async (id) => {
+  const response = await clienteApi.get(`/usuarios/${id}`);
+  return response.data;
+};
+
+/**
+ * Actualiza los datos de perfil de un usuario existente.
+ *
+ * @param {number|string} id - ID del usuario.
+ * @param {Object} datos - Datos a actualizar.
+ * @returns {Promise<Object>} Datos del usuario actualizado.
+ */
+export const actualizarUsuario = async (id, datos) => {
+  const response = await clienteApi.put(`/usuarios/${id}`, datos);
+  return response.data;
+};
+
 export default {
   registrarUsuario,
+  obtenerUsuario,
+  actualizarUsuario,
 };
