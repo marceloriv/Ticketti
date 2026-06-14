@@ -13,10 +13,11 @@
  *  - Click en cualquier parte de la tarjeta navega al detalle del evento.
  */
 import { Calendar, MapPin, Ticket } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Button, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 const IMG_PLACEHOLDER = '/assets/hero.png';
+
 
 // Formateadores ────────────────────────────────────────────────────────────
 const MONEDA = new Intl.NumberFormat('es-CL', {
@@ -164,4 +165,4 @@ const ProductCard = ({
   );
 };
 
-export default ProductCard;
+export default React.memo(ProductCard);
