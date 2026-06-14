@@ -10,12 +10,14 @@ import {
   Button,
   Card,
   Container,
+  Form,
   Nav,
   Spinner,
   Tab,
   Table,
 } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { obtenerUsuario, actualizarUsuario } from '@api/usuariosApi';
 
 const estadoLabelMap = {
   CREADO: 'Creado',
@@ -68,10 +70,22 @@ const ESTADO_VARIANT = {
 };
 
 const PerfilCliente = () => {
-  const { usuario } = useAuth();
+  const { usuario, actualizarContextoUsuario } = useAuth();
   const [notificaciones, setNotificaciones] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
+
+  // Estados del Formulario de Perfil
+  const [formData, setFormData] = useState({
+    nombre: '',
+    correo: '',
+    telefono: '',
+    direccion: '',
+  });
+  const [cargandoPerfil, setCargandoPerfil] = useState(false);
+  const [guardandoPerfil, setGuardandoPerfil] = useState(false);
+  const [errorPerfil, setErrorPerfil] = useState('');
+  const [exitoPerfil, setExitoPerfil] = useState('');
 
   const idUsuario = usuario?.id || localStorage.getItem('idUsuario');
 
@@ -89,9 +103,78 @@ const PerfilCliente = () => {
     }
   }, [idUsuario]);
 
+  const cargarPerfilCompleto = useCallback(async () => {
+    if (!idUsuario) return;
+    setCargandoPerfil(true);
+    setErrorPerfil('');
+    try {
+      const data = await obtenerUsuario(idUsuario);
+      setFormData({
+        nombre: data.nombre || '',
+        correo: data.correo || '',
+        telefono: data.telefono || '',
+        direccion: data.direccion || '',
+      });
+    } catch {
+      setErrorPerfil('No se pudieron cargar los datos de perfil.');
+    } finally {
+      setCargandoPerfil(false);
+    }
+  }, [idUsuario]);
+
   useEffect(() => {
     cargarNotificaciones();
-  }, [cargarNotificaciones]);
+    cargarPerfilCompleto();
+  }, [cargarNotificaciones, cargarPerfilCompleto]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorPerfil('');
+    setExitoPerfil('');
+
+    if (!formData.nombre.trim()) {
+      setErrorPerfil('El nombre es obligatorio.');
+      return;
+    }
+    if (!formData.correo.trim()) {
+      setErrorPerfil('El correo es obligatorio.');
+      return;
+    }
+
+    setGuardandoPerfil(true);
+    try {
+      const usuarioActualizado = await actualizarUsuario(idUsuario, {
+        nombre: formData.nombre.trim(),
+        correo: formData.correo.trim(),
+        telefono: formData.telefono ? formData.telefono.trim() : '',
+        direccion: formData.direccion ? formData.direccion.trim() : '',
+        rol: usuario?.rol || 'CLIENTE',
+      });
+
+      actualizarContextoUsuario({
+        nombre: usuarioActualizado.nombre,
+        correo: usuarioActualizado.correo,
+      });
+
+      setExitoPerfil('Perfil actualizado exitosamente.');
+    } catch (err) {
+      setErrorPerfil(
+        err.response?.data?.mensaje ||
+          err.message ||
+          'Error al actualizar el perfil.'
+      );
+    } finally {
+      setGuardandoPerfil(false);
+    }
+  };
 
   return (
     <div className="d-flex flex-column min-vh-100">
@@ -235,17 +318,96 @@ const PerfilCliente = () => {
                     </Alert>
                   </Tab.Pane>
 
-                  {/* ── PERFIL ── pendiente MSUsuarios */}
+                  {/* ── PERFIL ── */}
                   <Tab.Pane eventKey="perfil">
-                    <Alert variant="info" className="text-center py-4">
-                      <User size={24} className="mb-2" />
-                      <p className="mb-1 fw-semibold">
-                        Edición de perfil próximamente
-                      </p>
-                      <p className="text-muted small mb-0">
-                        MSUsuarios — PUT /api/v1/usuarios/&#123;id&#125;
-                      </p>
-                    </Alert>
+                    <div className="mb-3">
+                      <h5 className="fw-bold mb-3">Información Personal</h5>
+                    </div>
+                    {cargandoPerfil ? (
+                      <div className="text-center py-4">
+                        <Spinner className="spinner-ticketti" />
+                      </div>
+                    ) : (
+                      <Form onSubmit={handleSubmit} className="perfil-cliente-form">
+                        {errorPerfil && <Alert variant="danger">{errorPerfil}</Alert>}
+                        {exitoPerfil && <Alert variant="success">{exitoPerfil}</Alert>}
+
+                        <Form.Group className="mb-3" controlId="formNombre">
+                          <Form.Label className="fw-semibold">Nombre Completo</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="nombre"
+                            value={formData.nombre}
+                            onChange={handleChange}
+                            placeholder="Tu nombre completo"
+                            required
+                          />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formCorreo">
+                          <Form.Label className="fw-semibold">Correo Electrónico</Form.Label>
+                          <Form.Control
+                            type="email"
+                            name="correo"
+                            value={formData.correo}
+                            onChange={handleChange}
+                            placeholder="nombre@correo.com"
+                            required
+                          />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formTelefono">
+                          <Form.Label className="fw-semibold">Teléfono de Contacto</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="telefono"
+                            value={formData.telefono}
+                            onChange={handleChange}
+                            placeholder="Ej: +56912345678"
+                          />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formDireccion">
+                          <Form.Label className="fw-semibold">Dirección</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="direccion"
+                            value={formData.direccion}
+                            onChange={handleChange}
+                            placeholder="Tu dirección física"
+                          />
+                        </Form.Group>
+
+                        <div className="d-flex justify-content-end gap-2 mt-4">
+                          <Button
+                            variant="outline-secondary"
+                            type="button"
+                            onClick={cargarPerfilCompleto}
+                            disabled={guardandoPerfil}
+                          >
+                            Descartar Cambios
+                          </Button>
+                          <Button
+                            className="btn-ticketti"
+                            type="submit"
+                            disabled={guardandoPerfil}
+                            style={{
+                              backgroundColor: '#a370f7',
+                              borderColor: '#a370f7',
+                            }}
+                          >
+                            {guardandoPerfil ? (
+                              <>
+                                <Spinner animation="border" size="sm" className="me-2" />
+                                Guardando...
+                              </>
+                            ) : (
+                              'Guardar Cambios'
+                            )}
+                          </Button>
+                        </div>
+                      </Form>
+                    )}
                   </Tab.Pane>
                 </Tab.Content>
               </Card.Body>

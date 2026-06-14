@@ -241,6 +241,18 @@ export function AuthProvider({ children }) {
     return clienteApi({ url, headers, ...options });
   };
 
+  /**
+   * Actualiza localmente los datos del usuario en el estado y localStorage.
+   */
+  const actualizarContextoUsuario = useCallback((nuevosDatos) => {
+    setUsuario((prev) => {
+      if (!prev) return null;
+      const usuarioActualizado = { ...prev, ...nuevosDatos };
+      localStorage.setItem(USER_KEY, JSON.stringify(usuarioActualizado));
+      return usuarioActualizado;
+    });
+  }, []);
+
   const value = {
     token,
     usuario,
@@ -252,6 +264,7 @@ export function AuthProvider({ children }) {
     establecerCarritoId,
     isAuthenticated,
     loading,
+    actualizarContextoUsuario,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
