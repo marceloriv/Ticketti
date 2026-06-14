@@ -90,14 +90,12 @@ const Inicio = () => {
       const response = await api.get('/eventos/listarEventos');
       const datos = response.data || [];
       setEventos(datos);
-      setEventosFiltrados(datos);
     } catch (err) {
       console.error('Error al cargar eventos:', err);
       setError(
         'No se pudieron cargar los eventos. Por favor, intenta más tarde.'
       );
       setEventos([]);
-      setEventosFiltrados([]);
     } finally {
       setCargando(false);
     }
