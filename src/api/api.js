@@ -47,28 +47,16 @@ api.interceptors.request.use(
       // Decodificar JWT para extraer usuarioId
       try {
         const decoded = jwtDecode(token);
-        console.log('[API] JWT decodificado:', decoded);
         if (decoded.usuarioId) {
           // El JWT tiene el usuarioId en el claim "usuarioId"
           // Convertir a Number para asegurar que el backend reciba un Long
           const usuarioId = Number(decoded.usuarioId);
           if (!Number.isNaN(usuarioId)) {
             config.headers['X-Usuario-Id'] = usuarioId;
-            console.log('[API] X-Usuario-Id header agregado:', usuarioId);
-          } else {
-            console.warn(
-              '[API] usuarioId no es un número válido:',
-              decoded.usuarioId
-            );
           }
-        } else {
-          console.warn(
-            '[API] JWT no tiene claim usuarioId. Claims disponibles:',
-            Object.keys(decoded)
-          );
         }
       } catch (e) {
-        console.error('[API] Error decodificando JWT:', e);
+        // Ignorar silenciosamente o registrar en dev
       }
     }
 

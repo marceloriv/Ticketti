@@ -47,26 +47,17 @@ clienteApi.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
 
       try {
-        // Decodificar el token para extraer el usuarioId y rol requeridos por los microservicios
         const decoded = jwtDecode(token);
         if (decoded) {
-          console.log('[API] JWT decodificado:', decoded);
           if (decoded.usuarioId) {
             config.headers['X-Usuario-Id'] = String(decoded.usuarioId);
-            console.log(
-              '[API] X-Usuario-Id header agregado:',
-              decoded.usuarioId
-            );
           }
           if (decoded.rol) {
             config.headers['X-Rol-Usuario-Id'] = String(decoded.rol);
           }
         }
       } catch (e) {
-        console.warn(
-          '[API] Error al decodificar JWT para inyectar cabeceras:',
-          e
-        );
+        // Ignorar
       }
     }
     return config;
