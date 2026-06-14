@@ -93,9 +93,16 @@
   overflow: hidden;
   background-size: cover;
   background-position: center;
-  height: 85vh;
-  min-height: 400px;
-  aspect-ratio: 16/9;
+  height: 50vh;
+  aspect-ratio: 4/3;
+}
+
+@media (min-width: 768px) {
+  .hero-slide {
+    height: 85vh;
+    min-height: 400px;
+    aspect-ratio: 16/9;
+  }
 }
 
 .hero-slide__image {
