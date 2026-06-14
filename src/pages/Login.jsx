@@ -44,6 +44,7 @@ export default function Login() {
       navigate(ROUTES.INICIO);
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión');
+      setPassword(''); // Limpia el input de contraseña ante fallos por buenas prácticas de seguridad
     } finally {
       setLoading(false);
     }
