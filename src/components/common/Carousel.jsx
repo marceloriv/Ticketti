@@ -20,14 +20,14 @@ export default function CommonCarousel({ slides = [] }) {
               decoding={index === 0 ? "sync" : "async"}
             />
             <div className="hero-slide__overlay" />
-            <Container className="hero-slide__content h-100 d-flex flex-column justify-content-center align-items-center text-center text-white py-5">
-              <h1 className="display-4 fw-bold mb-3">{slide.titulo}</h1>
-              <p className="lead mb-4 hero-carousel__text">{slide.subtitulo}</p>
+            <Container className="hero-slide__content h-100 d-flex flex-column justify-content-center align-items-center text-center text-white py-3 py-md-5 px-4">
+              <h1 className="display-6 display-md-4 fw-bold mb-3">{slide.titulo}</h1>
+              <p className="fs-6 fs-md-5 mb-4 hero-carousel__text">{slide.subtitulo}</p>
               <Button
                 variant="light"
-                size="lg"
+                size="md"
                 href="#eventos"
-                className="fw-semibold px-4 py-2 hero-carousel__button"
+                className="fw-semibold px-3 py-2 px-md-4 py-md-2 hero-carousel__button"
               >
                 Explorar
               </Button>
