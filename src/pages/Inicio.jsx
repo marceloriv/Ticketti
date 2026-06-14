@@ -2,6 +2,8 @@ import api from '@api/api';
 import { getCausasActivas, getOrganizaciones } from '@api/donacionesApi';
 import CommonCarousel from '@components/common/Carousel';
 import ProductCard from '@components/common/ProductCard';
+import CategoryCard from '@components/common/CategoryCard';
+import { useNavigate } from 'react-router-dom';
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
@@ -21,31 +23,21 @@ import {
 } from 'react-bootstrap';
 
 const CATEGORIAS = [
-  { id: 'todo', nombre: 'Todo', generos: [] },
+  { id: 'todo', nombre: 'Todo' },
   {
     id: 'conciertos',
     nombre: 'Conciertos',
-    generos: [
-      'ROCK',
-      'JAZZ',
-      'POP',
-      'KPOP',
-      'METAL',
-      'RAP',
-      'RNB',
-      'INDIE',
-      'REGGAETOM',
-    ],
+    descripcion: 'Vive grandes shows musicales en vivo con tus artistas favoritos.',
   },
   {
     id: 'festivales',
     nombre: 'Festivales Culturales',
-    generos: ['GASTRONOMIA', 'ARTE', 'ARTESANIA', 'FOLCLORE'],
+    descripcion: 'Descubre tradiciones, arte y sabor en festivales para toda la familia.',
   },
   {
     id: 'cinemovil',
     nombre: 'Cine Móvil',
-    generos: ['TERROR', 'COMEDIA', 'DRAMA', 'ACCION', 'ROMANCE', 'PARODIA'],
+    descripcion: 'Disfruta de cine al aire libre en lugares emblemáticos de la ciudad.',
   },
 ];
 
@@ -71,10 +63,9 @@ const HERO_SLIDES = [
 ];
 
 const Inicio = () => {
+  const navigate = useNavigate();
   const { establecerCarritoId, isAuthenticated } = useAuth();
   const [eventos, setEventos] = useState([]);
-  const [eventosFiltrados, setEventosFiltrados] = useState([]);
-  const [categoriaActiva, setCategoriaActiva] = useState('todo');
   const [busqueda, setBusqueda] = useState('');
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -200,30 +191,20 @@ const Inicio = () => {
     }
   };
 
-  //Filtros por categoría y búsqueda
-  useEffect(() => {
-    let filtrados = eventos;
+  // Nota: el filtrado principal ahora se maneja en la página /eventos.
 
-    if (categoriaActiva !== 'todo') {
-      const categoriaSeleccionada = CATEGORIAS.find(
-        (c) => c.id === categoriaActiva
-      );
-      filtrados = filtrados.filter((evento) =>
-        categoriaSeleccionada.generos.includes(evento.genero)
-      );
+  const getCategoryImage = (id) => {
+    switch (id) {
+      case 'festivales':
+        return '/img/categoriafolk.png';
+      case 'cinemovil':
+        return '/img/categoriaautocine.jpg';
+      case 'conciertos':
+        return '/img/categoriaconcierto.webp';
+      default:
+        return '/img/default-cat.jpg';
     }
-
-    if (busqueda.trim()) {
-      const termino = busqueda.toLowerCase();
-      filtrados = filtrados.filter(
-        (evento) =>
-          evento.nombre?.toLowerCase().includes(termino) ||
-          evento.recinto?.ubicacion?.toLowerCase().includes(termino)
-      );
-    }
-
-    setEventosFiltrados(filtrados);
-  }, [categoriaActiva, busqueda, eventos]);
+  };
 
   return (
     <div className="d-flex flex-column min-vh-100">
@@ -253,29 +234,39 @@ const Inicio = () => {
                     placeholder="Buscar eventos por nombre, género o ubicación..."
                     value={busqueda}
                     onChange={(e) => setBusqueda(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        navigate(`/eventos?search=${encodeURIComponent(busqueda)}`);
+                      }
+                    }}
                     className="inicio-search-input"
                   />
                 </InputGroup>
-                <div className="d-flex flex-wrap justify-content-center gap-2">
-                  {CATEGORIAS.map((cat) => (
-                    <Button
-                      key={cat.id}
-                      size="sm"
-                      onClick={() => setCategoriaActiva(cat.id)}
-                      className={`rounded-pill px-4 inicio-categoria-button ${
-                        categoriaActiva === cat.id ? 'active' : ''
-                      }`}
-                    >
-                      {cat.nombre}
-                    </Button>
-                  ))}
-                </div>
               </Col>
             </Row>
           </Container>
         </section>
 
-        {/* EVENTOS  */}
+        {/* CATEGORÍAS - CARDS */}
+        <section id="categorias-eventos" className="py-5 bg-white">
+          <Container>
+            <h2 className="text-center mb-4 fw-bold">Explora por Categoría</h2>
+            <Row className="g-4">
+              {CATEGORIAS.filter((c) => c.id !== 'todo').map((cat) => (
+                <Col key={cat.id} md={4}>
+                  <CategoryCard
+                    title={cat.nombre}
+                    imgSrc={getCategoryImage(cat.id)}
+                    description={cat.descripcion}
+                    onClick={() => navigate(`/eventos?categoria=${encodeURIComponent(cat.id)}`)}
+                  />
+                </Col>
+              ))}
+            </Row>
+          </Container>
+        </section>
+        {/* EVENTOS DESTACADOS (solo muestra primeros 6) */}
         <section id="eventos" className="py-5">
           <Container>
             <h2 className="text-center mb-4 fw-bold">Eventos Destacados</h2>
@@ -285,18 +276,16 @@ const Inicio = () => {
               </div>
             )}
             {error && (
-              <Alert variant="danger" className="text-center">
-                {error}
-              </Alert>
+              <Alert variant="danger" className="text-center">{error}</Alert>
             )}
-            {!cargando && !error && eventosFiltrados.length === 0 && (
-              <Alert variant="info" className="text-center">
-                No se encontraron eventos.
-              </Alert>
+
+            {!cargando && !error && eventos.length === 0 && (
+              <Alert variant="info" className="text-center">No se encontraron eventos.</Alert>
             )}
-            {!cargando && !error && eventosFiltrados.length > 0 && (
+
+            {!cargando && !error && eventos.length > 0 && (
               <Row xs={1} sm={2} lg={3} xl={4} className="g-4">
-                {eventosFiltrados.map((evento) => (
+                {eventos.slice(0, 6).map((evento) => (
                   <Col key={evento.id}>
                     <ProductCard
                       evento={{
@@ -304,9 +293,7 @@ const Inicio = () => {
                         imagen: evento.imagenUrl || '/assets/hero.png',
                         titulo: evento.nombre || 'Evento sin nombre',
                         fecha: evento.fecha,
-                        ubicacion:
-                          evento.recinto?.ubicacion ||
-                          'Ubicación por confirmar',
+                        ubicacion: evento.recinto?.ubicacion || 'Ubicación por confirmar',
                         precio: evento.precioEntrada || 0,
                       }}
                       onComprar={() => handleAddToCart(evento)}
@@ -315,6 +302,9 @@ const Inicio = () => {
                 ))}
               </Row>
             )}
+            <div className="text-center mt-4">
+              <Button variant="outline-primary" onClick={() => navigate('/eventos')}>Ver todos los eventos</Button>
+            </div>
           </Container>
         </section>
 

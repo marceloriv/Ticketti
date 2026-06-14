@@ -403,6 +403,21 @@
   background-color: transparent;
 }
 
+.category-icon {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: #f8f9fa;
+}
+
+.category-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .inicio-categoria-button:hover,
 .inicio-categoria-button.active {
   background-color: var(--ticketti-primary);
