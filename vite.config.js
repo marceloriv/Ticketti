@@ -64,4 +64,7 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    sourcemap: 'hidden', // Evita emitir el comentario sourceMappingURL en producción para ocultar el código fuente sin minificar
+  },
 });
