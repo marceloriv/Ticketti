@@ -8,13 +8,16 @@ export default function CommonCarousel({ slides = [] }) {
       interval={5000}
       className="hero-carousel"
     >
-      {slides.map((slide) => (
+      {slides.map((slide, index) => (
         <RBCarousel.Item key={slide.id}>
           <div className="hero-slide">
             <img
               src={slide.imagen}
               alt={slide.titulo}
               className="hero-slide__image"
+              fetchpriority={index === 0 ? "high" : "auto"}
+              loading={index === 0 ? "eager" : "lazy"}
+              decoding={index === 0 ? "sync" : "async"}
             />
             <div className="hero-slide__overlay" />
             <Container className="hero-slide__content h-100 d-flex flex-column justify-content-center align-items-center text-center text-white py-5">

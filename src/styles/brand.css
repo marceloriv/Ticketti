@@ -95,6 +95,7 @@
   background-position: center;
   height: 85vh;
   min-height: 400px;
+  aspect-ratio: 16/9;
 }
 
 .hero-slide__image {
