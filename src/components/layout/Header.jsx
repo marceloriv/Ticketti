@@ -221,32 +221,30 @@ const Header = () => {
                     size="sm"
                     onClick={handleIrCarrito}
                     className="position-relative"
+                    aria-label={`Ver carrito, ${cantidadCarrito} entradas añadidas`}
                   >
-                    <ShoppingCart size={14} className="me-1" />
+                    <ShoppingCart size={14} className="me-1" aria-hidden="true" />
                     Carrito
-
+ 
                     {cantidadCarrito > 0 && (
                       <span
-                        role="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleIrCarrito();
-                        }}
                         className="carrito-badge-ticketti"
+                        aria-hidden="true"
                       >
                         {cantidadCarrito}
                       </span>
                     )}
                   </Button>
                 )}
-
+ 
                 <Button
                   variant="outline-danger"
                   size="sm"
                   onClick={logout}
                   className="d-flex align-items-center gap-1"
+                  aria-label="Cerrar sesión de la cuenta"
                 >
-                  <LogOut size={16} />
+                  <LogOut size={16} aria-hidden="true" />
                   Salir
                 </Button>
               </>
@@ -257,24 +255,21 @@ const Header = () => {
                   size="sm"
                   onClick={handleIrCarrito}
                   className="position-relative"
+                  aria-label={`Ver carrito, ${cantidadCarrito} entradas añadidas`}
                 >
-                  <ShoppingCart size={14} className="me-1" />
+                  <ShoppingCart size={14} className="me-1" aria-hidden="true" />
                   Carrito
-
+ 
                   {cantidadCarrito > 0 && (
                     <span
-                      role="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleIrCarrito();
-                      }}
                       className="carrito-badge-ticketti"
+                      aria-hidden="true"
                     >
                       {cantidadCarrito}
                     </span>
                   )}
                 </Button>
-                <Button as="a" href="/login" className="btn-primary">
+                <Button as="a" href="/login" className="btn-primary" aria-label="Acceder a la plataforma">
                   Acceso
                 </Button>
               </>
