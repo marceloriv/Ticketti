@@ -4,13 +4,14 @@ import { ROLES, ROUTES } from '@utils/routes';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 // Importar páginas públicas
+import Contacto from '@pages/Contacto';
 import DetalleEvento from '@pages/DetalleEvento';
 import Donaciones from '@pages/Donaciones';
 import Inicio from '@pages/Inicio';
+import Eventos from '@pages/Eventos';
 import Login from '@pages/Login';
 import Nosotros from '@pages/Nosotros';
 import Registro from '@pages/Registro';
-import Contacto from '@pages/Contacto';
 
 // Importar páginas protegidas
 import DashboardAdmin from '@pages/DashboardAdmin';
@@ -19,17 +20,12 @@ import HistorialNotificaciones from '@pages/HistorialNotificaciones';
 import PaginaCarrito from '@pages/PaginaCarrito';
 import PerfilCliente from '@pages/PerfilCliente';
 
-
-
 export default function AppRoutes() {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return (
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: '100vh' }}
-      >
+      <div className="d-flex justify-content-center align-items-center app-routes-loading">
         <div className="spinner-border" role="status">
           <span className="visually-hidden">Cargando...</span>
         </div>
@@ -45,20 +41,28 @@ export default function AppRoutes() {
 
       <Route
         path={ROUTES.LOGIN}
-        element={isAuthenticated ? <Navigate to={ROUTES.INICIO} replace /> : <Login />}
+        element={
+          isAuthenticated ? <Navigate to={ROUTES.INICIO} replace /> : <Login />
+        }
       />
 
       <Route
         path={ROUTES.REGISTRO}
-        element={isAuthenticated ? <Navigate to={ROUTES.INICIO} replace /> : <Registro />}
+        element={
+          isAuthenticated ? (
+            <Navigate to={ROUTES.INICIO} replace />
+          ) : (
+            <Registro />
+          )
+        }
       />
 
       {/* ========== RUTAS PÚBLICAS - EVENTOS ========== */}
       <Route path="/evento/:id" element={<DetalleEvento />} />
-      <Route path="/events" element={<Inicio />} />
+      <Route path={ROUTES.EVENTOS} element={<Eventos />} />
       <Route path={ROUTES.DONACIONES} element={<Donaciones />} />
-      <Route path="/nosotros" element={<Nosotros />} />
-      <Route path="/contact" element={<Contacto />} />
+      <Route path={ROUTES.NOSOTROS} element={<Nosotros />} />
+      <Route path={ROUTES.CONTACTO} element={<Contacto />} />
 
       {/* ========== RUTAS PROTEGIDAS - CLIENTE ========== */}
       <Route
@@ -76,10 +80,8 @@ export default function AppRoutes() {
         element={<ProtectedRoute element={<HistorialNotificaciones />} />}
       />
 
-      <Route
-        path="/carrito/:carritoId"
-        element={<ProtectedRoute element={<PaginaCarrito />} />}
-      />
+      <Route path="/carrito" element={<PaginaCarrito />} />
+      <Route path="/carrito/:carritoId" element={<PaginaCarrito />} />
 
       {/* ========== RUTAS PROTEGIDAS - ADMIN PLATAFORMA ========== */}
       <Route
@@ -108,5 +110,3 @@ export default function AppRoutes() {
     </Routes>
   );
 }
-
-

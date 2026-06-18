@@ -1,15 +1,8 @@
-// Stubs para endpoints de donaciones usados por la UI localmente
-export const getOrganizaciones = async () => [];
-export const getCausasActivas = async () => [];
-export const getTotalPorOrganizacion = async () => 0;
-export const crearOrganizacion = async (payload) => ({ ...payload, idOrganizacion: Date.now() });
-export const crearCausa = async (payload) => ({ ...payload, idCausa: Date.now() });
-export const getCausasPorOrganizacion = async () => [];
-export default {
-  getOrganizaciones,
-  getCausasActivas,
-  getTotalPorOrganizacion,
-  crearOrganizacion,
-  crearCausa,
-  getCausasPorOrganizacion,
-};
+import donacionesApi from '../api/donacionesApi';
+
+/**
+ * Re-exportación para mantener compatibilidad con imports existentes en la aplicación
+ * que referencian a @services/donacionesApi.
+ */
+export * from '../api/donacionesApi';
+export default donacionesApi;

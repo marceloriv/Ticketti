@@ -1,29 +1,28 @@
-import { useState, useEffect, useCallback } from 'react';
 import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Button,
-  Badge,
-  Spinner,
-  Alert,
-  Modal,
-  Form,
-  Table,
-  Tabs,
-  Tab,
-} from 'react-bootstrap';
-import { Heart, Building2, Plus, TrendingUp, Eye } from 'lucide-react';
-import Header from '@components/layout/Header';
-import Footer from '@components/layout/Footer';
-import {
+  crearOrganizacion,
+  getCausasPorOrganizacion,
   getOrganizaciones,
   getTotalPorOrganizacion,
-  getCausasPorOrganizacion,
-  crearOrganizacion,
-} from '@services/donacionesApi';
-import { COLOR_MARCA } from '@utils/constantes';
+} from '@api/donacionesApi';
+import Footer from '@components/layout/Footer';
+import Header from '@components/layout/Header';
+import { Building2, Eye, Heart, Plus, TrendingUp } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Col,
+  Container,
+  Form,
+  Modal,
+  Row,
+  Spinner,
+  Tab,
+  Table,
+  Tabs,
+} from 'react-bootstrap';
 
 const Donaciones = () => {
   const [organizaciones, setOrganizaciones] = useState([]);
@@ -124,21 +123,16 @@ const Donaciones = () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
-      <main className="flex-grow-1 py-5">
+      <main className="grow py-5">
         <Container>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div className="d-flex align-items-center gap-2">
-              <Heart size={28} style={{ color: COLOR_MARCA }} />
+              <Heart size={28} className="text-ticketti" />
               <h2 className="fw-bold mb-0">Organizaciones Beneficiarias</h2>
             </div>
             <Button
               onClick={() => setShowCrear(true)}
-              className="d-flex align-items-center gap-2"
-              style={{
-                backgroundColor: COLOR_MARCA,
-                borderColor: COLOR_MARCA,
-                color: '#000',
-              }}
+              className="d-flex align-items-center gap-2 btn-ticketti"
             >
               <Plus size={18} /> Nueva organización
             </Button>
@@ -149,7 +143,7 @@ const Donaciones = () => {
 
           {cargando && (
             <div className="text-center py-5">
-              <Spinner animation="border" style={{ color: COLOR_MARCA }} />
+              <Spinner animation="border" className="spinner-ticketti" />
             </div>
           )}
 
@@ -160,21 +154,10 @@ const Donaciones = () => {
           <Row xs={1} md={2} lg={3} className="g-4">
             {organizaciones.map((org) => (
               <Col key={org.idOrganizacion}>
-                <Card
-                  className="h-100 border-0 shadow-sm"
-                  style={{ transition: 'all 0.3s ease' }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = `0 8px 25px rgba(90,212,230,0.25)`;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = '';
-                    e.currentTarget.style.boxShadow = '';
-                  }}
-                >
+                <Card className="h-100 border-0 shadow-sm donaciones-card">
                   <Card.Body className="p-4">
                     <div className="d-flex align-items-center gap-2 mb-3">
-                      <Building2 size={22} style={{ color: COLOR_MARCA }} />
+                      <Building2 size={22} className="text-ticketti" />
                       <Card.Title className="fw-bold mb-0 fs-6">
                         {org.nombre}
                       </Card.Title>
@@ -192,8 +175,7 @@ const Donaciones = () => {
                       <Button
                         variant="outline-primary"
                         size="sm"
-                        className="w-100 d-flex align-items-center justify-content-center gap-2"
-                        style={{ borderColor: COLOR_MARCA, color: COLOR_MARCA }}
+                        className="w-100 d-flex align-items-center justify-content-center gap-2 btn-outline-ticketti"
                         onClick={() => verDetalle(org)}
                       >
                         <Eye size={16} /> Ver detalle y causas
@@ -216,14 +198,14 @@ const Donaciones = () => {
       >
         <Modal.Header closeButton>
           <Modal.Title className="d-flex align-items-center gap-2">
-            <Building2 size={22} style={{ color: COLOR_MARCA }} />
+            <Building2 size={22} className="text-ticketti" />
             {orgSeleccionada?.nombre}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {cargandoDetalle ? (
             <div className="text-center py-4">
-              <Spinner animation="border" style={{ color: COLOR_MARCA }} />
+              <Spinner animation="border" className="spinner-ticketti" />
             </div>
           ) : (
             <Tabs defaultActiveKey="causas" className="mb-3">
@@ -271,11 +253,7 @@ const Donaciones = () => {
               </Tab>
               <Tab eventKey="total" title="Monto Recaudado">
                 <div className="text-center py-4">
-                  <TrendingUp
-                    size={48}
-                    style={{ color: COLOR_MARCA }}
-                    className="mb-3"
-                  />
+                  <TrendingUp size={48} className="text-ticketti mb-3" />
                   <h3 className="fw-bold">
                     {total !== null
                       ? new Intl.NumberFormat('es-CL', {
@@ -368,13 +346,13 @@ const Donaciones = () => {
               <Button
                 type="submit"
                 disabled={guardando}
-                style={{
-                  backgroundColor: COLOR_MARCA,
-                  borderColor: COLOR_MARCA,
-                  color: '#000',
-                }}
+                className="btn-ticketti"
               >
-                {guardando ? <Spinner size="sm" /> : 'Guardar'}
+                {guardando ? (
+                  <Spinner size="sm" className="spinner-ticketti" />
+                ) : (
+                  'Guardar'
+                )}
               </Button>
             </div>
           </Form>

@@ -1,15 +1,26 @@
-import { Card, Button, Form, Alert, Badge } from 'react-bootstrap';
+import { ArrowRight, CheckCircle, Heart } from 'lucide-react';
 import { useState } from 'react';
+import { Alert, Badge, Button, Form } from 'react-bootstrap';
+import '../styles/components/ResumenCarrito.css';
 
-const ACCENT_COLOR = '#2CACAD';
+/**
+ * Formateador de moneda local para pesos chilenos.
+ */
 const PRECIO_MONEDA = new Intl.NumberFormat('es-CL', {
   style: 'currency',
   currency: 'CLP',
   minimumFractionDigits: 0,
 });
 
+/**
+ * Convierte un número a formato de pesos chilenos.
+ *
+ * @param {number} valor - Valor a formatear.
+ * @returns {string} Valor de la moneda formateado.
+ */
 const formatearMoneda = (valor) => PRECIO_MONEDA.format(valor || 0);
 
+/** Mapeo de variantes de badges bootstrap según el estado del carrito */
 const ESTADO_CARRITO_VARIANT = {
   CREADO: 'secondary',
   RESERVADO: 'warning',
@@ -19,130 +30,186 @@ const ESTADO_CARRITO_VARIANT = {
   REEMBOLSADO: 'info',
 };
 
-const ResumenCarrito = ({ resumen, onCheckout, loading }) => {
-  const [causaSocialId, setCausaSocialId] = useState('');
+/**
+ * Componente que muestra el panel con el desglose final y el checkout del carrito de compras.
+ * La donación del 10% es OBLIGATORIA — no es opcional. Se calcula sobre el subtotal.
+ */
+const ResumenCarrito = ({ resumen, onCheckout, loading, isGuest = false, esCarritoPagado = false }) => {
+  const [causaSocialId, setCausaSocialId] = useState('1');
   const [error, setError] = useState('');
 
-  // El resumen usa `items` (no `entradas`)
   const items = resumen?.items || [];
   const subtotal = resumen?.subtotal || 0;
-  const donacion = resumen?.montoDonacion ?? subtotal * 0.1;
-  const total = resumen?.total ?? subtotal + donacion;
-  const cantidadTotal = items.reduce((sum, item) => sum + (item.cantidad || 0), 0);
+
+  // La donación siempre es el 10% del subtotal — es obligatoria en toda compra
+  const donacion = subtotal * 0.1;
+
+  // Total siempre incluye la donación obligatoria del 10%
+  const total = subtotal + donacion;
+
+  const cantidadTotal = items.reduce(
+    (sum, item) => sum + (item.cantidad || 0),
+    0
+  );
   const estadoCarrito = resumen?.estadoCarrito;
   const estadoPago = resumen?.estadoPago;
 
   const esReservado = estadoCarrito === 'RESERVADO';
   const yaPagado = estadoCarrito === 'PAGADO';
-  const puedePagar = !yaPagado && cantidadTotal > 0 && !loading;
+  const pagoPendiente = estadoPago === 'PENDIENTE';
+  // Puede pagar si no está pagado, tiene items, no está cargando, y si está reservado el pago debe estar pendiente
+  const puedePagar = !yaPagado && cantidadTotal > 0 && !loading && (!esReservado || pagoPendiente);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-    if (!causaSocialId) {
-      setError('Por favor selecciona una causa social');
+    if (!isGuest && !causaSocialId) {
+      setError('Por favor selecciona una causa social para destinar tu donación');
       return;
     }
     if (cantidadTotal === 0) {
-      setError('El carrito esta vacio');
+      setError('El carrito está vacío');
       return;
     }
     if (onCheckout) {
-      onCheckout(causaSocialId);
+      onCheckout(isGuest ? null : causaSocialId);
     }
   };
 
   return (
-    <Card className="shadow-sm" style={{ borderColor: ACCENT_COLOR }}>
-      <Card.Header className="bg-white" style={{ borderBottomColor: ACCENT_COLOR }}>
-        <h5 className="mb-0 fw-bold">Resumen de Compra</h5>
-      </Card.Header>
-      <Card.Body className="bg-light">
-        {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
+    <div className="resumen-carrito-container card border-0 shadow-sm p-4">
+      {/* Banner superior */}
+      <div className="resumen-carrito-banner"></div>
 
-        {estadoCarrito && (
-          <div className="d-flex gap-2 mb-3 flex-wrap">
-            <Badge bg={ESTADO_CARRITO_VARIANT[estadoCarrito] || 'secondary'}>
-              {estadoCarrito}
+      <h5 className="resumen-carrito-titulo fw-bold text-dark mb-3">
+        Resumen de Compra
+      </h5>
+
+      {error && (
+        <Alert variant="danger" className="resumen-carrito-alerta mb-3 py-2 small">
+          ⚠️ {error}
+        </Alert>
+      )}
+
+      {estadoCarrito && (
+        <div className="resumen-carrito-estados d-flex gap-2 mb-3 flex-wrap">
+          <Badge
+            bg={ESTADO_CARRITO_VARIANT[estadoCarrito] || 'secondary'}
+            className="px-2 py-1"
+          >
+            Carro: {estadoCarrito}
+          </Badge>
+          {estadoPago && (
+            <Badge bg="light" text="dark" className="border px-2 py-1">
+              Pago: {estadoPago}
             </Badge>
-            {estadoPago && (
-              <Badge bg="light" text="dark" className="border">
-                Pago: {estadoPago}
-              </Badge>
-            )}
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
-        <div className="mb-4">
-          <div className="d-flex justify-content-between mb-2">
-            <span className="text-muted">Subtotal:</span>
-            <span className="fw-semibold">{formatearMoneda(subtotal)}</span>
-          </div>
-          <div className="d-flex justify-content-between mb-2">
-            <span className="text-muted">Donacion (10%):</span>
-            <span className="fw-semibold" style={{ color: ACCENT_COLOR }}>
-              {formatearMoneda(donacion)}
-            </span>
-          </div>
-          <hr />
-          <div className="d-flex justify-content-between">
-            <span className="fw-bold">Total:</span>
-            <span className="fw-bold fs-5" style={{ color: ACCENT_COLOR }}>
-              {formatearMoneda(total)}
-            </span>
-          </div>
+      {/* Breakdown de precios */}
+      <div className="resumen-carrito-breakdown">
+        <div className="resumen-carrito-fila">
+          <span className="resumen-carrito-etiqueta">Subtotal</span>
+          <span className="resumen-carrito-valor">{formatearMoneda(subtotal)}</span>
+        </div>
+        <div className="resumen-carrito-fila">
+          <span className="resumen-carrito-etiqueta">Cargo por Despacho</span>
+          <span className="resumen-carrito-valor text-success">Gratis</span>
         </div>
 
-        {puedePagar && (
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-semibold">Causa Social</Form.Label>
-              <Form.Select
-                name="causaSocial"
-                value={causaSocialId}
-                onChange={(e) => setCausaSocialId(e.target.value)}
-                required
-                disabled={loading || esReservado}
-              >
-                <option value="">Selecciona una causa social...</option>
-                <option value="1">Fundacion Educacion para Todos</option>
-                <option value="2">Asociacion Proteccion Animal</option>
-                <option value="3">Organizacion Medio Ambiente</option>
-                <option value="4">Fundacion Salud Comunitaria</option>
-              </Form.Select>
-            </Form.Group>
+        <div className="resumen-carrito-divider"></div>
 
-            <Button
-              type="submit"
-              variant="primary"
-              className="w-100 fw-semibold"
-              style={{ backgroundColor: ACCENT_COLOR, borderColor: ACCENT_COLOR }}
-              disabled={loading || esReservado || !causaSocialId}
-            >
-              {esReservado
-                ? 'Reserva activa'
-                : loading
-                  ? 'Procesando...'
-                  : 'Ir a Pagar'}
-            </Button>
-          </Form>
-        )}
-
-        {yaPagado && (
-          <Alert variant="success" className="text-center mb-0">
-            Pago confirmado ✓
-          </Alert>
-        )}
-
-        {cantidadTotal > 0 && (
-          <div className="mt-3 text-center">
-            <small className="text-muted">
-              {cantidadTotal} {cantidadTotal === 1 ? 'entrada' : 'entradas'} en el carrito
-            </small>
+        {/* ── Donación obligatoria del 10% ─────────────────────────────── */}
+        <div className="resumen-carrito-seccion-donacion">
+          <div className="resumen-carrito-donacion-header">
+            <Heart size={16} className="resumen-carrito-donacion-icono" />
+            <h6 className="resumen-carrito-donacion-titulo mb-0">
+              Donación a Causa Social
+              <span className="resumen-carrito-donacion-badge">Obligatoria</span>
+            </h6>
           </div>
-        )}
-      </Card.Body>
-    </Card>
+
+          <div className="resumen-carrito-donacion-monto">
+            <div className="resumen-carrito-fila">
+              <span className="resumen-carrito-etiqueta">10% del subtotal</span>
+              <span className="resumen-carrito-valor resumen-carrito-donacion-valor">
+                {formatearMoneda(donacion)}
+              </span>
+            </div>
+            <p className="resumen-carrito-donacion-descripcion">
+              Cada compra incluye una donación del 10% para apoyar causas
+              sociales. Selecciona a quién deseas destinar tu aporte:
+            </p>
+          </div>
+
+          {!isGuest && (
+            <Form.Select
+              value={causaSocialId}
+              onChange={(e) => setCausaSocialId(e.target.value)}
+              disabled={loading || esReservado || esCarritoPagado}
+              className="resumen-carrito-select-causa"
+              required
+            >
+              <option value="">Seleccionar causa social...</option>
+              <option value="1">UNICEF</option>
+              <option value="2">MusiCares</option>
+              <option value="3">Global Green</option>
+              <option value="4">Fundación Salud Comunitaria</option>
+            </Form.Select>
+          )}
+        </div>
+
+        <div className="resumen-carrito-divider"></div>
+
+        {/* Total Final (incluye donación obligatoria) */}
+        <div className="resumen-carrito-total-row">
+          <span
+            className="resumen-carrito-total-etiqueta"
+            style={{ fontSize: '1.25rem' }}
+          >
+            Total Final
+          </span>
+          <span
+            className="resumen-carrito-total-valor"
+            style={{ fontSize: '1.45rem' }}
+          >
+            {formatearMoneda(total)}
+          </span>
+        </div>
+      </div>
+
+      {puedePagar && (
+        <Form onSubmit={handleSubmit}>
+          <Button
+            type="submit"
+            disabled={loading || (esReservado && !pagoPendiente) || (!isGuest && !causaSocialId)}
+            className="resumen-carrito-btn-checkout"
+          >
+            {isGuest ? (
+              <span>Iniciar sesión para comprar</span>
+            ) : loading ? (
+              <span>Procesando...</span>
+            ) : (
+              <>
+                <span>Proceder al Pago Seguro</span>
+                <ArrowRight size={18} />
+              </>
+            )}
+          </Button>
+        </Form>
+      )}
+
+      {yaPagado && (
+        <Alert
+          variant="success"
+          className="text-center mb-0 d-flex align-items-center justify-content-center gap-2 py-3 rounded-3 shadow-sm"
+        >
+          <CheckCircle size={20} />
+          <span className="fw-bold">Pago confirmado ✓</span>
+        </Alert>
+      )}
+    </div>
   );
 };
 

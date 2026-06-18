@@ -1,0 +1,189 @@
+/* Estilos premium para la página de Contacto de Ticketti */
+
+.contacto-page {
+  background-color: #f8fafc;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.contacto-hero-ticketti {
+  background: linear-gradient(135deg, #0f1b3d 0%, #1e293b 100%);
+  color: #ffffff;
+  padding: 5rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.contacto-hero-ticketti::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 15% 50%, rgba(90, 212, 230, 0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.contacto-hero-ticketti h1 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 3rem;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, #ffffff 30%, var(--ticketti-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.contacto-hero-ticketti p {
+  font-size: 1.15rem;
+  opacity: 0.85;
+  font-weight: 300;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Tarjetas de Información */
+.contacto-info-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+}
+
+.contacto-info-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(90, 212, 230, 0.15) !important;
+  border-color: rgba(90, 212, 230, 0.3);
+}
+
+.contacto-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background-color: var(--ticketti-primary-light);
+  color: var(--ticketti-primary-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.contacto-info-card:hover .contacto-icon-wrapper {
+  background-color: var(--ticketti-primary);
+  color: #000000;
+  transform: scale(1.05);
+}
+
+/* Formulario Premium */
+.contacto-form-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+}
+
+.contacto-form-card:hover {
+  box-shadow: 0 15px 40px rgba(90, 212, 230, 0.1) !important;
+}
+
+.contacto-form-card .form-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #334155;
+  margin-bottom: 0.5rem;
+}
+
+.contacto-form-card .form-control {
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease-in-out;
+  background-color: #f8fafc;
+}
+
+.contacto-form-card .form-control:focus {
+  background-color: #ffffff;
+  border-color: var(--ticketti-primary);
+  box-shadow: 0 0 0 4px var(--ticketti-primary-shadow);
+  outline: none;
+}
+
+.contacto-form-card textarea.form-control {
+  resize: none;
+}
+
+.btn-enviar-contacto {
+  background-color: var(--ticketti-primary);
+  border: none;
+  color: #000000;
+  font-weight: 600;
+  padding: 0.8rem 1.8rem;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-enviar-contacto:hover {
+  background-color: var(--ticketti-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(90, 212, 230, 0.3);
+  color: #000000;
+}
+
+.btn-enviar-contacto:active {
+  transform: translateY(0);
+}
+
+/* Preguntas Frecuentes FAQ */
+.faq-section-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0f1b3d;
+  margin-bottom: 2.5rem;
+}
+
+.faq-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.faq-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(90, 212, 230, 0.2);
+}
+
+.faq-card .card-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #1e293b;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.50rem;
+}
+
+.faq-icon {
+  color: var(--ticketti-primary-hover);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.faq-card .card-text {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}

@@ -1,22 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
+import api from '@api/api';
+import Footer from '@components/layout/Footer';
+import Header from '@components/layout/Header';
+import { useAuth } from '@hooks/useAuth';
+import { Heart, Mail, RefreshCw, ShoppingBag, User } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  Container,
+  Alert,
+  Badge,
+  Button,
   Card,
+  Container,
+  Form,
   Nav,
+  Spinner,
   Tab,
   Table,
-  Badge,
-  Spinner,
-  Alert,
-  Button,
 } from 'react-bootstrap';
-import { User, Mail, ShoppingBag, Heart, RefreshCw } from 'lucide-react';
-import Header from '@components/layout/Header';
-import Footer from '@components/layout/Footer';
-import { useAuth } from '@hooks/useAuth';
 import { Link } from 'react-router-dom';
-import api from '@services/api';
-import { COLOR_MARCA } from '@utils/constantes';
+import { obtenerUsuario, actualizarUsuario } from '@api/usuariosApi';
 
 const estadoLabelMap = {
   CREADO: 'Creado',
@@ -69,10 +70,22 @@ const ESTADO_VARIANT = {
 };
 
 const PerfilCliente = () => {
-  const { usuario } = useAuth();
+  const { usuario, actualizarContextoUsuario } = useAuth();
   const [notificaciones, setNotificaciones] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
+
+  // Estados del Formulario de Perfil
+  const [formData, setFormData] = useState({
+    nombre: '',
+    correo: '',
+    telefono: '',
+    direccion: '',
+  });
+  const [cargandoPerfil, setCargandoPerfil] = useState(false);
+  const [guardandoPerfil, setGuardandoPerfil] = useState(false);
+  const [errorPerfil, setErrorPerfil] = useState('');
+  const [exitoPerfil, setExitoPerfil] = useState('');
 
   const idUsuario = usuario?.id || localStorage.getItem('idUsuario');
 
@@ -90,39 +103,95 @@ const PerfilCliente = () => {
     }
   }, [idUsuario]);
 
+  const cargarPerfilCompleto = useCallback(async () => {
+    if (!idUsuario) return;
+    setCargandoPerfil(true);
+    setErrorPerfil('');
+    try {
+      const data = await obtenerUsuario(idUsuario);
+      setFormData({
+        nombre: data.nombre || '',
+        correo: data.correo || '',
+        telefono: data.telefono || '',
+        direccion: data.direccion || '',
+      });
+    } catch {
+      setErrorPerfil('No se pudieron cargar los datos de perfil.');
+    } finally {
+      setCargandoPerfil(false);
+    }
+  }, [idUsuario]);
+
   useEffect(() => {
     cargarNotificaciones();
-  }, [cargarNotificaciones]);
+    cargarPerfilCompleto();
+  }, [cargarNotificaciones, cargarPerfilCompleto]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorPerfil('');
+    setExitoPerfil('');
+
+    if (!formData.nombre.trim()) {
+      setErrorPerfil('El nombre es obligatorio.');
+      return;
+    }
+    if (!formData.correo.trim()) {
+      setErrorPerfil('El correo es obligatorio.');
+      return;
+    }
+
+    setGuardandoPerfil(true);
+    try {
+      const usuarioActualizado = await actualizarUsuario(idUsuario, {
+        nombre: formData.nombre.trim(),
+        correo: formData.correo.trim(),
+        telefono: formData.telefono ? formData.telefono.trim() : '',
+        direccion: formData.direccion ? formData.direccion.trim() : '',
+        rol: usuario?.rol || 'CLIENTE',
+      });
+
+      actualizarContextoUsuario({
+        nombre: usuarioActualizado.nombre,
+        correo: usuarioActualizado.correo,
+      });
+
+      setExitoPerfil('Perfil actualizado exitosamente.');
+    } catch (err) {
+      setErrorPerfil(
+        err.response?.data?.mensaje ||
+          err.message ||
+          'Error al actualizar el perfil.'
+      );
+    } finally {
+      setGuardandoPerfil(false);
+    }
+  };
 
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
-      <main className="flex-grow-1 py-4" style={{ background: '#f8f9fa' }}>
+      <main className="grow py-4 perfil-cliente-main">
         <Container fluid="lg">
           {/* Cabecera del perfil */}
           <Card className="border-0 shadow-sm mb-4">
             <Card.Body className="d-flex align-items-center gap-4 p-4">
-              <div
-                style={{
-                  background: `${COLOR_MARCA}20`,
-                  borderRadius: '50%',
-                  width: 72,
-                  height: 72,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <User size={36} style={{ color: COLOR_MARCA }} />
+              <div className="perfil-cliente-avatar">
+                <User size={36} className="perfil-cliente-icon" />
               </div>
               <div>
                 <h4 className="fw-bold mb-1">
                   {usuario?.nombre || 'Mi perfil'}
                 </h4>
-                <Badge style={{ background: COLOR_MARCA, color: '#000' }}>
-                  CLIENTE
-                </Badge>
+                <Badge className="badge-ticketti">CLIENTE</Badge>
               </div>
             </Card.Body>
           </Card>
@@ -184,7 +253,7 @@ const PerfilCliente = () => {
                     {error && <Alert variant="danger">{error}</Alert>}
                     {cargando ? (
                       <div className="text-center py-4">
-                        <Spinner style={{ color: COLOR_MARCA }} />
+                        <Spinner className="spinner-ticketti" />
                       </div>
                     ) : notificaciones.length === 0 ? (
                       <Alert variant="info">
@@ -207,9 +276,7 @@ const PerfilCliente = () => {
                                 <Badge
                                   bg="light"
                                   text="dark"
-                                  style={{
-                                    borderLeft: `3px solid ${COLOR_MARCA}`,
-                                  }}
+                                  className="badge-ticketti-border"
                                 >
                                   {TIPO_LABELS[n.tipo] || n.tipo}
                                 </Badge>
@@ -237,22 +304,110 @@ const PerfilCliente = () => {
                     <MisComprasTab usuarioId={usuario?.id} />
                   </Tab.Pane>
 
-                  {/* ── DONACIONES — pendiente MSDonaciones */}
+                  {/* ── DONACIONES ── pendiente MSDonaciones */}
                   <Tab.Pane eventKey="donaciones">
-                    <Placeholder
-                      ms="MSDonaciones"
-                      descripcion="Donaciones del usuario — GET /api/donaciones/usuario/{id}"
-                      altura={250}
-                    />
+                    <Alert variant="info" className="text-center py-4">
+                      <Heart size={24} className="mb-2 text-ticketti" />
+                      <p className="mb-1 fw-semibold">
+                        Historial de donaciones próximamente
+                      </p>
+                      <p className="text-muted small mb-0">
+                        MSDonaciones — GET
+                        /api/donaciones/usuario/&#123;id&#125;
+                      </p>
+                    </Alert>
                   </Tab.Pane>
 
-                  {/* ── PERFIL — pendiente MSUsuarios */}
+                  {/* ── PERFIL ── */}
                   <Tab.Pane eventKey="perfil">
-                    <Placeholder
-                      ms="MSUsuarios"
-                      descripcion="Editar datos del perfil — PUT /api/v1/usuarios/{id}"
-                      altura={250}
-                    />
+                    <div className="mb-3">
+                      <h5 className="fw-bold mb-3">Información Personal</h5>
+                    </div>
+                    {cargandoPerfil ? (
+                      <div className="text-center py-4">
+                        <Spinner className="spinner-ticketti" />
+                      </div>
+                    ) : (
+                      <Form onSubmit={handleSubmit} className="perfil-cliente-form">
+                        {errorPerfil && <Alert variant="danger">{errorPerfil}</Alert>}
+                        {exitoPerfil && <Alert variant="success">{exitoPerfil}</Alert>}
+
+                        <Form.Group className="mb-3" controlId="formNombre">
+                          <Form.Label className="fw-semibold">Nombre Completo</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="nombre"
+                            value={formData.nombre}
+                            onChange={handleChange}
+                            placeholder="Tu nombre completo"
+                            required
+                          />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formCorreo">
+                          <Form.Label className="fw-semibold">Correo Electrónico</Form.Label>
+                          <Form.Control
+                            type="email"
+                            name="correo"
+                            value={formData.correo}
+                            onChange={handleChange}
+                            placeholder="nombre@correo.com"
+                            required
+                          />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formTelefono">
+                          <Form.Label className="fw-semibold">Teléfono de Contacto</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="telefono"
+                            value={formData.telefono}
+                            onChange={handleChange}
+                            placeholder="Ej: +56912345678"
+                          />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formDireccion">
+                          <Form.Label className="fw-semibold">Dirección</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="direccion"
+                            value={formData.direccion}
+                            onChange={handleChange}
+                            placeholder="Tu dirección física"
+                          />
+                        </Form.Group>
+
+                        <div className="d-flex justify-content-end gap-2 mt-4">
+                          <Button
+                            variant="outline-secondary"
+                            type="button"
+                            onClick={cargarPerfilCompleto}
+                            disabled={guardandoPerfil}
+                          >
+                            Descartar Cambios
+                          </Button>
+                          <Button
+                            className="btn-ticketti"
+                            type="submit"
+                            disabled={guardandoPerfil}
+                            style={{
+                              backgroundColor: '#a370f7',
+                              borderColor: '#a370f7',
+                            }}
+                          >
+                            {guardandoPerfil ? (
+                              <>
+                                <Spinner animation="border" size="sm" className="me-2" />
+                                Guardando...
+                              </>
+                            ) : (
+                              'Guardar Cambios'
+                            )}
+                          </Button>
+                        </div>
+                      </Form>
+                    )}
                   </Tab.Pane>
                 </Tab.Content>
               </Card.Body>
@@ -280,7 +435,20 @@ function MisComprasTab({ usuarioId }) {
       const res = await api.get('/Carrito/listar', {
         headers: { 'X-Usuario-Id': usuarioId },
       });
-      setCarritos(res.data?.data || []);
+      const carritos = res.data?.data || [];
+      // Filtrar solo carritos con estado PAGADO
+      const carritosPagados = carritos.filter(
+        (c) =>
+          (c.estadoCarrito || c.estado || '').toString().toUpperCase() ===
+          'PAGADO'
+      );
+      // Ordenar por fecha de creación (ascendente) para asignar número secuencial
+      const carritosOrdenados = carritosPagados.sort((a, b) => {
+        const fechaA = new Date(a.fechaCreacion || a.createdAt || 0);
+        const fechaB = new Date(b.fechaCreacion || b.createdAt || 0);
+        return fechaA - fechaB;
+      });
+      setCarritos(carritosOrdenados);
     } catch {
       setError('No se pudieron cargar las compras.');
     } finally {
@@ -295,7 +463,7 @@ function MisComprasTab({ usuarioId }) {
   if (cargando)
     return (
       <div className="text-center py-4">
-        <Spinner style={{ color: COLOR_MARCA }} />
+        <Spinner className="spinner-ticketti" />
       </div>
     );
 
@@ -307,9 +475,7 @@ function MisComprasTab({ usuarioId }) {
     );
 
   if (carritos.length === 0)
-    return (
-      <Alert variant="info">Todavía no tienes compras registradas.</Alert>
-    );
+    return <Alert variant="info">Todavía no tienes compras registradas.</Alert>;
 
   // Cada carrito se convierte en una fila con el resumen de ítems
   const formatearItems = (carrito) => {
@@ -346,7 +512,7 @@ function MisComprasTab({ usuarioId }) {
       <Table hover responsive>
         <thead className="table-light">
           <tr>
-            <th>ID</th>
+            <th>#</th>
             <th>Fecha</th>
             <th>Entradas</th>
             <th>Tipo</th>
@@ -356,25 +522,30 @@ function MisComprasTab({ usuarioId }) {
           </tr>
         </thead>
         <tbody>
-          {carritos.map((carrito) => {
+          {carritos.map((carrito, index) => {
             const idCarrito = carrito.idCarrito || carrito.id;
             const estado =
               (carrito.estadoCarrito || carrito.estado || '—')
                 .toString()
                 .toUpperCase() || 'CREADO';
+            const numeroCompra = index + 1;
             return (
               <tr key={idCarrito}>
-                <td className="fw-semibold">#{idCarrito}</td>
+                <td className="fw-semibold">Compra #{numeroCompra}</td>
                 <td className="text-muted small">
                   {formatearFecha(carrito.fechaCreacion || carrito.createdAt)}
                 </td>
                 <td>{totalEntradas(carrito)}</td>
                 <td className="small">{formatearItems(carrito)}</td>
-                <td className="fw-semibold">{formatearMoneda(carrito.total || 0)}</td>
+                <td className="fw-semibold">
+                  {formatearMoneda(carrito.total || 0)}
+                </td>
                 <td>
                   <Badge
                     bg={estadoVariantMap[estado] || 'secondary'}
-                    text={estadoVariantMap[estado] === 'light' ? 'dark' : undefined}
+                    text={
+                      estadoVariantMap[estado] === 'light' ? 'dark' : undefined
+                    }
                   >
                     {estadoLabelMap[estado] || estado}
                   </Badge>

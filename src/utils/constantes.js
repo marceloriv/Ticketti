@@ -1,1 +1,0 @@
-export const COLOR_MARCA = '#5ad4e6';

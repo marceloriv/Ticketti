@@ -1,0 +1,209 @@
+/* Estilo Glassmorphism para el Resumen del Carrito */
+
+.resumen-carrito-container {
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 24px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Imagen superior del resumen */
+.resumen-carrito-banner {
+  height: 120px;
+  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=400');
+  background-size: cover;
+  background-position: center;
+  margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+}
+
+.resumen-carrito-titulo {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: #0f1b3d !important;
+  margin-bottom: 1rem;
+}
+
+/* Filas del breakdown */
+.resumen-carrito-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.resumen-carrito-etiqueta {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.resumen-carrito-valor {
+  color: #0f1b3d;
+  font-weight: 700;
+}
+
+/* Divisor */
+.resumen-carrito-divider {
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.08);
+  margin: 1rem 0;
+}
+
+/* Total */
+.resumen-carrito-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+.resumen-carrito-total-etiqueta {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f1b3d;
+}
+
+.resumen-carrito-total-valor {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f1b3d;
+}
+
+/* Sección de Causa Social */
+.resumen-carrito-seccion-donacion {
+  margin: 1.5rem 0;
+}
+
+.resumen-carrito-donacion-titulo {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #0f1b3d;
+  margin-bottom: 0.75rem;
+}
+
+/* Header de la sección de donación */
+.resumen-carrito-donacion-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.resumen-carrito-donacion-icono {
+  color: #e85d75;
+  flex-shrink: 0;
+}
+
+.resumen-carrito-donacion-titulo {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #0f1b3d;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Badge "Obligatoria" */
+.resumen-carrito-donacion-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #e85d75, #f7a8b8);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.2em 0.6em;
+  border-radius: 20px;
+  vertical-align: middle;
+}
+
+/* Bloque de monto de donación */
+.resumen-carrito-donacion-monto {
+  background: rgba(232, 93, 117, 0.06);
+  border: 1px solid rgba(232, 93, 117, 0.15);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Valor resaltado de la donación */
+.resumen-carrito-donacion-valor {
+  color: #e85d75 !important;
+  font-weight: 800;
+}
+
+/* Descripción informativa */
+.resumen-carrito-donacion-descripcion {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 0.35rem;
+  margin-bottom: 0;
+  line-height: 1.45;
+}
+
+
+/* Selector dropdown de causa */
+.resumen-carrito-select-causa {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.resumen-carrito-select-causa:focus {
+  border-color: var(--ticketti-primary-hover);
+  box-shadow: 0 0 0 3px var(--ticketti-primary-shadow);
+  outline: none;
+}
+
+/* Botón Checkout */
+.resumen-carrito-btn-checkout {
+  width: 100%;
+  background: var(--ticketti-primary) !important;
+  color: #000000 !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 0.85rem 1rem !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 15px rgba(90, 212, 230, 0.3) !important;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.resumen-carrito-btn-checkout:hover:not(:disabled) {
+  background: var(--ticketti-primary-hover) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(90, 212, 230, 0.45) !important;
+}
+
+.resumen-carrito-btn-checkout:active:not(:disabled) {
+  transform: translateY(0) !important;
+}
+
+.resumen-carrito-btn-checkout:disabled {
+  background: #cbd5e1 !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+}

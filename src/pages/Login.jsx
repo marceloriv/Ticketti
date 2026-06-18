@@ -1,6 +1,15 @@
 import { useAuth } from '@hooks/useAuth';
+import { ROUTES } from '@utils/routes';
 import { useEffect, useState } from 'react';
-import { Alert, Button, Card, Col, Container, Row, Spinner } from 'react-bootstrap';
+import {
+  Alert,
+  Button,
+  Card,
+  Col,
+  Container,
+  Row,
+  Spinner,
+} from 'react-bootstrap';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
 import { Link, useNavigate } from 'react-router-dom';
@@ -16,7 +25,7 @@ export default function Login() {
   // Si ya está autenticado, mandarlo al home
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/home');
+      navigate(ROUTES.INICIO);
     }
   }, [isAuthenticated, navigate]);
 
@@ -32,7 +41,7 @@ export default function Login() {
       });
 
       // Después del login, todos van al home
-      navigate('/home');
+      navigate(ROUTES.INICIO);
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión');
     } finally {

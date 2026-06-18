@@ -1,429 +1,381 @@
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
+import { useAuth } from '@hooks/useAuth';
+import { BarChart2, Calendar, Plus, TrendingUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import {
-  Building2,
-  Heart,
-  Plus,
-  ShoppingBag,
-  TrendingUp
-} from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
-import {
-  Alert,
-  Badge,
-  Button,
-  Card,
-  Col,
-  Container,
-  Form,
-  Modal,
-  Nav,
-  Row,
-  Spinner,
-  Tab,
-  Table,
+  Button, Card, Col, Container, Form,
+  Modal, Nav, Row, Tab
 } from 'react-bootstrap';
-import { COLOR_MARCA } from '@utils/constantes';
+import api from '@services/api';
 
-// Los endpoints de donaciones provienen de un microservicio externo.
-// Para mantener la UI funcional en este repo se usan stubs locales.
-const getOrganizaciones = async () => [];
-const getCausasActivas = async () => [];
-const getTotalPorOrganizacion = async () => 0;
-const crearOrganizacion = async () => {};
-const crearCausa = async () => {};
+const GENEROS = [
+  'ROCK', 'JAZZ', 'POP', 'KPOP', 'METAL', 'RAP', 'RNB', 'INDIE', 'REGGAETON',
+  'TERROR', 'COMEDIA', 'DRAMA', 'ACCION', 'ROMANCE', 'PARODIA',
+  'GASTRONOMIA', 'ARTE', 'ARTESANIA', 'FOLCLORE'
+];
 
-// Tarjeta de estadística reutilizable
-const StatCard = ({ icon: Icon, titulo, valor, color, cargando }) => (
-  <Card className="border-0 shadow-sm h-100">
-    <Card.Body className="d-flex align-items-center gap-3 p-4">
-      <div
-        style={{
-          background: `${color}20`,
-          borderRadius: '50%',
-          width: 52,
-          height: 52,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
-      >
-        {Icon ? <Icon size={24} style={{ color }} /> : null}
-      </div>
-      <div>
-        <p className="text-muted small mb-1">{titulo}</p>
-        {cargando ? (
-          <Spinner size="sm" />
-        ) : (
-          <h4 className="fw-bold mb-0">{valor}</h4>
-        )}
-      </div>
-    </Card.Body>
-  </Card>
+const ESTADOS = ['PUBLICADO', 'CANCELADO'];
+
+const Placeholder = ({ ms, descripcion, altura = 200 }) => (
+  <div className={`d-flex flex-column align-items-center justify-content-center text-center rounded dashboard-organizador-placeholder dashboard-organizador-placeholder--${altura}`}>
+    <p className="text-muted fw-semibold mb-1">🔧 Pendiente — {ms}</p>
+    <p className="text-muted small mb-0">{descripcion}</p>
+  </div>
 );
 
-// Placeholder para secciones de otros microservicios
-const Placeholder = ({ ms, descripcion }) => (
-  <Card
-    className="border-0 border-dashed shadow-sm"
-    style={{ border: '2px dashed #dee2e6 !important' }}
-  >
-    <Card.Body className="text-center py-5">
-      <p className="text-muted mb-1 fw-semibold">🔧 Pendiente — {ms}</p>
-      <p className="text-muted small mb-0">{descripcion}</p>
-    </Card.Body>
-  </Card>
-);
+const DashboardOrganizador = () => {
+  const { usuario } = useAuth();
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState(null);
+  const [exito, setExito] = useState(false);
+  const [errores, setErrores] = useState({});
 
-const DashboardAdmin = () => {
-  const [organizaciones, setOrganizaciones] = useState([]);
-  const [causas, setCausas] = useState([]);
-  const [totales, setTotales] = useState({});
-  const [cargando, setCargando] = useState(true);
-  const [showModalOrg, setShowModalOrg] = useState(false);
-  const [showModalCausa, setShowModalCausa] = useState(false);
-  const [guardando, setGuardando] = useState(false);
-  const [exito, setExito] = useState('');
-  const [error, setError] = useState('');
-
-  const [formOrg, setFormOrg] = useState({
-    nombre: '',
-    rut: '',
-    email: '',
-    telefono: '',
-    direccion: '',
-    banco: '',
-    tipoCuenta: '',
-    numeroCuenta: '',
-    titularCuenta: '',
-    rutTitular: '',
-    metodoPagoPreferido: 'TRANSFERENCIA',
-  });
-  const [formCausa, setFormCausa] = useState({
-    idOrganizacion: '',
+  const [form, setForm] = useState({
     nombre: '',
     descripcion: '',
-    objetivoMonto: '',
-    fechaInicio: '',
+    fecha: '',
+    genero: '',
+    estado: 'PUBLICADO',
+    aforo: '',
+    stock: '',
+    precioEntrada: '',
+    recinto: { nombre: '', ubicacion: '' },
+    imagenUrl: '',
+    causaSocialId: null,
+    causaSocialNombre: '',
+    organizacionNombre: '',
   });
 
-  const cargar = useCallback(async () => {
-    setCargando(true);
+  const [archivoPdf, setArchivoPdf] = useState(null);
+  const [archivoImagen, setArchivoImagen] = useState(null);
+  const [causasActivas, setCausasActivas] = useState([]);
+  const [cargandoCausas, setCargandoCausas] = useState(false);
+  const [misEventos, setMisEventos] = useState([]);
+  const [cargandoEventos, setCargandoEventos] = useState(false);
+
+  // Cargar causas activas cuando se abre el modal
+  useEffect(() => {
+    if (mostrarModal) {
+      cargarCausasActivas();
+    }
+  }, [mostrarModal]);
+
+  // Actualizar nombre de causa y organización cuando se selecciona una causa activa
+  useEffect(() => {
+    if (!form.causaSocialId) return;
+
+    const causaSeleccionada = causasActivas.find(c => c.idCausa === parseInt(form.causaSocialId, 10));
+    if (!causaSeleccionada) return;
+
+    const causaSocialNombre = causaSeleccionada.nombre || '';
+    const organizacionNombre = causaSeleccionada.organizacion?.nombre || '';
+
+    if (form.causaSocialNombre !== causaSocialNombre || form.organizacionNombre !== organizacionNombre) {
+      setForm(prev => ({
+        ...prev,
+        causaSocialNombre,
+        organizacionNombre,
+      }));
+    }
+  }, [form.causaSocialId, causasActivas]);
+
+  const cargarCausasActivas = async () => {
+    setCargandoCausas(true);
     try {
-      const [orgs, causasData] = await Promise.all([
-        getOrganizaciones(),
-        getCausasActivas(),
-      ]);
-      setOrganizaciones(orgs);
-      setCausas(causasData);
-      // Cargar totales por organización
-      const tots = {};
-      await Promise.all(
-        orgs.map(async (o) => {
-          try {
-            tots[o.idOrganizacion] = await getTotalPorOrganizacion(
-              o.idOrganizacion
-            );
-          } catch {
-            tots[o.idOrganizacion] = 0;
-          }
-        })
-      );
-      setTotales(tots);
-    } catch {
-      setError('Error cargando datos.');
+      const response = await api.get('/causas/activas');
+      setCausasActivas(response.data || []);
+    } catch (err) {
+      console.error('Error cargando causas activas:', err);
+      setCausasActivas([]);
+    } finally {
+      setCargandoCausas(false);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'recintoNombre' || name === 'recintoUbicacion') {
+      setForm(prev => ({
+        ...prev,
+        recinto: {
+          ...prev.recinto,
+          [name === 'recintoNombre' ? 'nombre' : 'ubicacion']: value
+        }
+      }));
+      setErrores(prev => ({ ...prev, [name]: undefined }));
+    } else {
+      setForm(prev => ({ ...prev, [name]: value }));
+      setErrores(prev => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  useEffect(() => {
+    const cargarMisEventos = async () => {
+      setCargandoEventos(true);
+      try {
+        const response = await api.get('/eventos/mis');
+        setMisEventos(response.data || []);
+      } catch (err) {
+        console.error('Error cargando eventos:', err);
+      } finally {
+        setCargandoEventos(false);
+      }
+    };
+    cargarMisEventos();
+  }, []);
+
+  const validarFormulario = () => {
+    const nuevosErrores = {};
+
+    if (!form.nombre.trim()) {
+      nuevosErrores.nombre = 'Nombre del evento es obligatorio.';
+    }
+
+    if (!form.descripcion.trim()) {
+      nuevosErrores.descripcion = 'Descripción del evento es obligatoria.';
+    }
+
+    if (!form.fecha) {
+      nuevosErrores.fecha = 'Fecha y hora son obligatorias.';
+    } else {
+      const fechaIso = new Date(form.fecha);
+      if (Number.isNaN(fechaIso.getTime())) {
+        nuevosErrores.fecha = 'Fecha y hora no son válidas.';
+      }
+    }
+
+    if (!form.genero) {
+      nuevosErrores.genero = 'Selecciona un género para el evento.';
+    }
+
+    if (!form.recinto.nombre.trim()) {
+      nuevosErrores.recintoNombre = 'Nombre del recinto es obligatorio.';
+    }
+
+    if (!form.recinto.ubicacion.trim()) {
+      nuevosErrores.recintoUbicacion = 'Ubicación del recinto es obligatoria.';
+    }
+
+    if (!form.aforo) {
+      nuevosErrores.aforo = 'Aforo es obligatorio.';
+    } else if (parseInt(form.aforo, 10) <= 0) {
+      nuevosErrores.aforo = 'Aforo debe ser mayor que cero.';
+    }
+
+    if (form.stock === '') {
+      nuevosErrores.stock = 'Stock de entradas es obligatorio.';
+    } else if (parseInt(form.stock, 10) < 0) {
+      nuevosErrores.stock = 'Stock no puede ser negativo.';
+    }
+
+    if (form.aforo && form.stock !== '' && parseInt(form.stock, 10) > parseInt(form.aforo, 10)) {
+      nuevosErrores.stock = 'El stock no puede ser mayor que el aforo.';
+    }
+
+    if (!form.precioEntrada) {
+      nuevosErrores.precioEntrada = 'Precio de entrada es obligatorio.';
+    } else if (parseFloat(form.precioEntrada) <= 0) {
+      nuevosErrores.precioEntrada = 'Precio de entrada debe ser mayor que cero.';
+    }
+
+    setErrores(nuevosErrores);
+    return Object.keys(nuevosErrores).length === 0;
+  };
+
+  const handleImagen = (e) => {
+    const archivo = e.target.files[0];
+    if (!archivo) return;
+    setArchivoImagen(archivo);
+    setForm(prev => ({ ...prev, imagenUrl: `/img/${archivo.name}` }));
+  };
+
+  const handlePdf = (e) => {
+    setArchivoPdf(e.target.files[0]);
+  };
+
+  const handleSubmit = async () => {
+    setCargando(true);
+    setError(null);
+    try {
+      if (!validarFormulario()) {
+        setCargando(false);
+        return;
+      }
+
+      const fechaIso = new Date(form.fecha);
+      const payload = {
+        nombre: form.nombre,
+        descripcion: form.descripcion,
+        fecha: fechaIso.toISOString(),
+        genero: form.genero || null,
+        estado: form.estado,
+        aforo: parseInt(form.aforo, 10),
+        stock: parseInt(form.stock, 10),
+        precioEntrada: parseFloat(form.precioEntrada),
+        recinto: {
+          nombre: form.recinto.nombre,
+          ubicacion: form.recinto.ubicacion,
+        },
+        imagenUrl: form.imagenUrl,
+        causaSocialId: form.causaSocialId ? parseInt(form.causaSocialId, 10) : null,
+      };
+
+      await api.post('/eventos/crear', payload);
+      setExito(true);
+      setTimeout(() => {
+        setMostrarModal(false);
+        setExito(false);
+        setForm({
+          nombre: '', descripcion: '', fecha: '', genero: '',
+          estado: 'PUBLICADO', aforo: '', stock: '', precioEntrada: '',
+          recinto: { nombre: '', ubicacion: '' }, imagenUrl: '',
+          causaSocialId: null, causaSocialNombre: '', organizacionNombre: '',
+        });
+        setArchivoPdf(null);
+        setArchivoImagen(null);
+      }, 1500);
+    } catch (err) {
+      console.error('Error creando evento:', err);
+      const mensaje = err.response?.data?.message || err.response?.data || err.message || 'Error al crear el evento. Verifica los datos.';
+      setError(`Error al crear el evento. ${mensaje}`);
     } finally {
       setCargando(false);
     }
-  }, []);
-
-  useEffect(() => {
-    cargar();
-  }, [cargar]);
-
-  const totalRecaudado = Object.values(totales).reduce(
-    (a, b) => a + Number(b || 0),
-    0
-  );
-
-  const handleCrearOrg = async (e) => {
-    e.preventDefault();
-    setGuardando(true);
-    try {
-      await crearOrganizacion(formOrg);
-      setExito('Organización creada.');
-      setShowModalOrg(false);
-      cargar();
-      setTimeout(() => setExito(''), 3000);
-    } catch {
-      setError('Error al crear organización.');
-    } finally {
-      setGuardando(false);
-    }
   };
-
-  const handleCrearCausa = async (e) => {
-    e.preventDefault();
-    setGuardando(true);
-    try {
-      await crearCausa({
-        ...formCausa,
-        idOrganizacion: Number(formCausa.idOrganizacion),
-      });
-      setExito('Causa social creada.');
-      setShowModalCausa(false);
-      cargar();
-      setTimeout(() => setExito(''), 3000);
-    } catch {
-      setError('Error al crear causa.');
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  const fmt = (n) =>
-    new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      minimumFractionDigits: 0,
-    }).format(n || 0);
 
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
-      <main className="flex-grow-1 py-4" style={{ background: '#f8f9fa' }}>
+      <main className="grow py-4 dashboard-organizador-main">
         <Container fluid="lg">
-          <h2 className="fw-bold mb-4">Panel Administrador</h2>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 className="fw-bold mb-0">Panel Organizador</h2>
+              <p className="text-muted small mb-0">
+                Bienvenido, {usuario?.nombre || 'Organizador'}
+              </p>
+            </div>
+            <Button
+              className="d-flex align-items-center gap-2 btn-ticketti"
+              onClick={() => setMostrarModal(true)}
+            >
+              <Plus size={18} /> Crear evento
+            </Button>
+          </div>
 
-          {exito && (
-            <Alert variant="success" dismissible onClose={() => setExito('')}>
-              {exito}
-            </Alert>
-          )}
-          {error && (
-            <Alert variant="danger" dismissible onClose={() => setError('')}>
-              {error}
-            </Alert>
-          )}
-
-          {/* Estadísticas */}
+          {/* Estadísticas ms eventos, falta ms carrito */}
           <Row className="g-3 mb-4">
-            <Col xs={6} lg={3}>
-              <StatCard
-                icon={Building2}
-                titulo="Organizaciones"
-                valor={organizaciones.length}
-                color={COLOR_MARCA}
-                cargando={cargando}
-              />
-            </Col>
-            <Col xs={6} lg={3}>
-              <StatCard
-                icon={Heart}
-                titulo="Causas activas"
-                valor={causas.length}
-                color="#e83e8c"
-                cargando={cargando}
-              />
-            </Col>
-            <Col xs={6} lg={3}>
-              <StatCard
-                icon={TrendingUp}
-                titulo="Total donado"
-                valor={fmt(totalRecaudado)}
-                color="#28a745"
-                cargando={cargando}
-              />
-            </Col>
-            <Col xs={6} lg={3}>
-              {/* Placeholder ventas — MSCarrito */}
+            <Col xs={6} md={3}>
               <Card className="border-0 shadow-sm h-100">
                 <Card.Body className="d-flex align-items-center gap-3 p-4">
-                  <div
-                    style={{
-                      background: '#ffc10720',
-                      borderRadius: '50%',
-                      width: 52,
-                      height: 52,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <ShoppingBag size={24} style={{ color: '#ffc107' }} />
+                  <div className="dashboard-stat-icon dashboard-stat-icon-brand">
+                    <Calendar size={22} />
                   </div>
                   <div>
-                    <p className="text-muted small mb-1">Total ventas</p>
-                    <p className="text-muted small mb-0 fst-italic">
-                      Pendiente MSCarrito
-                    </p>
+                    <p className="text-muted small mb-1">Mis eventos</p>
+                    <p className="text-muted small fst-italic mb-0">Pendiente MSEventos</p>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col xs={6} md={3}>
+              <Card className="border-0 shadow-sm h-100">
+                <Card.Body className="d-flex align-items-center gap-3 p-4">
+                  <div className="dashboard-stat-icon dashboard-stat-icon-success">
+                    <TrendingUp size={22} />
+                  </div>
+                  <div>
+                    <p className="text-muted small mb-1">Entradas vendidas</p>
+                    <p className="text-muted small fst-italic mb-0">Pendiente MSCarrito</p>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col xs={6} md={3}>
+              <Card className="border-0 shadow-sm h-100">
+                <Card.Body className="d-flex align-items-center gap-3 p-4">
+                  <div className="dashboard-stat-icon dashboard-stat-icon-warning">
+                    <BarChart2 size={22} />
+                  </div>
+                  <div>
+                    <p className="text-muted small mb-1">Ingresos</p>
+                    <p className="text-muted small fst-italic mb-0">Pendiente MSCarrito</p>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col xs={6} md={3}>
+              <Card className="border-0 shadow-sm h-100">
+                <Card.Body className="d-flex align-items-center gap-3 p-4">
+                  <div className="dashboard-stat-icon dashboard-stat-icon-pink">
+                    <TrendingUp size={22} />
+                  </div>
+                  <div>
+                    <p className="text-muted small mb-1">Donaciones generadas</p>
+                    <p className="text-muted small fst-italic mb-0">Pendiente MSDonaciones</p>
                   </div>
                 </Card.Body>
               </Card>
             </Col>
           </Row>
 
-          {/* Tabs de gestión */}
-          <Tab.Container defaultActiveKey="organizaciones">
+          {/* Tabs */}
+          <Tab.Container defaultActiveKey="eventos">
             <Card className="border-0 shadow-sm">
               <Card.Header className="bg-white border-bottom">
                 <Nav variant="tabs" className="border-0">
-                  <Nav.Item>
-                    <Nav.Link eventKey="organizaciones">
-                      Organizaciones
-                    </Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link eventKey="causas">Causas Sociales</Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link eventKey="ventas">Ventas</Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link eventKey="usuarios">Usuarios</Nav.Link>
-                  </Nav.Item>
+                  <Nav.Item><Nav.Link eventKey="eventos">Mis Eventos</Nav.Link></Nav.Item>
+                  <Nav.Item><Nav.Link eventKey="ventas">Ventas por Evento</Nav.Link></Nav.Item>
+                  <Nav.Item><Nav.Link eventKey="reportes">Reportes</Nav.Link></Nav.Item>
                 </Nav>
               </Card.Header>
               <Card.Body>
                 <Tab.Content>
-                  {/* ORGANIZACIONES */}
-                  <Tab.Pane eventKey="organizaciones">
-                    <div className="d-flex justify-content-between mb-3">
-                      <h5 className="fw-bold mb-0">
-                        Organizaciones beneficiarias
-                      </h5>
-                      <Button
-                        size="sm"
-                        onClick={() => setShowModalOrg(true)}
-                        style={{
-                          backgroundColor: COLOR_MARCA,
-                          borderColor: COLOR_MARCA,
-                          color: '#000',
-                        }}
-                      >
-                        <Plus size={16} /> Nueva
-                      </Button>
-                    </div>
-                    {cargando ? (
-                      <div className="text-center py-4">
-                        <Spinner style={{ color: COLOR_MARCA }} />
-                      </div>
+                  <Tab.Pane eventKey="eventos">
+                    {cargandoEventos ? (
+                      <p className="text-muted text-center py-4">Cargando eventos...</p>
+                    ) : misEventos.length === 0 ? (
+                      <p className="text-muted text-center py-4">No tienes eventos creados aún.</p>
                     ) : (
-                      <Table hover responsive size="sm">
-                        <thead className="table-light">
-                          <tr>
-                            <th>Nombre</th>
-                            <th>RUT</th>
-                            <th>Email</th>
-                            <th>Estado</th>
-                            <th>Total donado</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {organizaciones.map((o) => (
-                            <tr key={o.idOrganizacion}>
-                              <td className="fw-semibold">{o.nombre}</td>
-                              <td className="text-muted small">{o.rut}</td>
-                              <td className="text-muted small">{o.email}</td>
-                              <td>
-                                <Badge
-                                  bg={
-                                    o.estado === 'ACTIVA'
-                                      ? 'success'
-                                      : 'secondary'
-                                  }
-                                >
-                                  {o.estado}
-                                </Badge>
-                              </td>
-                              <td
-                                className="fw-semibold"
-                                style={{ color: '#28a745' }}
-                              >
-                                {fmt(totales[o.idOrganizacion])}
-                              </td>
+                      <div className="table-responsive">
+                        <table className="table table-hover align-middle">
+                          <thead>
+                            <tr>
+                              <th>Nombre</th>
+                              <th>Fecha</th>
+                              <th>Género</th>
+                              <th>Estado</th>
+                              <th>Stock</th>
+                              <th>Precio</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </Table>
+                          </thead>
+                          <tbody>
+                            {misEventos.map(evento => (
+                              <tr key={evento.id}>
+                                <td className="fw-semibold">{evento.nombre}</td>
+                                <td>{new Date(evento.fecha).toLocaleDateString('es-CL')}</td>
+                                <td><span className="badge bg-secondary">{evento.genero}</span></td>
+                                <td>
+                                  <span className={`badge ${evento.estado === 'PUBLICADO' ? 'bg-success' : 'bg-danger'}`}>
+                                    {evento.estado}
+                                  </span>
+                                </td>
+                                <td>{evento.stock}</td>
+                                <td>${evento.precioEntrada?.toLocaleString('es-CL')}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     )}
                   </Tab.Pane>
-
-                  {/* CAUSAS */}
-                  <Tab.Pane eventKey="causas">
-                    <div className="d-flex justify-content-between mb-3">
-                      <h5 className="fw-bold mb-0">Causas sociales activas</h5>
-                      <Button
-                        size="sm"
-                        onClick={() => setShowModalCausa(true)}
-                        style={{
-                          backgroundColor: COLOR_MARCA,
-                          borderColor: COLOR_MARCA,
-                          color: '#000',
-                        }}
-                      >
-                        <Plus size={16} /> Nueva causa
-                      </Button>
-                    </div>
-                    {cargando ? (
-                      <div className="text-center py-4">
-                        <Spinner style={{ color: COLOR_MARCA }} />
-                      </div>
-                    ) : (
-                      <Table hover responsive size="sm">
-                        <thead className="table-light">
-                          <tr>
-                            <th>Causa</th>
-                            <th>Organización</th>
-                            <th>Objetivo</th>
-                            <th>Estado</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {causas.map((c) => (
-                            <tr key={c.idCausa}>
-                              <td className="fw-semibold">{c.nombre}</td>
-                              <td className="text-muted small">
-                                {c.organizacion?.nombre || '—'}
-                              </td>
-                              <td className="text-muted small">
-                                {c.objetivoMonto
-                                  ? fmt(c.objetivoMonto)
-                                  : 'Sin límite'}
-                              </td>
-                              <td>
-                                <Badge
-                                  bg={
-                                    c.estado === 'ACTIVA'
-                                      ? 'success'
-                                      : 'secondary'
-                                  }
-                                >
-                                  {c.estado}
-                                </Badge>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
-                    )}
-                  </Tab.Pane>
-
-                  {/* VENTAS — placeholder MSCarrito */}
                   <Tab.Pane eventKey="ventas">
-                    <Placeholder
-                      ms="MSCarrito"
-                      descripcion="Historial de ventas y pagos — implementar con endpoint de MSCarrito"
-                    />
+                    <Placeholder ms="MSCarrito" descripcion="Ventas por evento" altura={250} />
                   </Tab.Pane>
-
-                  {/* USUARIOS — placeholder MSUsuarios */}
-                  <Tab.Pane eventKey="usuarios">
-                    <Placeholder
-                      ms="MSUsuarios"
-                      descripcion="Gestión de usuarios y roles — implementar con endpoint de MSUsuarios (Ingrid)"
-                    />
+                  <Tab.Pane eventKey="reportes">
+                    <Placeholder ms="MSEventos + MSCarrito" descripcion="Reportes de asistencia e ingresos" altura={250} />
                   </Tab.Pane>
                 </Tab.Content>
               </Card.Body>
@@ -431,203 +383,226 @@ const DashboardAdmin = () => {
           </Tab.Container>
         </Container>
       </main>
-
-      {/* Modal nueva organización */}
-      <Modal
-        show={showModalOrg}
-        onHide={() => setShowModalOrg(false)}
-        size="lg"
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Nueva Organización</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleCrearOrg}>
-            <Row className="g-3">
-              {[
-                'nombre',
-                'rut',
-                'email',
-                'telefono',
-                'direccion',
-                'banco',
-                'tipoCuenta',
-                'numeroCuenta',
-                'titularCuenta',
-                'rutTitular',
-              ].map((f) => (
-                <Col md={6} key={f}>
-                  <Form.Group>
-                    <Form.Label className="fw-semibold text-capitalize">
-                      {f}
-                    </Form.Label>
-                    <Form.Control
-                      type={f === 'email' ? 'email' : 'text'}
-                      value={formOrg[f]}
-                      onChange={(e) =>
-                        setFormOrg({ ...formOrg, [f]: e.target.value })
-                      }
-                      required
-                    />
-                  </Form.Group>
-                </Col>
-              ))}
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label className="fw-semibold">
-                    Método de pago
-                  </Form.Label>
-                  <Form.Select
-                    value={formOrg.metodoPagoPreferido}
-                    onChange={(e) =>
-                      setFormOrg({
-                        ...formOrg,
-                        metodoPagoPreferido: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="TRANSFERENCIA">Transferencia</option>
-                    <option value="DEPOSITO">Depósito</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-            </Row>
-            <div className="d-flex justify-content-end gap-2 mt-4">
-              <Button
-                variant="outline-secondary"
-                onClick={() => setShowModalOrg(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                disabled={guardando}
-                style={{
-                  backgroundColor: COLOR_MARCA,
-                  borderColor: COLOR_MARCA,
-                  color: '#000',
-                }}
-              >
-                {guardando ? <Spinner size="sm" /> : 'Guardar'}
-              </Button>
-            </div>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
-      {/* Modal nueva causa */}
-      <Modal
-        show={showModalCausa}
-        onHide={() => setShowModalCausa(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Nueva Causa Social</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleCrearCausa}>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-semibold">Organización</Form.Label>
-              <Form.Select
-                value={formCausa.idOrganizacion}
-                onChange={(e) =>
-                  setFormCausa({ ...formCausa, idOrganizacion: e.target.value })
-                }
-                required
-              >
-                <option value="">Selecciona una organización</option>
-                {organizaciones.map((o) => (
-                  <option key={o.idOrganizacion} value={o.idOrganizacion}>
-                    {o.nombre}
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-semibold">
-                Nombre de la causa
-              </Form.Label>
-              <Form.Control
-                value={formCausa.nombre}
-                onChange={(e) =>
-                  setFormCausa({ ...formCausa, nombre: e.target.value })
-                }
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-semibold">Descripción</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={2}
-                value={formCausa.descripcion}
-                onChange={(e) =>
-                  setFormCausa({ ...formCausa, descripcion: e.target.value })
-                }
-              />
-            </Form.Group>
-            <Row className="g-2">
-              <Col>
-                <Form.Group>
-                  <Form.Label className="fw-semibold">
-                    Objetivo (CLP)
-                  </Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={formCausa.objetivoMonto}
-                    onChange={(e) =>
-                      setFormCausa({
-                        ...formCausa,
-                        objetivoMonto: e.target.value,
-                      })
-                    }
-                  />
-                </Form.Group>
-              </Col>
-              <Col>
-                <Form.Group>
-                  <Form.Label className="fw-semibold">Fecha inicio</Form.Label>
-                  <Form.Control
-                    type="date"
-                    value={formCausa.fechaInicio}
-                    onChange={(e) =>
-                      setFormCausa({
-                        ...formCausa,
-                        fechaInicio: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <div className="d-flex justify-content-end gap-2 mt-4">
-              <Button
-                variant="outline-secondary"
-                onClick={() => setShowModalCausa(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                disabled={guardando}
-                style={{
-                  backgroundColor: COLOR_MARCA,
-                  borderColor: COLOR_MARCA,
-                  color: '#000',
-                }}
-              >
-                {guardando ? <Spinner size="sm" /> : 'Guardar'}
-              </Button>
-            </div>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
       <Footer />
+
+      {/* Modal Crear Evento */}
+      <Modal show={mostrarModal} onHide={() => setMostrarModal(false)} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Crear Evento</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {exito && <div className="alert alert-success">¡Evento creado exitosamente!</div>}
+          {error && <div className="alert alert-danger">{error}</div>}
+
+          <Row className="g-3">
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Nombre del Evento</Form.Label>
+                <Form.Control name="nombre" value={form.nombre} onChange={handleChange} placeholder="Ej: Lollapalooza" />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Fecha</Form.Label>
+                <Form.Control
+                  type="datetime-local"
+                  name="fecha"
+                  value={form.fecha}
+                  onChange={handleChange}
+                  isInvalid={!!errores.fecha}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errores.fecha}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={12}>
+              <Form.Group>
+                <Form.Label>Descripción</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={2}
+                  name="descripcion"
+                  value={form.descripcion}
+                  onChange={handleChange}
+                  isInvalid={!!errores.descripcion}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errores.descripcion}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Género</Form.Label>
+                <Form.Select name="genero" value={form.genero} onChange={handleChange}>
+                  <option value="">Seleccionar género</option>
+                  {GENEROS.map(g => <option key={g} value={g}>{g}</option>)}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Estado</Form.Label>
+                <Form.Select name="estado" value={form.estado} onChange={handleChange}>
+                  {ESTADOS.map(e => <option key={e} value={e}>{e}</option>)}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Nombre del Recinto</Form.Label>
+                <Form.Control
+                  name="recintoNombre"
+                  value={form.recinto.nombre}
+                  onChange={handleChange}
+                  placeholder="Ej: Parque O'Higgins"
+                  isInvalid={!!errores.recintoNombre}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errores.recintoNombre}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Ubicación</Form.Label>
+                <Form.Control
+                  name="recintoUbicacion"
+                  value={form.recinto.ubicacion}
+                  onChange={handleChange}
+                  placeholder="Ej: Santiago Centro"
+                  isInvalid={!!errores.recintoUbicacion}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errores.recintoUbicacion}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group>
+                <Form.Label>Aforo</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="aforo"
+                  value={form.aforo}
+                  onChange={handleChange}
+                  min="1"
+                  isInvalid={!!errores.aforo}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errores.aforo}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group>
+                <Form.Label>Stock Entradas</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="stock"
+                  value={form.stock}
+                  onChange={handleChange}
+                  min="0"
+                  isInvalid={!!errores.stock}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errores.stock}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group>
+                <Form.Label>Precio Entradas</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="precioEntrada"
+                  value={form.precioEntrada}
+                  onChange={handleChange}
+                  min="0"
+                  isInvalid={!!errores.precioEntrada}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errores.precioEntrada}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Imagen del Evento</Form.Label>
+                <Form.Control type="file" accept="image/*" onChange={handleImagen} />
+                {archivoImagen && (
+                  <img src={URL.createObjectURL(archivoImagen)} alt="preview"
+                    className="mt-2 rounded" style={{ width: '100%', maxHeight: '150px', objectFit: 'cover' }} />
+                )}
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Causa Social (.pdf)</Form.Label>
+                <Form.Control type="file" accept=".pdf" onChange={handlePdf} />
+                {archivoPdf && (
+                  <p className="text-muted small mt-2">📄 {archivoPdf.name}</p>
+                )}
+              </Form.Group>
+            </Col>
+            <Col md={12}>
+              <hr />
+              <p className="fw-semibold mb-3">Causa Social (Opcional)</p>
+              <p className="text-muted small mb-2">Si no selecciona una causa, adminplataforma podrá agregarla posteriormente.</p>
+            </Col>
+            <Col md={12}>
+              <Form.Group>
+                <Form.Label>Seleccionar Causa Social</Form.Label>
+                <Form.Select
+                  name="causaSocialId"
+                  value={form.causaSocialId || ''}
+                  onChange={(e) => setForm(prev => ({ ...prev, causaSocialId: e.target.value ? e.target.value : null }))}
+                  disabled={cargandoCausas}
+                >
+                  <option value="">-- Sin causa social --</option>
+                  {causasActivas.map(causa => (
+                    <option key={causa.idCausa} value={causa.idCausa}>
+                      {causa.nombre} ({causa.organizacion?.nombre || 'Sin organización'})
+                    </option>
+                  ))}
+                </Form.Select>
+                {cargandoCausas && <p className="text-muted small mt-2">Cargando causas...</p>}
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Nombre causa social</Form.Label>
+                <Form.Control
+                  name="causaSocialNombre"
+                  value={form.causaSocialNombre}
+                  onChange={handleChange}
+                  placeholder="Se rellenará al seleccionar o escribir manualmente"
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Nombre organización</Form.Label>
+                <Form.Control
+                  name="organizacionNombre"
+                  value={form.organizacionNombre}
+                  onChange={handleChange}
+                  placeholder="Se rellenará al seleccionar o escribir manualmente"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setMostrarModal(false)}>Cancelar</Button>
+          <Button className="btn-ticketti" onClick={handleSubmit} disabled={cargando}>
+            {cargando ? 'Creando...' : 'Crear Evento'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
 
-export default DashboardAdmin;
+export default DashboardOrganizador;

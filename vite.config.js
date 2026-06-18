@@ -14,6 +14,7 @@ export default defineConfig({
       '@pages': path.resolve(process.cwd(), './src/pages'),
       '@routes': path.resolve(process.cwd(), './src/routes'),
       '@services': path.resolve(process.cwd(), './src/services'),
+      '@api': path.resolve(process.cwd(), './src/api'),
       '@contexts': path.resolve(process.cwd(), './src/contexts'),
       '@hooks': path.resolve(process.cwd(), './src/hooks'),
       '@utils': path.resolve(process.cwd(), './src/utils'),
@@ -28,6 +29,21 @@ export default defineConfig({
         target: 'http://localhost:8081',//
         changeOrigin: true,
         secure: false,
+        configure: (proxy) => {
+          proxy.on('error', (err) => {
+            console.log('proxy error', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req) => {
+            console.log('Sending request to the target:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req) => {
+            console.log(
+              'Received response from the target:',
+              proxyRes.statusCode,
+              req.url
+            );
+          });
+        },
       },
       '/api/v0': {
         target: 'http://localhost:8081',// El bff maneja rutas publicas y privadas 
