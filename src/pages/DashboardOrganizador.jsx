@@ -30,6 +30,7 @@ const DashboardOrganizador = () => {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(null);
   const [exito, setExito] = useState(false);
+  const [errores, setErrores] = useState({});
 
   const [form, setForm] = useState({
     nombre: '',
@@ -51,6 +52,8 @@ const DashboardOrganizador = () => {
   const [archivoImagen, setArchivoImagen] = useState(null);
   const [causasActivas, setCausasActivas] = useState([]);
   const [cargandoCausas, setCargandoCausas] = useState(false);
+  const [misEventos, setMisEventos] = useState([]);
+  const [cargandoEventos, setCargandoEventos] = useState(false);
 
   // Cargar causas activas cuando se abre el modal
   useEffect(() => {
@@ -59,22 +62,36 @@ const DashboardOrganizador = () => {
     }
   }, [mostrarModal]);
 
-  // Actualizar nombre de causa y organización cuando se selecciona una
   useEffect(() => {
-    if (form.causaSocialId) {
-      const causaSeleccionada = causasActivas.find(c => c.idCausa === parseInt(form.causaSocialId));
-      if (causaSeleccionada) {
-        setForm(prev => ({
-          ...prev,
-          causaSocialNombre: causaSeleccionada.nombre || '',
-          organizacionNombre: causaSeleccionada.organizacion?.nombre || '',
-        }));
+    const cargarMisEventos = async () => {
+      setCargandoEventos(true);
+      try {
+        const response = await api.get('/eventos/mis');
+        setMisEventos(response.data || []);
+      } catch (err) {
+        console.error('Error cargando eventos:', err);
+      } finally {
+        setCargandoEventos(false);
       }
-    } else {
+    };
+    cargarMisEventos();
+  }, []);
+
+  // Actualizar nombre de causa y organización cuando se selecciona una causa activa
+  useEffect(() => {
+    if (!form.causaSocialId) return;
+
+    const causaSeleccionada = causasActivas.find(c => c.idCausa === parseInt(form.causaSocialId, 10));
+    if (!causaSeleccionada) return;
+
+    const causaSocialNombre = causaSeleccionada.nombre || '';
+    const organizacionNombre = causaSeleccionada.organizacion?.nombre || '';
+
+    if (form.causaSocialNombre !== causaSocialNombre || form.organizacionNombre !== organizacionNombre) {
       setForm(prev => ({
         ...prev,
-        causaSocialNombre: '',
-        organizacionNombre: '',
+        causaSocialNombre,
+        organizacionNombre,
       }));
     }
   }, [form.causaSocialId, causasActivas]);
@@ -102,9 +119,69 @@ const DashboardOrganizador = () => {
           [name === 'recintoNombre' ? 'nombre' : 'ubicacion']: value
         }
       }));
+      setErrores(prev => ({ ...prev, [name]: undefined }));
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
+      setErrores(prev => ({ ...prev, [name]: undefined }));
     }
+  };
+
+  const validarFormulario = () => {
+    const nuevosErrores = {};
+
+    if (!form.nombre.trim()) {
+      nuevosErrores.nombre = 'Nombre del evento es obligatorio.';
+    }
+
+    if (!form.descripcion.trim()) {
+      nuevosErrores.descripcion = 'Descripción del evento es obligatoria.';
+    }
+
+    if (!form.fecha) {
+      nuevosErrores.fecha = 'Fecha y hora son obligatorias.';
+    } else {
+      const fechaIso = new Date(form.fecha);
+      if (Number.isNaN(fechaIso.getTime())) {
+        nuevosErrores.fecha = 'Fecha y hora no son válidas.';
+      }
+    }
+
+    if (!form.genero) {
+      nuevosErrores.genero = 'Selecciona un género para el evento.';
+    }
+
+    if (!form.recinto.nombre.trim()) {
+      nuevosErrores.recintoNombre = 'Nombre del recinto es obligatorio.';
+    }
+
+    if (!form.recinto.ubicacion.trim()) {
+      nuevosErrores.recintoUbicacion = 'Ubicación del recinto es obligatoria.';
+    }
+
+    if (!form.aforo) {
+      nuevosErrores.aforo = 'Aforo es obligatorio.';
+    } else if (parseInt(form.aforo, 10) <= 0) {
+      nuevosErrores.aforo = 'Aforo debe ser mayor que cero.';
+    }
+
+    if (form.stock === '') {
+      nuevosErrores.stock = 'Stock de entradas es obligatorio.';
+    } else if (parseInt(form.stock, 10) < 0) {
+      nuevosErrores.stock = 'Stock no puede ser negativo.';
+    }
+
+    if (form.aforo && form.stock !== '' && parseInt(form.stock, 10) > parseInt(form.aforo, 10)) {
+      nuevosErrores.stock = 'El stock no puede ser mayor que el aforo.';
+    }
+
+    if (!form.precioEntrada) {
+      nuevosErrores.precioEntrada = 'Precio de entrada es obligatorio.';
+    } else if (parseFloat(form.precioEntrada) <= 0) {
+      nuevosErrores.precioEntrada = 'Precio de entrada debe ser mayor que cero.';
+    }
+
+    setErrores(nuevosErrores);
+    return Object.keys(nuevosErrores).length === 0;
   };
 
   const handleImagen = (e) => {
@@ -122,18 +199,30 @@ const DashboardOrganizador = () => {
     setCargando(true);
     setError(null);
     try {
-      const payload = {
-        ...form,
-        aforo: parseInt(form.aforo),
-        stock: parseInt(form.stock),
-        precioEntrada: parseFloat(form.precioEntrada),
-        fecha: new Date(form.fecha).toISOString(),
-      };
-      // Agregar causaSocialId solo si se seleccionó una
-      if (form.causaSocialId) {
-        payload.causaSocialId = parseInt(form.causaSocialId);
+      if (!validarFormulario()) {
+        setCargando(false);
+        return;
       }
-      await api.post('/Evento/crear', payload);
+
+      const fechaIso = new Date(form.fecha);
+      const payload = {
+        nombre: form.nombre,
+        descripcion: form.descripcion,
+        fecha: fechaIso.toISOString(),
+        genero: form.genero || null,
+        estado: form.estado,
+        aforo: parseInt(form.aforo, 10),
+        stock: parseInt(form.stock, 10),
+        precioEntrada: parseFloat(form.precioEntrada),
+        recinto: {
+          nombre: form.recinto.nombre,
+          ubicacion: form.recinto.ubicacion,
+        },
+        imagenUrl: form.imagenUrl,
+        causaSocialId: form.causaSocialId ? parseInt(form.causaSocialId, 10) : null,
+      };
+
+      await api.post('/eventos/crear', payload);
       setExito(true);
       setTimeout(() => {
         setMostrarModal(false);
@@ -148,7 +237,9 @@ const DashboardOrganizador = () => {
         setArchivoImagen(null);
       }, 1500);
     } catch (err) {
-      setError('Error al crear el evento. Verifica los datos.');
+      console.error('Error creando evento:', err);
+      const mensaje = err.response?.data?.message || err.response?.data || err.message || 'Error al crear el evento. Verifica los datos.';
+      setError(`Error al crear el evento. ${mensaje}`);
     } finally {
       setCargando(false);
     }
@@ -243,7 +334,42 @@ const DashboardOrganizador = () => {
               <Card.Body>
                 <Tab.Content>
                   <Tab.Pane eventKey="eventos">
-                    <Placeholder ms="MSEventos" descripcion="Listar eventos del organizador" altura={250} />
+                    {cargandoEventos ? (
+                      <p className="text-muted text-center py-4">Cargando eventos...</p>
+                    ) : misEventos.length === 0 ? (
+                      <p className="text-muted text-center py-4">No tienes eventos creados aún.</p>
+                    ) : (
+                      <div className="table-responsive">
+                        <table className="table table-hover align-middle">
+                          <thead>
+                            <tr>
+                              <th>Nombre</th>
+                              <th>Fecha</th>
+                              <th>Género</th>
+                              <th>Estado</th>
+                              <th>Stock</th>
+                              <th>Precio</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {misEventos.map(evento => (
+                              <tr key={evento.id}>
+                                <td className="fw-semibold">{evento.nombre}</td>
+                                <td>{new Date(evento.fecha).toLocaleDateString('es-CL')}</td>
+                                <td><span className="badge bg-secondary">{evento.genero}</span></td>
+                                <td>
+                                  <span className={`badge ${evento.estado === 'PUBLICADO' ? 'bg-success' : 'bg-danger'}`}>
+                                    {evento.estado}
+                                  </span>
+                                </td>
+                                <td>{evento.stock}</td>
+                                <td>${evento.precioEntrada?.toLocaleString('es-CL')}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </Tab.Pane>
                   <Tab.Pane eventKey="ventas">
                     <Placeholder ms="MSCarrito" descripcion="Ventas por evento" altura={250} />
@@ -278,13 +404,32 @@ const DashboardOrganizador = () => {
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Fecha</Form.Label>
-                <Form.Control type="datetime-local" name="fecha" value={form.fecha} onChange={handleChange} />
+                <Form.Control
+                  type="datetime-local"
+                  name="fecha"
+                  value={form.fecha}
+                  onChange={handleChange}
+                  isInvalid={!!errores.fecha}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errores.fecha}
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col md={12}>
               <Form.Group>
                 <Form.Label>Descripción</Form.Label>
-                <Form.Control as="textarea" rows={2} name="descripcion" value={form.descripcion} onChange={handleChange} />
+                <Form.Control
+                  as="textarea"
+                  rows={2}
+                  name="descripcion"
+                  value={form.descripcion}
+                  onChange={handleChange}
+                  isInvalid={!!errores.descripcion}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errores.descripcion}
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col md={6}>
@@ -307,31 +452,79 @@ const DashboardOrganizador = () => {
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Nombre del Recinto</Form.Label>
-                <Form.Control name="recintoNombre" value={form.recinto.nombre} onChange={handleChange} placeholder="Ej: Parque O'Higgins" />
+                <Form.Control
+                  name="recintoNombre"
+                  value={form.recinto.nombre}
+                  onChange={handleChange}
+                  placeholder="Ej: Parque O'Higgins"
+                  isInvalid={!!errores.recintoNombre}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errores.recintoNombre}
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Ubicación</Form.Label>
-                <Form.Control name="recintoUbicacion" value={form.recinto.ubicacion} onChange={handleChange} placeholder="Ej: Santiago Centro" />
+                <Form.Control
+                  name="recintoUbicacion"
+                  value={form.recinto.ubicacion}
+                  onChange={handleChange}
+                  placeholder="Ej: Santiago Centro"
+                  isInvalid={!!errores.recintoUbicacion}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errores.recintoUbicacion}
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col md={4}>
               <Form.Group>
                 <Form.Label>Aforo</Form.Label>
-                <Form.Control type="number" name="aforo" value={form.aforo} onChange={handleChange} min="1" />
+                <Form.Control
+                  type="number"
+                  name="aforo"
+                  value={form.aforo}
+                  onChange={handleChange}
+                  min="1"
+                  isInvalid={!!errores.aforo}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errores.aforo}
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col md={4}>
               <Form.Group>
                 <Form.Label>Stock Entradas</Form.Label>
-                <Form.Control type="number" name="stock" value={form.stock} onChange={handleChange} min="0" />
+                <Form.Control
+                  type="number"
+                  name="stock"
+                  value={form.stock}
+                  onChange={handleChange}
+                  min="0"
+                  isInvalid={!!errores.stock}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errores.stock}
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col md={4}>
               <Form.Group>
                 <Form.Label>Precio Entradas</Form.Label>
-                <Form.Control type="number" name="precioEntrada" value={form.precioEntrada} onChange={handleChange} min="0" />
+                <Form.Control
+                  type="number"
+                  name="precioEntrada"
+                  value={form.precioEntrada}
+                  onChange={handleChange}
+                  min="0"
+                  isInvalid={!!errores.precioEntrada}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errores.precioEntrada}
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col md={6}>
@@ -361,9 +554,9 @@ const DashboardOrganizador = () => {
             <Col md={12}>
               <Form.Group>
                 <Form.Label>Seleccionar Causa Social</Form.Label>
-                <Form.Select 
-                  name="causaSocialId" 
-                  value={form.causaSocialId || ''} 
+                <Form.Select
+                  name="causaSocialId"
+                  value={form.causaSocialId || ''}
                   onChange={(e) => setForm(prev => ({ ...prev, causaSocialId: e.target.value ? e.target.value : null }))}
                   disabled={cargandoCausas}
                 >
@@ -380,22 +573,22 @@ const DashboardOrganizador = () => {
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Nombre causa social</Form.Label>
-                <Form.Control 
-                  name="causaSocialNombre" 
-                  value={form.causaSocialNombre} 
+                <Form.Control
+                  name="causaSocialNombre"
+                  value={form.causaSocialNombre}
                   onChange={handleChange}
-                  placeholder="Se rellenará al seleccionar o escribir manualmente" 
+                  placeholder="Se rellenará al seleccionar o escribir manualmente"
                 />
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Nombre organización</Form.Label>
-                <Form.Control 
-                  name="organizacionNombre" 
-                  value={form.organizacionNombre} 
+                <Form.Control
+                  name="organizacionNombre"
+                  value={form.organizacionNombre}
                   onChange={handleChange}
-                  placeholder="Se rellenará al seleccionar o escribir manualmente" 
+                  placeholder="Se rellenará al seleccionar o escribir manualmente"
                 />
               </Form.Group>
             </Col>
@@ -413,5 +606,3 @@ const DashboardOrganizador = () => {
 };
 
 export default DashboardOrganizador;
-
-
