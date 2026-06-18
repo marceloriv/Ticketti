@@ -6,17 +6,12 @@ import { jwtDecode } from 'jwt-decode';
 import { LogOut, ShoppingCart, Ticket, User } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
 import { Button, Container, Nav, Navbar, Stack } from 'react-bootstrap';
-<<<<<<< HEAD
-import { useEffect, useCallback } from 'react';
-// 
-=======
 import { useNavigate } from 'react-router-dom';
 
 /**
  * Componente de navegación principal de la aplicación
  * Muestra el logo, enlaces de navegación, botón de carrito y opciones de usuario
  */
->>>>>>> origin/develop
 const Header = () => {
   const { usuario, logout, carritoId, establecerCarritoId, isAuthenticated } = useAuth();
   const navigate = useNavigate();
