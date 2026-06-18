@@ -26,7 +26,16 @@ export const buscarEvento = async (id) => {
   return response.data;
 };
 
+/**
+ * Lista los eventos del organizador autenticado.
+ */
+export const listarMisEventos = async () => {
+  const response = await clienteApi.get('/eventos/mis');
+  return response.data || [];
+};
+
 export default {
   listarEventos,
   buscarEvento,
+  listarMisEventos,
 };
