@@ -1,3 +1,4 @@
+import Header from '@/components/layout/Header';
 import api from '@api/api';
 import { useState } from 'react';
 import { Alert, Button, Card, Col, Container, Row } from 'react-bootstrap';
@@ -119,10 +120,12 @@ export default function Registro() {
   };
 
   return (
-    <Container className="containerRegistro py-5">
-      <Row className="justify-content-center">
-        <Col md={10} lg={4} className="mx-auto">
-          <Card className="registro-card shadow">
+    <div className="registro-page">
+      <Header />
+      <Container className="containerRegistro py-5 flex-grow-1 d-flex align-items-center">
+        <Row className="justify-content-center w-100 m-0">
+          <Col md={8} lg={5} className="mx-auto px-0">
+            <Card className="registro-card shadow w-100">
             <Card.Body>
               <h2 className="text-center mb-4">Registro</h2>
 
@@ -242,6 +245,7 @@ export default function Registro() {
           </Card>
         </Col>
       </Row>
-    </Container>
+      </Container>
+    </div>
   );
 }

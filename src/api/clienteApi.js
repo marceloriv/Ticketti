@@ -79,6 +79,8 @@ clienteApi.interceptors.response.use(
           console.error('Sesión expirada o no autorizada (401)');
           if (localStorage.getItem('token')) {
             localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('carritoId');
             globalThis.location.href = '/login';
           }
           break;

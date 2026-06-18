@@ -25,8 +25,25 @@ export default function ProtectedRoute({ element, requiredRole = null }) {
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
-  // Si se requiere un rol específico y no coincide, mandarlo al home
-  if (requiredRole && rol !== requiredRole) {
+  // Definir la jerarquía de roles en el frontend
+  const tieneAcceso = (rolUsuario, rolRequerido) => {
+    if (!rolRequerido) return true;
+    if (!rolUsuario) return false;
+
+    const jerarquia = {
+      CLIENTE: 1,
+      ORGANIZADOR: 2,
+      ADMINPLATAFORMA: 3,
+    };
+
+    const nivelUsuario = jerarquia[rolUsuario.toUpperCase()] || 0;
+    const nivelRequerido = jerarquia[rolRequerido.toUpperCase()] || 0;
+
+    return nivelUsuario >= nivelRequerido;
+  };
+
+  // Si se requiere un rol específico y no coincide jerárquicamente, mandarlo al home
+  if (requiredRole && !tieneAcceso(rol, requiredRole)) {
     return <Navigate to={ROUTES.INICIO} replace />;
   }
 
