@@ -15,7 +15,7 @@ export default function CommonCarousel({ slides = [] }) {
               src={slide.imagen}
               alt={slide.titulo}
               className="hero-slide__image"
-              fetchpriority={index === 0 ? "high" : "auto"}
+              fetchPriority={index === 0 ? "high" : "auto"}
               loading={index === 0 ? "eager" : "lazy"}
               decoding={index === 0 ? "sync" : "async"}
             />

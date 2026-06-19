@@ -137,8 +137,16 @@ export function AuthProvider({ children }) {
 
       return data.token;
     } catch (err) {
-      const msg =
-        err.response?.data?.mensaje || err.message || 'Error al iniciar sesión';
+      let msg = 'Error al iniciar sesión';
+      if (err.response) {
+        if (err.response.status === 401) {
+          msg = 'Correo electrónico o contraseña incorrectos';
+        } else {
+          msg = err.response.data?.mensaje || err.response.data?.message || msg;
+        }
+      } else {
+        msg = err.message || msg;
+      }
       throw new Error(msg);
     }
   };

@@ -287,7 +287,7 @@ const DetalleEvento = () => {
                   <div className="detalle-evento-info-card d-flex align-items-center gap-3 p-3 mb-2 rounded-3">
                     <Calendar
                       size={20}
-                      className="detalle-evento-info-icono text-primary"
+                      className="detalle-evento-info-icono text-primary" aria-hidden="true"
                     />
                     <div>
                       <small className="text-muted d-block">Fecha y Hora</small>
@@ -300,7 +300,7 @@ const DetalleEvento = () => {
                   <div className="detalle-evento-info-card d-flex align-items-center gap-3 p-3 mb-2 rounded-3">
                     <MapPin
                       size={20}
-                      className="detalle-evento-info-icono text-primary"
+                      className="detalle-evento-info-icono text-primary" aria-hidden="true"
                     />
                     <div>
                       <small className="text-muted d-block">Recinto</small>
@@ -313,7 +313,7 @@ const DetalleEvento = () => {
                   <div className="detalle-evento-info-card d-flex align-items-center gap-3 p-3 mb-2 rounded-3">
                     <Users
                       size={20}
-                      className="detalle-evento-info-icono text-primary"
+                      className="detalle-evento-info-icono text-primary" aria-hidden="true"
                     />
                     <div>
                       <small className="text-muted d-block">
