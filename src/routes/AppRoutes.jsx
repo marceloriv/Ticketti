@@ -7,6 +7,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import Contacto from '@pages/Contacto';
 import DetalleEvento from '@pages/DetalleEvento';
 import Inicio from '@pages/Inicio';
+import Eventos from '@pages/Eventos';
 import Login from '@pages/Login';
 import Nosotros from '@pages/Nosotros';
 import Registro from '@pages/Registro';
@@ -57,7 +58,7 @@ export default function AppRoutes() {
 
       {/* ========== RUTAS PÚBLICAS - EVENTOS ========== */}
       <Route path="/evento/:id" element={<DetalleEvento />} />
-      <Route path={ROUTES.EVENTOS} element={<Inicio />} />
+      <Route path={ROUTES.EVENTOS} element={<Eventos />} />
       <Route path={ROUTES.NOSOTROS} element={<Nosotros />} />
       <Route path={ROUTES.CONTACTO} element={<Contacto />} />
 

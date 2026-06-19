@@ -229,7 +229,7 @@ const Header = () => {
                   {nombreUsuario}
                 </Button>
 
-                {(rolActual === 'CLIENTE' || !isAuthenticated) && (
+                {(rolActual === 'CLIENTE' || rolActual === 'ORGANIZADOR' || rolActual === 'ADMINPLATAFORMA' || !isAuthenticated) && (
                   <Button
                     variant="outline-secondary"
                     size="sm"
