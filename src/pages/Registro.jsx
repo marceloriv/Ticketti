@@ -4,15 +4,18 @@ import { Alert, Button, Card, Col, Container, Row } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import { Link, useNavigate } from 'react-router-dom';
 
+// se agrega un estado inicial para el formulario para facilitar el reseteo después del registro exitoso
 const initialFormData = {
   nombre: '',
   correo: '',
   contrasena: '',
   confirmarContrasena: '',
   aceptaTerminos: false,
+  aceptaPrivacidad: false,
   direccion: '',
   telefono: '',
 };
+// función para extraer mensajes de error específicos del registro, manejando casos comunes de errores en APIs REST
 
 const getRegistroErrorMessage = (error) => {
   const raw = error.response?.data?.mensaje || error.response?.data?.message;
@@ -43,12 +46,21 @@ const getRegistroErrorMessage = (error) => {
 
   return raw;
 };
-
+// componente de registro de usuario
+//con validaciones para contraseñas, aceptación de términos y manejo de errores específicos del proceso de registro
 export default function Registro() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState(initialFormData);
   const [mensaje, setMensaje] = useState({ tipo: null, texto: '' });
   const [cargando, setCargando] = useState(false);
+
+
+  const [documentosLeidos, setDocumentosLeidos] = useState({
+    terminos: localStorage.getItem('terminosLeidos') === 'true',
+    privacidad: localStorage.getItem('privacidadLeidos') === 'true',
+  });
+
+  // función para manejar cambios en los campos del formulario, actualizando el estado formData
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -59,28 +71,38 @@ export default function Registro() {
     }));
   };
 
+  // función para manejar el envío del formulario de registro, con validaciones y llamadas a la API
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensaje({ tipo: null, texto: '' });
-    setCargando(true);
 
     if (formData.contrasena !== formData.confirmarContrasena) {
       setMensaje({
         tipo: 'danger',
         texto: 'Las contraseñas no coinciden.',
       });
-      setCargando(false);
       return;
     }
 
     if (!formData.aceptaTerminos) {
       setMensaje({
         tipo: 'danger',
-        texto: 'Debes aceptar los términos para registrarte.',
+        texto: 'Debes aceptar los Términos y Condiciones para registrarte.',
       });
-      setCargando(false);
       return;
     }
+
+    if (!formData.aceptaPrivacidad) {
+      setMensaje({
+        tipo: 'danger',
+        texto:
+          'Debes aceptar la Política de Privacidad y el tratamiento de datos personales para registrarte.',
+      });
+      return;
+    }
+
+    setCargando(true);
 
     try {
       await api.post(
@@ -92,6 +114,10 @@ export default function Registro() {
           direccion: formData.direccion,
           telefono: formData.telefono,
           rol: 'CLIENTE',
+          // Campos adicionales de ckeckbox para preferencias del usuario
+          aceptaTerminos: formData.aceptaTerminos,
+          aceptaPrivacidad: formData.aceptaPrivacidad,
+
         },
         { skipAuth: true }
       );
@@ -127,7 +153,11 @@ export default function Registro() {
               <h2 className="text-center mb-4">Registro</h2>
 
               {mensaje.texto && (
-                <Alert variant={mensaje.tipo} className="mb-4">
+                <Alert
+                  variant={mensaje.tipo}
+                  className="mb-4"
+                  style={{ whiteSpace: 'pre-line' }}
+                >
                   {mensaje.texto}
                 </Alert>
               )}
@@ -213,14 +243,59 @@ export default function Registro() {
                   />
                 </Form.Group>
 
-                <Form.Group className="mb-3" controlId="formGridCheckbox">
-                  <Form.Check
-                    type="checkbox"
-                    label="Acepto los términos"
-                    name="aceptaTerminos"
-                    checked={formData.aceptaTerminos}
-                    onChange={handleChange}
-                  />
+
+                <Form.Group className="mb-2" controlId="formGridTerminos">
+                  <div className="form-check">
+                    <Form.Check.Input
+                      type="checkbox"
+                      name="aceptaTerminos"
+                      checked={formData.aceptaTerminos}
+                      onChange={handleChange}
+                      disabled={!documentosLeidos.terminos}
+                      required
+                    />
+
+                    <Form.Check.Label>
+                      Acepto los Términos y Condiciones de uso de Ticketti.{' '}
+                      <Link className="legal-check-link" to="/terminos">
+                        Ver términos
+                      </Link>
+                    </Form.Check.Label>
+                  </div>
+
+                  {!documentosLeidos.terminos && (
+                    <small className="d-block text-muted ms-4">
+                      Debes leer los términos antes de aceptarlos.
+                    </small>
+                  )}
+                </Form.Group>
+
+                <Form.Group className="mb-3" controlId="formGridPrivacidad">
+                  <div className="form-check">
+                    <Form.Check.Input
+                      type="checkbox"
+                      name="aceptaPrivacidad"
+                      checked={formData.aceptaPrivacidad}
+                      onChange={handleChange}
+                      disabled={!documentosLeidos.privacidad}
+                      required
+                    />
+
+                    <Form.Check.Label>
+                      He leído y acepto la Política de Privacidad y autorizo el tratamiento de
+                      mis datos personales para crear y gestionar mi cuenta en Ticketti,
+                      conforme a la Ley N° 21.719.{' '}
+                      <Link className="legal-check-link" to="/privacidad">
+                        Ver política
+                      </Link>
+                    </Form.Check.Label>
+                  </div>
+
+                  {!documentosLeidos.privacidad && (
+                    <small className="d-block text-muted ms-4">
+                      Debes leer la política antes de aceptarla.
+                    </small>
+                  )}
                 </Form.Group>
 
                 <div className="text-center">
@@ -228,7 +303,11 @@ export default function Registro() {
                     variant="primary"
                     type="submit"
                     className="btn"
-                    disabled={cargando}
+                    disabled={
+                      cargando ||
+                      !formData.aceptaTerminos ||
+                      !formData.aceptaPrivacidad
+                    }
                   >
                     {cargando ? 'Registrando...' : 'Registrarse'}
                   </Button>
