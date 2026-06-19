@@ -17,13 +17,14 @@ import {
   Tab,
   Table,
 } from 'react-bootstrap';
-// Los endpoints de donaciones provienen de un microservicio externo.
-// Para mantener la UI funcional en este repo se usan stubs locales.
-const getOrganizaciones = async () => [];
-const getCausasActivas = async () => [];
-const getTotalPorOrganizacion = async () => 0;
-const crearOrganizacion = async () => {};
-const crearCausa = async () => {};
+import {
+  getOrganizaciones,
+  getCausasActivas,
+  getTotalPorOrganizacion,
+  crearOrganizacionActiva,
+  crearCausaActiva,
+  activarOrganizacion,
+} from '@api/donacionesApi';
 
 const STAT_VARIANTS = {
   brand: 'dashboard-stat-icon-brand',
@@ -79,6 +80,7 @@ const DashboardAdmin = () => {
   const [exito, setExito] = useState('');
   const [error, setError] = useState('');
 
+  // Formulario "Nueva Organización" (admin crea desde cero -> queda ACTIVA)
   const [formOrg, setFormOrg] = useState({
     nombre: '',
     rut: '',
@@ -92,6 +94,20 @@ const DashboardAdmin = () => {
     rutTitular: '',
     metodoPagoPreferido: 'TRANSFERENCIA',
   });
+
+  // Formulario "Activar Organización" (admin completa datos bancarios
+  // de una organización PENDIENTE creada por el Organizador)
+  const [formActivar, setFormActivar] = useState({
+    banco: '',
+    tipoCuenta: '',
+    numeroCuenta: '',
+    titularCuenta: '',
+    rutTitular: '',
+    metodoPagoPreferido: 'TRANSFERENCIA',
+  });
+  const [orgAActivar, setOrgAActivar] = useState(null);
+  const [showModalActivar, setShowModalActivar] = useState(false);
+
   const [formCausa, setFormCausa] = useState({
     idOrganizacion: '',
     nombre: '',
@@ -139,12 +155,39 @@ const DashboardAdmin = () => {
     0
   );
 
+  const fmt = (n) =>
+    new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0,
+    }).format(n || 0);
+
+  // ── Handlers: Organizaciones ──────────────────────────────
+
   const handleCrearOrg = async (e) => {
     e.preventDefault();
     setGuardando(true);
     try {
-      await crearOrganizacion(formOrg);
-      setExito('Organización creada.');
+      const {
+        banco,
+        tipoCuenta,
+        numeroCuenta,
+        titularCuenta,
+        rutTitular,
+        metodoPagoPreferido,
+        ...datosBasicos
+      } = formOrg;
+
+      await crearOrganizacionActiva(datosBasicos, {
+        banco,
+        tipoCuenta,
+        numeroCuenta,
+        titularCuenta,
+        rutTitular,
+        metodoPagoPreferido,
+      });
+
+      setExito('Organización creada y activada.');
       setShowModalOrg(false);
       cargar();
       setTimeout(() => setExito(''), 3000);
@@ -155,15 +198,46 @@ const DashboardAdmin = () => {
     }
   };
 
+  const abrirModalActivar = (org) => {
+    setOrgAActivar(org);
+    setShowModalActivar(true);
+  };
+
+  const handleActivarOrg = async (e) => {
+    e.preventDefault();
+    setGuardando(true);
+    try {
+      await activarOrganizacion(orgAActivar.idOrganizacion, formActivar);
+      setExito('Organización activada correctamente.');
+      setShowModalActivar(false);
+      setFormActivar({
+        banco: '',
+        tipoCuenta: '',
+        numeroCuenta: '',
+        titularCuenta: '',
+        rutTitular: '',
+        metodoPagoPreferido: 'TRANSFERENCIA',
+      });
+      cargar();
+      setTimeout(() => setExito(''), 3000);
+    } catch {
+      setError('Error al activar la organización.');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  // ── Handlers: Causas Sociales ─────────────────────────────
+
   const handleCrearCausa = async (e) => {
     e.preventDefault();
     setGuardando(true);
     try {
-      await crearCausa({
+      await crearCausaActiva({
         ...formCausa,
         idOrganizacion: Number(formCausa.idOrganizacion),
       });
-      setExito('Causa social creada.');
+      setExito('Causa social creada y activada.');
       setShowModalCausa(false);
       cargar();
       setTimeout(() => setExito(''), 3000);
@@ -173,13 +247,6 @@ const DashboardAdmin = () => {
       setGuardando(false);
     }
   };
-
-  const fmt = (n) =>
-    new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      minimumFractionDigits: 0,
-    }).format(n || 0);
 
   return (
     <div className="d-flex flex-column min-vh-100">
@@ -296,6 +363,7 @@ const DashboardAdmin = () => {
                             <th>Email</th>
                             <th>Estado</th>
                             <th>Total donado</th>
+                            <th>Acciones</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -317,6 +385,17 @@ const DashboardAdmin = () => {
                               </td>
                               <td className="fw-semibold text-success">
                                 {fmt(totales[o.idOrganizacion])}
+                              </td>
+                              <td>
+                                {o.estado === 'PENDIENTE' && (
+                                  <Button
+                                    size="sm"
+                                    variant="success"
+                                    onClick={() => abrirModalActivar(o)}
+                                  >
+                                    Activar
+                                  </Button>
+                                )}
                               </td>
                             </tr>
                           ))}
@@ -356,7 +435,7 @@ const DashboardAdmin = () => {
                             <tr key={c.idCausa}>
                               <td className="fw-semibold">{c.nombre}</td>
                               <td className="text-muted small">
-                                {c.organizacion?.nombre || '—'}
+                                {c.nombreOrganizacion || '—'}
                               </td>
                               <td className="text-muted small">
                                 {c.objetivoMonto
@@ -403,7 +482,7 @@ const DashboardAdmin = () => {
         </Container>
       </main>
 
-      {/* Modal nueva organización */}
+      {/* Modal nueva organización (admin: crea y activa de inmediato) */}
       <Modal
         show={showModalOrg}
         onHide={() => setShowModalOrg(false)}
@@ -454,7 +533,7 @@ const DashboardAdmin = () => {
                     onChange={(e) =>
                       setFormOrg({
                         ...formOrg,
-                        metodoPagoPreferido: e.target.value,
+                        metodoPago: e.target.value,
                       })
                     }
                   >
@@ -483,7 +562,76 @@ const DashboardAdmin = () => {
         </Modal.Body>
       </Modal>
 
-      {/* Modal nueva causa */}
+      {/* Modal activar organización (admin completa datos bancarios de una PENDIENTE) */}
+      <Modal
+        show={showModalActivar}
+        onHide={() => setShowModalActivar(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Activar Organización</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="text-muted small">
+            Completa los datos bancarios de{' '}
+            <strong>{orgAActivar?.nombre}</strong> para activarla.
+          </p>
+          <Form onSubmit={handleActivarOrg}>
+            <Row className="g-3">
+              {['banco', 'tipoCuenta', 'numeroCuenta', 'titularCuenta', 'rutTitular'].map(
+                (f) => (
+                  <Col md={6} key={f}>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-capitalize">
+                        {f}
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={formActivar[f]}
+                        onChange={(e) =>
+                          setFormActivar({ ...formActivar, [f]: e.target.value })
+                        }
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                )
+              )}
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold">Método de pago</Form.Label>
+                  <Form.Select
+                    value={formActivar.metodoPagoPreferido}
+                    onChange={(e) =>
+                      setFormActivar({ ...formActivar, metodoPagoPreferido: e.target.value })
+                    }
+                  >
+                    <option value="TRANSFERENCIA">Transferencia</option>
+                    <option value="DEPOSITO">Depósito</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+            <div className="d-flex justify-content-end gap-2 mt-4">
+              <Button
+                variant="outline-secondary"
+                onClick={() => setShowModalActivar(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={guardando} variant="success">
+                {guardando ? (
+                  <Spinner size="sm" className="spinner-ticketti" />
+                ) : (
+                  'Activar'
+                )}
+              </Button>
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* Modal nueva causa (admin: crea y activa de inmediato) */}
       <Modal
         show={showModalCausa}
         onHide={() => setShowModalCausa(false)}

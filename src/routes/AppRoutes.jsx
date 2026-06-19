@@ -6,7 +6,6 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 // Importar páginas públicas
 import Contacto from '@pages/Contacto';
 import DetalleEvento from '@pages/DetalleEvento';
-import Donaciones from '@pages/Donaciones';
 import Inicio from '@pages/Inicio';
 import Login from '@pages/Login';
 import Nosotros from '@pages/Nosotros';
@@ -59,7 +58,6 @@ export default function AppRoutes() {
       {/* ========== RUTAS PÚBLICAS - EVENTOS ========== */}
       <Route path="/evento/:id" element={<DetalleEvento />} />
       <Route path={ROUTES.EVENTOS} element={<Inicio />} />
-      <Route path={ROUTES.DONACIONES} element={<Donaciones />} />
       <Route path={ROUTES.NOSOTROS} element={<Nosotros />} />
       <Route path={ROUTES.CONTACTO} element={<Contacto />} />
 
