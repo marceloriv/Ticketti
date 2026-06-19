@@ -86,12 +86,10 @@ clienteApi.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           console.error('Sesión expirada o no autorizada (401)');
-          if (localStorage.getItem('token')) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('carritoId');
-            globalThis.location.href = '/login';
-          }
+          //if (localStorage.getItem('token')) {
+          //  localStorage.removeItem('token');
+          //  globalThis.location.href = '/login';
+          //}
           break;
         case 403:
           console.error('Acceso prohibido al recurso (403)');
