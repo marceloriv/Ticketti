@@ -1,5 +1,5 @@
 import api from '@api/api';
-import { getCausasActivas, getOrganizaciones } from '@api/donacionesApi';
+import { getCausasActivas, getOrganizacionesActivas } from '@api/donacionesApi';
 import CommonCarousel from '@components/common/Carousel';
 import ProductCard from '@components/common/ProductCard';
 import CategoryCard from '@components/common/CategoryCard';
@@ -113,7 +113,7 @@ const Inicio = () => {
       try {
         const [causasData, orgsData] = await Promise.all([
           getCausasActivas(),
-          getOrganizaciones(),
+          getOrganizacionesActivas(),
         ]);
         setCausas(causasData);
         setOrganizaciones(orgsData);
