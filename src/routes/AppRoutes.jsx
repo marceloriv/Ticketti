@@ -17,7 +17,6 @@ const LoadingSpinner = () => (
 const Inicio = lazy(() => import('@pages/Inicio'));
 const Contacto = lazy(() => import('@pages/Contacto'));
 const DetalleEvento = lazy(() => import('@pages/DetalleEvento'));
-const Donaciones = lazy(() => import('@pages/Donaciones'));
 const Eventos = lazy(() => import('@pages/Eventos'));
 const Login = lazy(() => import('@pages/Login'));
 const Nosotros = lazy(() => import('@pages/Nosotros'));
@@ -65,7 +64,6 @@ export default function AppRoutes() {
         {/* ========== RUTAS PÚBLICAS - EVENTOS ========== */}
         <Route path="/evento/:id" element={<DetalleEvento />} />
         <Route path={ROUTES.EVENTOS} element={<Eventos />} />
-        <Route path={ROUTES.DONACIONES} element={<Donaciones />} />
         <Route path={ROUTES.NOSOTROS} element={<Nosotros />} />
         <Route path={ROUTES.CONTACTO} element={<Contacto />} />
 

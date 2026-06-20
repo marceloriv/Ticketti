@@ -78,8 +78,13 @@ api.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          console.error('Sesión expirada o no autorizada');
-          // No eliminar token ni redirigir automáticamente para evitar deslogueos indeseados
+          console.error('Sesión expirada o no autorizada (401)');
+          if (localStorage.getItem('token')) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('carritoId');
+            globalThis.location.href = '/login';
+          }
           break;
         case 403:
           console.error('Acceso prohibido');
