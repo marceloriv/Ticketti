@@ -1,8 +1,16 @@
 import { Button, Card, Col, Container, Row } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import '../styles/brand.css';
 
 export default function TerminosCondiciones() {
+  const navigate = useNavigate();
+
+  // Función para confirmar que el usuario ha leído los términos y condiciones
+  const confirmarLectura = () => {
+    sessionStorage.setItem('terminosLeidos', 'true');
+    navigate('/registro');
+  };
+
   return (
     <main className="legal-page">
       <Container className="py-5">
@@ -150,11 +158,13 @@ export default function TerminosCondiciones() {
             </section>
 
             <div className="legal-actions">
-              <Link to="/registro">
-                <Button variant="primary" className="legal-button">
-                  Volver al registro
-                </Button>
-              </Link>
+              <Button
+                variant="primary"
+                className="legal-button"
+                onClick={confirmarLectura}
+              >
+                Leí los Términos y Condiciones
+              </Button>
             </div>
           </Card.Body>
         </Card>

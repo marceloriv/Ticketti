@@ -853,3 +853,30 @@ opciones
   color: #084298;
   text-decoration: underline;
 }
+
+.registro-requisitos {
+  border: 1px solid rgba(79, 141, 247, 0.25);
+  border-radius: 14px;
+  background-color: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 8px 20px rgba(42, 93, 180, 0.08);
+}
+
+.registro-requisitos .card-body {
+  padding: 1rem 1.1rem;
+}
+
+.registro-requisitos h6 {
+  color: #10233f;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.registro-requisitos ul {
+  padding-left: 1rem;
+}
+
+.registro-requisitos li {
+  color: #4b5870;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}

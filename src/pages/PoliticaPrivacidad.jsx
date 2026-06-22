@@ -1,14 +1,16 @@
 import { Button, Card, Col, Container, Row } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import '../styles/brand.css';
-import { Link, useNavigate } from 'react-router-dom';
 
 export default function PoliticaPrivacidad() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-const confirmarLectura = () => {
-  localStorage.setItem('privacidadLeida', 'true');
-  navigate('/registro');
-};
+  // Función para confirmar que el usuario ha leído la política de privacidad
+  const confirmarLectura = () => {
+    sessionStorage.setItem('privacidadLeida', 'true');
+    navigate('/registro');
+  };
+
   return (
     <main className="legal-page">
       <Container className="py-5">
@@ -151,11 +153,13 @@ const confirmarLectura = () => {
             </section>
 
             <div className="legal-actions">
-              <Link to="/registro">
-                <Button variant="primary" className="legal-button">
-                  Volver al registro
-                </Button>
-              </Link>
+              <Button
+                variant="primary"
+                className="legal-button"
+                onClick={confirmarLectura}
+              >
+                Leí la Política de Privacidad
+              </Button>
             </div>
           </Card.Body>
         </Card>
