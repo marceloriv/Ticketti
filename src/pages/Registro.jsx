@@ -1,3 +1,4 @@
+import Header from '@/components/layout/Header';
 import api from '@api/api';
 import { useState } from 'react';
 import { Alert, Button, Card, Col, Container, Row } from 'react-bootstrap';
@@ -376,6 +377,7 @@ export default function Registro() {
           </Card>
         </Col>
       </Row>
-    </Container>
+      </Container>
+    </div>
   );
 }

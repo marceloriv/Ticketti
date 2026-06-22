@@ -567,8 +567,8 @@ opciones
 
 .App {
   min-height: 100vh;
-  background-color: #6f88c4;
 }
+
 
 /* Estilos para la tarjeta de registro*/
 
@@ -644,36 +644,42 @@ opciones
   --bs-btn-focus-shadow-rgb: 90, 212, 230;
 }
 
-/* Fondo compartido para Login y Registro */
-
+/* El fondo a pantalla completa se aplica al loginContainer y containerRegistro ocupando el viewport, y el footer queda abajo del todo en flujo natural */
 .loginContainer,
 .containerRegistro {
-  min-height: 100vh;
   position: relative;
   z-index: 1;
+  width: 100%;
 }
 
-/* Fondo a pantalla completa */
-.loginContainer::before,
-.containerRegistro::before {
-  content: '';
-  position: fixed;
-  inset: 0;
+.login-page,
+.registro-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background-image: url('/img/loginimagen2.jpg');
   background-size: cover;
-  background-position: center;
+  background-position: center top;
   background-repeat: no-repeat;
   background-color: #0f1b3d;
-  z-index: -1;
+  background-attachment: fixed;
+  overflow: hidden;
 }
 
-/* Para que el contenido quede encima del fondo */
-.loginContainer > *,
-.containerRegistro > * {
+
+
+
+
+/* Color de fondo sólido para el footer en login/registro (coherente y legible, situado al final del scroll) */
+.login-page footer,
+.registro-page footer {
+  background-color: #0f1b3d !important; /* Azul oscuro oficial de la marca */
+  border-top: 2px solid var(--ticketti-primary);
   position: relative;
   z-index: 1;
 }
-
+/*cdiseño para las hojas de términos y condiciones y política de privacidad*/
 .legal-page {
   min-height: 100vh;
   background:
@@ -853,6 +859,10 @@ opciones
   color: #084298;
   text-decoration: underline;
 }
+
+
+
+/* Estilos para la sección de requisitos en el registro */
 
 .registro-requisitos {
   border: 1px solid rgba(79, 141, 247, 0.25);
