@@ -4,30 +4,33 @@ import { ROLES, ROUTES } from '@utils/routes';
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
-// Componente fallback de carga para Suspense
-const LoadingSpinner = () => (
-  <div className="d-flex justify-content-center align-items-center app-routes-loading py-5">
-    <div className="spinner-border text-primary" role="status">
-      <span className="visually-hidden">Cargando...</span>
+// Importar páginas públicas
+import Contacto from '@pages/Contacto';
+import DetalleEvento from '@pages/DetalleEvento';
+import Inicio from '@pages/Inicio';
+import Eventos from '@pages/Eventos';
+import Login from '@pages/Login';
+import Nosotros from '@pages/Nosotros';
+import Registro from '@pages/Registro';
+import PoliticaPrivacidad from '@pages/PoliticaPrivacidad';
+import TerminosCondiciones from '@pages/TerminosCondiciones';
+// Importar páginas protegidas
+import DashboardAdmin from '@pages/DashboardAdmin';
+import DashboardOrganizador from '@pages/DashboardOrganizador';
+import HistorialNotificaciones from '@pages/HistorialNotificaciones';
+import PaginaCarrito from '@pages/PaginaCarrito';
+import PerfilCliente from '@pages/PerfilCliente';
+
+// Spinner local para estados de carga
+function LoadingSpinner() {
+  return (
+    <div className="d-flex justify-content-center align-items-center vh-100 app-routes-loading">
+      <div className="spinner-border text-info" role="status" style={{ width: '3rem', height: '3rem' }}>
+        <span className="visually-hidden">Cargando...</span>
+      </div>
     </div>
-  </div>
-);
-
-// Importar páginas públicas de forma perezosa (Lazy Loading / Code Splitting)
-const Inicio = lazy(() => import('@pages/Inicio'));
-const Contacto = lazy(() => import('@pages/Contacto'));
-const DetalleEvento = lazy(() => import('@pages/DetalleEvento'));
-const Eventos = lazy(() => import('@pages/Eventos'));
-const Login = lazy(() => import('@pages/Login'));
-const Nosotros = lazy(() => import('@pages/Nosotros'));
-const Registro = lazy(() => import('@pages/Registro'));
-
-// Importar páginas protegidas de forma perezosa (Lazy Loading / Code Splitting)
-const DashboardAdmin = lazy(() => import('@pages/DashboardAdmin'));
-const DashboardOrganizador = lazy(() => import('@pages/DashboardOrganizador'));
-const HistorialNotificaciones = lazy(() => import('@pages/HistorialNotificaciones'));
-const PaginaCarrito = lazy(() => import('@pages/PaginaCarrito'));
-const PerfilCliente = lazy(() => import('@pages/PerfilCliente'));
+  );
+}
 
 export default function AppRoutes() {
   const { isAuthenticated, loading } = useAuth();
@@ -46,7 +49,11 @@ export default function AppRoutes() {
         <Route
           path={ROUTES.LOGIN}
           element={
-            isAuthenticated ? <Navigate to={ROUTES.INICIO} replace /> : <Login />
+            isAuthenticated ? (
+              <Navigate to={ROUTES.INICIO} replace />
+            ) : (
+              <Login />
+            )
           }
         />
 
@@ -60,6 +67,9 @@ export default function AppRoutes() {
             )
           }
         />
+
+        <Route path="/terminos" element={<TerminosCondiciones />} />
+        <Route path="/privacidad" element={<PoliticaPrivacidad />} />
 
         {/* ========== RUTAS PÚBLICAS - EVENTOS ========== */}
         <Route path="/evento/:id" element={<DetalleEvento />} />

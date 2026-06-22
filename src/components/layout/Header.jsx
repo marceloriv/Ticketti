@@ -13,7 +13,8 @@ import { useNavigate } from 'react-router-dom';
  * Muestra el logo, enlaces de navegación, botón de carrito y opciones de usuario
  */
 const Header = () => {
-  const { usuario, logout, carritoId, establecerCarritoId, isAuthenticated } = useAuth();
+  const { usuario, logout, carritoId, establecerCarritoId, isAuthenticated } =
+    useAuth();
   const navigate = useNavigate();
   const { obtenerResumen, resumen, inicializarCarrito } = useCarrito(carritoId);
   const { totalEntradas: guestTotalEntradas } = useCarritoGuest();
@@ -21,7 +22,10 @@ const Header = () => {
 
   /** Cantidad de items en el carrito (backend para autenticados, localStorage para invitados) */
   const cantidadCarrito = isAuthenticated
-    ? (resumen?.items || []).reduce((sum, item) => sum + (item.cantidad || 0), 0)
+    ? (resumen?.items || []).reduce(
+        (sum, item) => sum + (item.cantidad || 0),
+        0
+      )
     : guestTotalEntradas;
 
   useEffect(() => {
@@ -30,28 +34,35 @@ const Header = () => {
 
   useEffect(() => {
     if (carritoId) {
-      obtenerResumenRef.current().then((res) => {
-        if (res && (res.estadoCarrito || res.estado) === 'PAGADO') {
-          console.log('[Carrito] Carrito actual ya está PAGADO. Limpiando ID...');
-          establecerCarritoId(null);
-        }
-      }).catch((e) => {
-        console.error('[Carrito] Error al obtener resumen:', e);
-        const errorStr = (e.message || '').toLowerCase();
-        if (
-          errorStr.includes('no pertenece') ||
-          errorStr.includes('no encontrado') ||
-          errorStr.includes('400') ||
-          errorStr.includes('404')
-        ) {
-          console.log('[Carrito] ID de carrito inválido o ajeno detectado. Reinicializando...');
-          inicializarCarrito().then((res) => {
-            if (res?.carritoId) {
-              establecerCarritoId(res.carritoId);
-            }
-          });
-        }
-      });
+      obtenerResumenRef
+        .current()
+        .then((res) => {
+          if (res && (res.estadoCarrito || res.estado) === 'PAGADO') {
+            console.log(
+              '[Carrito] Carrito actual ya está PAGADO. Limpiando ID...'
+            );
+            establecerCarritoId(null);
+          }
+        })
+        .catch((e) => {
+          console.error('[Carrito] Error al obtener resumen:', e);
+          const errorStr = (e.message || '').toLowerCase();
+          if (
+            errorStr.includes('no pertenece') ||
+            errorStr.includes('no encontrado') ||
+            errorStr.includes('400') ||
+            errorStr.includes('404')
+          ) {
+            console.log(
+              '[Carrito] ID de carrito inválido o ajeno detectado. Reinicializando...'
+            );
+            inicializarCarrito().then((res) => {
+              if (res?.carritoId) {
+                establecerCarritoId(res.carritoId);
+              }
+            });
+          }
+        });
     }
   }, [carritoId, establecerCarritoId, inicializarCarrito]);
 
@@ -90,12 +101,7 @@ const Header = () => {
   const obtenerNombreUsuario = () => {
     const payload = obtenerPayloadDesdeToken();
 
-    return (
-      usuario?.nombre ||
-      payload?.nombre ||
-      payload?.sub ||
-      'Usuario'
-    );
+    return usuario?.nombre || payload?.nombre || payload?.sub || 'Usuario';
   };
 
   /**
@@ -105,12 +111,12 @@ const Header = () => {
     const rol = obtenerRolDesdeToken() || usuario?.rol;
 
     console.log('[Header] Rol detectado:', rol);
-
+    // Redirigir según el rol del usuario.
     if (rol === 'ADMINPLATAFORMA') {
       navigate('/admin/dashboard');
       return;
     }
-
+    // Si el rol es ORGANIZADOR, redirigir a su dashboard específico.
     if (rol === 'ORGANIZADOR') {
       navigate('/organizador/dashboard');
       return;
@@ -215,7 +221,10 @@ const Header = () => {
                   {nombreUsuario}
                 </Button>
 
-                {(rolActual === 'CLIENTE' || rolActual === 'ORGANIZADOR' || rolActual === 'ADMINPLATAFORMA' || !isAuthenticated) && (
+                {(rolActual === 'CLIENTE' ||
+                  rolActual === 'ORGANIZADOR' ||
+                  rolActual === 'ADMINPLATAFORMA' ||
+                  !isAuthenticated) && (
                   <Button
                     variant="outline-secondary"
                     size="sm"
@@ -223,9 +232,12 @@ const Header = () => {
                     className="position-relative"
                     aria-label={`Ver carrito, ${cantidadCarrito} entradas añadidas`}
                   >
-                    <ShoppingCart size={14} className="me-1" aria-hidden="true" />
+                    <ShoppingCart
+                      size={14}
+                      className="me-1"
+                      aria-hidden="true"
+                    />
                     Carrito
- 
                     {cantidadCarrito > 0 && (
                       <span
                         className="carrito-badge-ticketti"
@@ -236,7 +248,7 @@ const Header = () => {
                     )}
                   </Button>
                 )}
- 
+
                 <Button
                   variant="outline-danger"
                   size="sm"
@@ -259,17 +271,18 @@ const Header = () => {
                 >
                   <ShoppingCart size={14} className="me-1" aria-hidden="true" />
                   Carrito
- 
                   {cantidadCarrito > 0 && (
-                    <span
-                      className="carrito-badge-ticketti"
-                      aria-hidden="true"
-                    >
+                    <span className="carrito-badge-ticketti" aria-hidden="true">
                       {cantidadCarrito}
                     </span>
                   )}
                 </Button>
-                <Button as="a" href="/login" className="btn-primary" aria-label="Acceder a la plataforma">
+                <Button
+                  as="a"
+                  href="/login"
+                  className="btn-primary"
+                  aria-label="Acceder a la plataforma"
+                >
                   Acceso
                 </Button>
               </>
