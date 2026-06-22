@@ -3,6 +3,7 @@ import ProductCard from '@components/common/ProductCard';
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
+import logger from '@utils/logger';
 import { useCarrito } from '@hooks/useCarrito';
 import { useCarritoGuest } from '@hooks/useCarritoGuest';
 import { useCallback, useEffect, useState } from 'react';
@@ -62,7 +63,7 @@ const Eventos = () => {
       setEventos(datos);
       setEventosFiltrados(datos);
     } catch (err) {
-      console.error('Error al cargar eventos:', err);
+      logger.error('Error al cargar eventos:', err);
       setError('No se pudieron cargar los eventos. Por favor, intenta más tarde.');
       setEventos([]);
       setEventosFiltrados([]);
@@ -115,7 +116,7 @@ const Eventos = () => {
         guestAgregarEntrada({ eventoId: evento.id, eventoNombre: evento.nombre, imagenUrl: evento.imagenUrl, tipoEntrada: 'General', cantidad: 1, precioUnitario: evento.precioEntrada || 0 });
       }
     } catch (err) {
-      console.error('Error agregando al carrito', err);
+      logger.error('Error agregando al carrito', err);
     }
   };
 

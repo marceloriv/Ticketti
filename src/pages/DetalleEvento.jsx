@@ -4,6 +4,7 @@ import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
 import { eventosApi } from '@api/index';
 import { ROUTES } from '@utils/routes';
+import logger from '@utils/logger';
 import { jwtDecode } from 'jwt-decode';
 import { AlertCircle, Calendar, MapPin, Ticket, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -69,7 +70,7 @@ const getUsuarioId = (usuario) => {
       return decoded.usuarioId;
     }
   } catch (e) {
-    console.warn('[DetalleEvento] No se pudo decodificar el token JWT:', e);
+    logger.warn('[DetalleEvento] No se pudo decodificar el token JWT:', e);
   }
   return null;
 };
@@ -107,7 +108,7 @@ const DetalleEvento = () => {
         const data = await eventosApi.buscarEvento(id);
         setEvento(data);
       } catch (err) {
-        console.error('[DetalleEvento] Error al cargar evento:', err);
+        logger.error('[DetalleEvento] Error al cargar evento:', err);
         setError('No se pudo cargar el evento de forma correcta.');
       } finally {
         setCargando(false);
@@ -122,7 +123,7 @@ const DetalleEvento = () => {
    * Si está autenticado, inicializa y actualiza el carrito en el backend.
    */
   const manejarAgregarAlCarrito = async () => {
-    console.log('[DetalleEvento] Añadiendo entradas al carrito');
+    logger.log('[DetalleEvento] Añadiendo entradas al carrito');
     setErrorCarrito('');
 
     if (cantidad < 1 || cantidad > 4) {
@@ -132,7 +133,7 @@ const DetalleEvento = () => {
 
     // Modo invitado (No autenticado): Guardar en localStorage
     if (!isAuthenticated) {
-      console.log('[DetalleEvento] Modo invitado, agregando a localStorage');
+      logger.log('[DetalleEvento] Modo invitado, agregando a localStorage');
       try {
         guestAgregarEntrada({
           eventoId: Number(id),
@@ -156,13 +157,13 @@ const DetalleEvento = () => {
     // Modo autenticado: Guardar en backend
     const usuarioId = getUsuarioId(usuario);
     if (!usuarioId) {
-      console.log('[DetalleEvento] Sin sesión activa, redirigiendo al login');
+      logger.log('[DetalleEvento] Sin sesión activa, redirigiendo al login');
       navigate('/login');
       return;
     }
 
     try {
-      console.log('[DetalleEvento] Inicializando carrito en microservicios');
+      logger.log('[DetalleEvento] Inicializando carrito en microservicios');
       const { carritoId: idCarrito } = await inicializarCarrito();
       if (!idCarrito) {
         setErrorCarrito(
@@ -173,7 +174,7 @@ const DetalleEvento = () => {
       // Registrar el ID del carrito en el contexto global
       establecerCarritoId(idCarrito);
 
-      console.log(
+      logger.log(
         '[DetalleEvento] Llamando al microservicio de carrito para agregar item'
       );
       await agregarEntrada(
@@ -190,7 +191,7 @@ const DetalleEvento = () => {
       setCantidad(1);
       navigate(`/carrito/${idCarrito}`);
     } catch (err) {
-      console.error(
+      logger.error(
         '[DetalleEvento] Falló agregar entrada en el microservicio:',
         err
       );

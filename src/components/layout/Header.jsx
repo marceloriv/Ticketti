@@ -2,6 +2,7 @@ import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
 import { useCarritoGuest } from '@hooks/useCarritoGuest';
 import { ROUTES } from '@utils/routes';
+import logger from '@utils/logger';
 import { jwtDecode } from 'jwt-decode';
 import { LogOut, ShoppingCart, Ticket, User } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
@@ -38,14 +39,14 @@ const Header = () => {
         .current()
         .then((res) => {
           if (res && (res.estadoCarrito || res.estado) === 'PAGADO') {
-            console.log(
+            logger.log(
               '[Carrito] Carrito actual ya está PAGADO. Limpiando ID...'
             );
             establecerCarritoId(null);
           }
         })
         .catch((e) => {
-          console.error('[Carrito] Error al obtener resumen:', e);
+          logger.error('[Carrito] Error al obtener resumen:', e);
           const errorStr = (e.message || '').toLowerCase();
           if (
             errorStr.includes('no pertenece') ||
@@ -53,7 +54,7 @@ const Header = () => {
             errorStr.includes('400') ||
             errorStr.includes('404')
           ) {
-            console.log(
+            logger.log(
               '[Carrito] ID de carrito inválido o ajeno detectado. Reinicializando...'
             );
             inicializarCarrito().then((res) => {
@@ -110,7 +111,7 @@ const Header = () => {
   const handleIrPerfilUsuario = () => {
     const rol = obtenerRolDesdeToken() || usuario?.rol;
 
-    console.log('[Header] Rol detectado:', rol);
+    logger.log('[Header] Rol detectado:', rol);
     // Redirigir según el rol del usuario.
     if (rol === 'ADMINPLATAFORMA') {
       navigate('/admin/dashboard');
@@ -142,7 +143,7 @@ const Header = () => {
             establecerCarritoId(resultado.carritoId);
             id = resultado.carritoId;
           }
-        } catch (e) {
+        } catch {
           // Fallback: navegar a /carrito (carrito de invitado) si el backend falla
           navigate('/carrito');
           return;
@@ -186,6 +187,7 @@ const Header = () => {
       expand="md"
       sticky="top"
       className="border-bottom shadow-sm"
+      aria-label="Navegación principal"
     >
       <Container>
         <Navbar.Brand

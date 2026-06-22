@@ -42,7 +42,7 @@
 }
 
 .product-card:hover:not([disabled]) {
-  box-shadow: 0 8px 25px rgba(90, 212, 230, 0.25) !important;
+  box-shadow: 0 8px 25px rgba(90, 212, 230, 0.25);
   transform: translateY(-4px);
 }
 
@@ -85,7 +85,7 @@
 
 .hover-lift:hover {
   transform: translateY(-5px);
-  box-shadow: 0 12px 30px rgba(90, 212, 230, 0.25) !important;
+  box-shadow: 0 12px 30px rgba(90, 212, 230, 0.25);
 }
 
 .hero-slide {
@@ -139,7 +139,7 @@
   justify-content: center;
   border-radius: 50%;
   border: 2px solid white;
-  background-color: red;
+  background-color: #c62828;
   color: white;
   font-size: 11px;
   font-weight: bold;
@@ -203,7 +203,7 @@
 
 .footer-social-link:hover,
 .footer-quick-link:hover {
-  color: var(--ticketti-primary) !important;
+  color: var(--ticketti-primary);
 }
 
 .perfil-cliente-main {
@@ -443,7 +443,7 @@
 }
 
 .inicio-org-card:hover {
-  box-shadow: 0 4px 15px rgba(90, 212, 230, 0.2) !important;
+  box-shadow: 0 4px 15px rgba(90, 212, 230, 0.2);
 }
 
 .inicio-org-icon {
@@ -459,18 +459,6 @@
 
 .text-ticketti {
   color: var(--ticketti-primary);
-}
-
-.btn-outline-ticketti {
-  border-color: var(--ticketti-primary);
-  color: var(--ticketti-primary);
-}
-
-.btn-outline-ticketti:hover,
-.btn-outline-ticketti.active {
-  background-color: var(--ticketti-primary);
-  border-color: var(--ticketti-primary);
-  color: #000;
 }
 
 .btn-ticketti {
@@ -493,7 +481,7 @@
 
 .donaciones-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(90, 212, 230, 0.25) !important;
+  box-shadow: 0 8px 25px rgba(90, 212, 230, 0.25);
 }
 
 /* Color del trazo del ícono */

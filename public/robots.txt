@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth/
+Disallow: /admin/
+Disallow: /perfil
+Disallow: /notificaciones
+Disallow: /carrito
+
+Sitemap: https://ticketti.cl/sitemap.xml

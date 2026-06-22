@@ -1,5 +1,6 @@
 import { useAuth } from '@hooks/useAuth';
 import { ROUTES } from '@utils/routes';
+import { jwtDecode } from 'jwt-decode';
 import { Navigate } from 'react-router-dom';
 
 /**
@@ -10,8 +11,8 @@ export default function ProtectedRoute({ element, requiredRole = null }) {
 
   const obtenerRolDesdeToken = (token) => {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.rol;
+      const decoded = jwtDecode(token);
+      return decoded?.rol || null;
     } catch {
       return null;
     }

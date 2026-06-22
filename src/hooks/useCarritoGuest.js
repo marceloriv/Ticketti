@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import logger from '../utils/logger';
 
 /**
  * Clave utilizada para almacenar el carrito de invitado en localStorage
@@ -40,7 +41,7 @@ export const useCarritoGuest = () => {
     try {
       localStorage.setItem(GUEST_CART_KEY, JSON.stringify(newCart));
     } catch (err) {
-      console.error(
+      logger.error(
         '[useCarritoGuest] Error guardando carrito en localStorage:',
         err
       );

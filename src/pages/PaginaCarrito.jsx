@@ -1,5 +1,6 @@
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
+import logger from '@/utils/logger';
 import { Info, ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
@@ -72,11 +73,11 @@ const PaginaCarrito = () => {
     if (carritoId && !isGuest) {
       obtenerResumen().then((res) => {
         if (res && (res.estadoCarrito || res.estado) === 'PAGADO') {
-          console.log('[PaginaCarrito] El carrito cargado está PAGADO. Limpiando ID de contexto...');
+          logger.log('[PaginaCarrito] El carrito cargado está PAGADO. Limpiando ID de contexto...');
           establecerCarritoId(null);
         }
       }).catch((err) => {
-        console.error('[PaginaCarrito] Error al cargar resumen inicial:', err);
+        logger.error('[PaginaCarrito] Error al cargar resumen inicial:', err);
         const errorStr = (err.message || '').toLowerCase();
         if (
           errorStr.includes('no pertenece') ||
@@ -84,7 +85,7 @@ const PaginaCarrito = () => {
           errorStr.includes('400') ||
           errorStr.includes('404')
         ) {
-          console.log('[PaginaCarrito] ID de carrito inválido o ajeno. Redirigiendo a uno nuevo...');
+          logger.log('[PaginaCarrito] ID de carrito inválido o ajeno. Redirigiendo a uno nuevo...');
           inicializarCarrito().then((res) => {
             if (res?.carritoId) {
               establecerCarritoId(res.carritoId);
@@ -113,7 +114,7 @@ const PaginaCarrito = () => {
     try {
       await eliminarEntrada(detalleId);
     } catch (err) {
-      console.error('[PaginaCarrito] Error al eliminar entrada:', err);
+      logger.error('[PaginaCarrito] Error al eliminar entrada:', err);
     }
   };
 
@@ -124,7 +125,7 @@ const PaginaCarrito = () => {
     try {
       await renovarReserva();
     } catch (err) {
-      console.error(
+      logger.error(
         '[PaginaCarrito] Error al renovar reserva de entradas:',
         err
       );
@@ -141,7 +142,7 @@ const PaginaCarrito = () => {
         navigate('/perfil');
       }, 2500);
     } catch (err) {
-      console.error('[PaginaCarrito] Error al realizar checkout:', err);
+      logger.error('[PaginaCarrito] Error al realizar checkout:', err);
     }
   };
 

@@ -8,6 +8,8 @@ import {
   Phone,
   Send,
 } from 'lucide-react';
+import { useState } from 'react';
+import { Alert, Button, Col, Container, Form, Row } from 'react-bootstrap';
 import '@/styles/components/Contacto.css';
 /**
  * Página de contacto de la plataforma Ticketti.
@@ -17,14 +19,24 @@ import '@/styles/components/Contacto.css';
  * @returns {React.JSX.Element} Componente de la página de contacto.
  */
 const Contacto = () => {
-  /**
-   * Maneja el envío del formulario de contacto.
-   *
-   * @param {React.FormEvent} e - Evento de envío del formulario.
-   */
+  const [formData, setFormData] = useState({
+    nombre: '',
+    email: '',
+    asunto: '',
+    mensaje: '',
+  });
+  const [enviado, setEnviado] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Lógica futura para enviar el mensaje a un microservicio de contacto
+    setEnviado(true);
+    setFormData({ nombre: '', email: '', asunto: '', mensaje: '' });
+    setTimeout(() => setEnviado(false), 3000);
   };
   return (
     <div className="contacto-page">
@@ -116,64 +128,70 @@ const Contacto = () => {
             <div className="col-lg-7">
               <div className="contacto-form-card p-4 p-md-5 shadow-sm h-100">
                 <h3 className="fw-bold mb-4 text-dark">Enviar Mensaje</h3>
-                <form onSubmit={handleSubmit}>
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label htmlFor="nombre" className="form-label">
-                        Nombre completo
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="nombre"
-                        placeholder="Ej. Juan Pérez"
-                        required
-                      />
-                    </div>
-                    <div className="col-md-6 mb-3">
-                      <label htmlFor="email" className="form-label">
-                        Correo electrónico
-                      </label>
-                      <input
-                        type="email"
-                        className="form-control"
-                        id="email"
-                        placeholder="tu@email.com"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="asunto" className="form-label">
-                      Asunto
-                    </label>
-                    <input
+                {enviado && (
+                  <Alert variant="success" className="mb-3">
+                    Mensaje enviado correctamente. Nos contactaremos pronto.
+                  </Alert>
+                )}
+                <Form onSubmit={handleSubmit}>
+                  <Row>
+                    <Col md={6} className="mb-3">
+                      <Form.Group controlId="contactoNombre">
+                        <Form.Label>Nombre completo</Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Ej. Juan Pérez"
+                          name="nombre"
+                          value={formData.nombre}
+                          onChange={handleChange}
+                          required
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={6} className="mb-3">
+                      <Form.Group controlId="contactoEmail">
+                        <Form.Label>Correo electrónico</Form.Label>
+                        <Form.Control
+                          type="email"
+                          placeholder="tu@email.com"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          required
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                  <Form.Group className="mb-3" controlId="contactoAsunto">
+                    <Form.Label>Asunto</Form.Label>
+                    <Form.Control
                       type="text"
-                      className="form-control"
-                      id="asunto"
                       placeholder="Motivo de tu mensaje"
+                      name="asunto"
+                      value={formData.asunto}
+                      onChange={handleChange}
                       required
                     />
-                  </div>
-                  <div className="mb-4">
-                    <label htmlFor="mensaje" className="form-label">
-                      Mensaje
-                    </label>
-                    <textarea
-                      className="form-control"
-                      id="mensaje"
+                  </Form.Group>
+                  <Form.Group className="mb-4" controlId="contactoMensaje">
+                    <Form.Label>Mensaje</Form.Label>
+                    <Form.Control
+                      as="textarea"
                       rows={5}
                       placeholder="Escribe aquí tu consulta en detalle..."
+                      name="mensaje"
+                      value={formData.mensaje}
+                      onChange={handleChange}
                       required
-                    ></textarea>
-                  </div>
+                    />
+                  </Form.Group>
                   <div className="text-end">
-                    <button type="submit" className="btn btn-enviar-contacto">
+                    <Button type="submit" className="btn-enviar-contacto d-flex align-items-center gap-2 ms-auto">
                       <Send size={16} />
                       Enviar mensaje
-                    </button>
+                    </Button>
                   </div>
-                </form>
+                </Form>
               </div>
             </div>
           </div>

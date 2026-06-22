@@ -1,7 +1,7 @@
 import ProtectedRoute from '@components/ProtectedRoute';
 import { useAuth } from '@hooks/useAuth';
 import { ROLES, ROUTES } from '@utils/routes';
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 // Importar páginas públicas

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import logger from '../utils/logger';
 
 /**
  * URL base de la API
@@ -55,7 +56,7 @@ api.interceptors.request.use(
             config.headers['X-Usuario-Id'] = usuarioId;
           }
         }
-      } catch (e) {
+      } catch {
         // Ignorar silenciosamente o registrar en dev
       }
     }
@@ -78,7 +79,7 @@ api.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          console.error('Sesión expirada o no autorizada (401)');
+          logger.error('Sesión expirada o no autorizada (401)');
           if (localStorage.getItem('token')) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
@@ -87,21 +88,21 @@ api.interceptors.response.use(
           }
           break;
         case 403:
-          console.error('Acceso prohibido');
+          logger.error('Acceso prohibido');
           break;
         case 404:
-          console.error('Recurso no encontrado');
+          logger.error('Recurso no encontrado');
           break;
         case 500:
-          console.error('Error interno del servidor');
+          logger.error('Error interno del servidor');
           break;
         default:
-          console.error(`Error HTTP: ${error.response.status}`);
+          logger.error(`Error HTTP: ${error.response.status}`);
       }
     } else if (error.request) {
-      console.error('No se pudo conectar con el servidor');
+      logger.error('No se pudo conectar con el servidor');
     } else {
-      console.error('Error en la configuración de la petición:', error.message);
+      logger.error('Error en la configuración de la petición:', error.message);
     }
 
     return Promise.reject(error);
