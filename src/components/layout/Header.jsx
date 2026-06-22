@@ -105,12 +105,12 @@ const Header = () => {
     const rol = obtenerRolDesdeToken() || usuario?.rol;
 
     console.log('[Header] Rol detectado:', rol);
-
+    // Redirigir según el rol del usuario.
     if (rol === 'ADMINPLATAFORMA') {
       navigate('/admin/dashboard');
       return;
     }
-
+    // Si el rol es ORGANIZADOR, redirigir a su dashboard específico.
     if (rol === 'ORGANIZADOR') {
       navigate('/organizador/dashboard');
       return;

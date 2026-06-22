@@ -11,7 +11,8 @@ import Eventos from '@pages/Eventos';
 import Login from '@pages/Login';
 import Nosotros from '@pages/Nosotros';
 import Registro from '@pages/Registro';
-
+import PoliticaPrivacidad from '@pages/PoliticaPrivacidad';
+import TerminosCondiciones from '@pages/TerminosCondiciones';
 // Importar páginas protegidas
 import DashboardAdmin from '@pages/DashboardAdmin';
 import DashboardOrganizador from '@pages/DashboardOrganizador';
@@ -55,6 +56,9 @@ export default function AppRoutes() {
           )
         }
       />
+
+      <Route path="/terminos" element={<TerminosCondiciones />} />
+      <Route path="/privacidad" element={<PoliticaPrivacidad />} />
 
       {/* ========== RUTAS PÚBLICAS - EVENTOS ========== */}
       <Route path="/evento/:id" element={<DetalleEvento />} />
