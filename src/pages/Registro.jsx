@@ -17,9 +17,9 @@ const initialFormData = {
   telefono: '',
 };
 
-// función para extraer mensajes de error específicos del registro, manejando casos comunes de errores en APIs REST
-// función para extraer mensajes de error específicos del registro, manejando casos comunes de errores en APIs REST
-// función para extraer mensajes de error específicos del registro, manejando casos comunes de errores en APIs REST
+// clave para que se puedan guardar los datos del formulario en sessionStorage y recueperarlos si el usuario recarga la página o vuelve después de leer los documentos legales, evitando que pierda lo que ya había ingresado
+const REGISTRO_DRAFT_KEY = 'registroFormData';
+
 // función para extraer mensajes de error específicos del registro, manejando casos comunes de errores en APIs REST
 const getRegistroErrorMessage = (error) => {
   const data = error.response?.data;
@@ -57,19 +57,28 @@ const getRegistroErrorMessage = (error) => {
 
   return raw;
 };
+
 // componente de registro de usuario
 //con validaciones para contraseñas, aceptación de términos y manejo de errores específicos del proceso de registro
 export default function Registro() {
   const navigate = useNavigate();
+
   //para que se mantengan los estados de aceptación de términos y privacidad aunque el usuario recargue la página o vuelva después de leer los documentos legales,
   //se inicializan a partir de sessionStorage, que se actualiza cuando el usuario confirma que ha leído cada documento
-  const [formData, setFormData] = useState(() => ({
-    ...initialFormData,
-    aceptaTerminos: sessionStorage.getItem('aceptaTerminos') === 'true',
-    aceptaPrivacidad: sessionStorage.getItem('aceptaPrivacidad') === 'true',
-  }));
+  const [formData, setFormData] = useState(() => {
+    const draft = JSON.parse(sessionStorage.getItem(REGISTRO_DRAFT_KEY) || '{}');
+
+    return {
+      ...initialFormData,
+      ...draft,
+      aceptaTerminos: sessionStorage.getItem('aceptaTerminos') === 'true',
+      aceptaPrivacidad: sessionStorage.getItem('aceptaPrivacidad') === 'true',
+    };
+  });
+
   const [mensaje, setMensaje] = useState({ tipo: null, texto: '' });
   const [cargando, setCargando] = useState(false);
+
   // referencia para el mensaje de error
   const mensajeRef = useRef(null);
 
@@ -79,6 +88,19 @@ export default function Registro() {
     privacidad: sessionStorage.getItem('privacidadLeida') === 'true',
   });
 
+  // guarda temporalmente los datos del registro mientras el usuario revisa los documentos legales
+  const guardarBorradorRegistro = (datosFormulario) => {
+    const datosTemporales = {
+      nombre: datosFormulario.nombre,
+      correo: datosFormulario.correo,
+      contrasena: datosFormulario.contrasena,
+      confirmarContrasena: datosFormulario.confirmarContrasena,
+      direccion: datosFormulario.direccion,
+      telefono: datosFormulario.telefono,
+    };
+
+    sessionStorage.setItem(REGISTRO_DRAFT_KEY, JSON.stringify(datosTemporales));
+  };
 
   // lleva al usuario hacia la alerta cuando aparece un mensaje de error o advertencia
   useEffect(() => {
@@ -92,7 +114,6 @@ export default function Registro() {
     }
   }, [mensaje]);
 
-
   // función para manejar cambios en los campos del formulario, actualizando el estado formData
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -101,10 +122,16 @@ export default function Registro() {
       sessionStorage.setItem(name, checked ? 'true' : 'false');
     }
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+    setFormData((prev) => {
+      const nuevosDatos = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value,
+      };
+
+      guardarBorradorRegistro(nuevosDatos);
+
+      return nuevosDatos;
+    });
   };
 
   // función para manejar el envío del formulario de registro, con validaciones y llamadas a la API
@@ -154,6 +181,7 @@ export default function Registro() {
     }
 
     setCargando(true);
+
     // intento de registro del usuario a través de la API, con manejo de errores específicos para el usuario
     try {
       await api.post(
@@ -178,6 +206,12 @@ export default function Registro() {
       });
 
       setFormData(initialFormData);
+
+      sessionStorage.removeItem(REGISTRO_DRAFT_KEY);
+      sessionStorage.removeItem('terminosLeidos');
+      sessionStorage.removeItem('privacidadLeida');
+      sessionStorage.removeItem('aceptaTerminos');
+      sessionStorage.removeItem('aceptaPrivacidad');
 
       setTimeout(() => {
         navigate('/login');
@@ -214,6 +248,7 @@ export default function Registro() {
                       {mensaje.texto}
                     </Alert>
                   )}
+
                   <Card className="registro-requisitos mb-4">
                     <Card.Body>
                       <h6 className="mb-2">Requisitos mínimos para registrarte</h6>
@@ -331,7 +366,6 @@ export default function Registro() {
                         <Link className="legal-check-link" to="/terminos">
                           Ver términos
                         </Link>
-
                       </div>
 
                       {!documentosLeidos.terminos && (
@@ -382,7 +416,6 @@ export default function Registro() {
                       )}
                     </Form.Group>
 
-
                     <div className="text-center">
                       <Button
                         variant="primary"
@@ -411,7 +444,5 @@ export default function Registro() {
         </Container>
       </main >
     </div>
-
-
   );
 }
