@@ -3,7 +3,7 @@ import { jwtDecode } from 'jwt-decode';
 import logger from '../utils/logger';
 
 /**
- * URL base de la API
+ * URL base de la API para las peticiones de Ticketti. pk en el bff se configura el proxy para redirigir a los microservicios.
  */
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
