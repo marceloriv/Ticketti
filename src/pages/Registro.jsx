@@ -1,6 +1,6 @@
 import Header from '@/components/layout/Header';
 import api from '@api/api';
-import { useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Alert, Button, Card, Col, Container, Row } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import { Link, useNavigate } from 'react-router-dom';
@@ -18,36 +18,45 @@ const initialFormData = {
 };
 
 // función para extraer mensajes de error específicos del registro, manejando casos comunes de errores en APIs REST
+// función para extraer mensajes de error específicos del registro, manejando casos comunes de errores en APIs REST
+// función para extraer mensajes de error específicos del registro, manejando casos comunes de errores en APIs REST
+// función para extraer mensajes de error específicos del registro, manejando casos comunes de errores en APIs REST
 const getRegistroErrorMessage = (error) => {
-  const raw = error.response?.data?.mensaje || error.response?.data?.message;
+  const data = error.response?.data;
+
+  if (Array.isArray(data)) {
+    return data.join('\n');
+  }
+
+  const raw =
+    typeof data === 'string'
+      ? data
+      : data?.mensaje || data?.message;
 
   if (!raw || typeof raw !== 'string') {
     return 'Error en el registro. Intenta nuevamente.';
   }
 
-  if (raw.includes('ApiGateway error calling')) {
-    const listMatch = raw.match(/\[[\s\S]*\]/);
+  const listMatch = raw.match(/\[[\s\S]*\]/);
 
-    if (listMatch?.[0]) {
-      try {
-        const parsed = JSON.parse(listMatch[0]);
+  if (listMatch?.[0]) {
+    try {
+      const parsed = JSON.parse(listMatch[0]);
 
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.join('\n');
-        }
-      } catch {
-        return listMatch[0]
-          .replace(/^\[|\]$/g, '')
-          .replace(/","/g, '\n')
-          .replace(/"/g, '')
-          .replace(/^"|"$/g, '');
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.join('\n');
       }
+    } catch {
+      return listMatch[0]
+        .replace(/^\[|\]$/g, '')
+        .replace(/","/g, '\n')
+        .replace(/"/g, '')
+        .replace(/^"|"$/g, '');
     }
   }
 
   return raw;
 };
-
 // componente de registro de usuario
 //con validaciones para contraseñas, aceptación de términos y manejo de errores específicos del proceso de registro
 export default function Registro() {
@@ -61,12 +70,27 @@ export default function Registro() {
   }));
   const [mensaje, setMensaje] = useState({ tipo: null, texto: '' });
   const [cargando, setCargando] = useState(false);
+  // referencia para el mensaje de error
+  const mensajeRef = useRef(null);
 
   // estado para saber si el usuario ya leyó los documentos legales antes de permitir aceptar los checkbox
   const [documentosLeidos] = useState({
     terminos: sessionStorage.getItem('terminosLeidos') === 'true',
     privacidad: sessionStorage.getItem('privacidadLeida') === 'true',
   });
+
+
+  // lleva al usuario hacia la alerta cuando aparece un mensaje de error o advertencia
+  useEffect(() => {
+    if (mensaje.texto && (mensaje.tipo === 'danger' || mensaje.tipo === 'warning')) {
+      setTimeout(() => {
+        mensajeRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }, 100);
+    }
+  }, [mensaje]);
 
 
   // función para manejar cambios en los campos del formulario, actualizando el estado formData
@@ -130,7 +154,7 @@ export default function Registro() {
     }
 
     setCargando(true);
-
+    // intento de registro del usuario a través de la API, con manejo de errores específicos para el usuario
     try {
       await api.post(
         '/usuarios',
@@ -182,8 +206,9 @@ export default function Registro() {
 
                   {mensaje.texto && (
                     <Alert
+                      ref={mensajeRef}
                       variant={mensaje.tipo}
-                      className="mb-4"
+                      className="mb-3"
                       style={{ whiteSpace: 'pre-line' }}
                     >
                       {mensaje.texto}
@@ -196,6 +221,10 @@ export default function Registro() {
                       <ul className="mb-0">
                         <li>El nombre debe tener entre 3 y 100 caracteres.</li>
                         <li>El correo debe ser válido y no estar registrado previamente.</li>
+                        <li>
+                          La contraseña debe tener mínimo 8 caracteres, una mayúscula,
+                          una minúscula y un número.
+                        </li>
                         <li>El teléfono debe tener exactamente 9 dígitos.</li>
                         <li>La dirección debe tener entre 5 y 255 caracteres.</li>
                         <li>Debes leer y aceptar los Términos y la Política de Privacidad.</li>
