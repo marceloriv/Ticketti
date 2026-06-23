@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import logger from '../utils/logger';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -11,7 +12,7 @@ class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Error capturado por ErrorBoundary:', error, errorInfo);
+    logger.error('Error capturado por ErrorBoundary:', error, errorInfo);
   }
 
   render() {
@@ -19,12 +20,20 @@ class ErrorBoundary extends Component {
       return (
         <div className="error-boundary-ticketti">
           <h1>Algo salió mal</h1>
-          <p>
-            <strong>Error:</strong> {this.state.error?.message}
-          </p>
-          <pre className="error-boundary-ticketti__stack">
-            {this.state.error?.stack}
-          </pre>
+          <p>Ha ocurrido un error inesperado. Por favor, intenta recargar la página.</p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              padding: '8px 16px',
+              cursor: 'pointer',
+              border: '1px solid #721c24',
+              borderRadius: '4px',
+              background: '#fff',
+              color: '#721c24',
+            }}
+          >
+            Recargar página
+          </button>
         </div>
       );
     }

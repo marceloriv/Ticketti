@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import carritoApi from '../api/carritoApi';
+import logger from '../utils/logger';
 
 /**
  * Hook personalizado para gestionar el carrito de compras de usuarios autenticados.
@@ -107,7 +108,7 @@ export const useCarrito = (carritoId) => {
         targetCarrito = activo;
       }
     } catch (e) {
-      console.warn(
+      logger.warn(
         '[Carrito] No se pudo recuperar carritos existentes:',
         e.message || e
       );
@@ -121,7 +122,7 @@ export const useCarrito = (carritoId) => {
           targetCarrito = nuevo;
         }
       } catch (e) {
-        console.error(
+        logger.error(
           '[Carrito] Error al crear nuevo carrito de compras:',
           e.message || e
         );
@@ -137,7 +138,7 @@ export const useCarrito = (carritoId) => {
         if (savedGuest) {
           const guestItems = JSON.parse(savedGuest);
           if (Array.isArray(guestItems) && guestItems.length > 0) {
-            console.log('[Carrito] Fusionando carrito de invitado en carrito autenticado:', targetId);
+            logger.log('[Carrito] Fusionando carrito de invitado en carrito autenticado:', targetId);
             for (const item of guestItems) {
               try {
                 await carritoApi.agregarEntrada(targetId, {
@@ -147,14 +148,14 @@ export const useCarrito = (carritoId) => {
                   precioUnitario: item.precioUnitario || 0,
                 });
               } catch (addErr) {
-                console.error('[Carrito] Error migrando item invitado:', addErr);
+                logger.error('[Carrito] Error migrando item invitado:', addErr);
               }
             }
             localStorage.removeItem('guestCart');
           }
         }
       } catch (mergeErr) {
-        console.error('[Carrito] Error leyendo guestCart para fusión:', mergeErr);
+        logger.error('[Carrito] Error leyendo guestCart para fusión:', mergeErr);
       }
 
       return { carritoId: targetId, carrito: targetCarrito };

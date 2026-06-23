@@ -1,6 +1,7 @@
 import ProtectedRoute from '@components/ProtectedRoute';
 import { useAuth } from '@hooks/useAuth';
 import { ROLES, ROUTES } from '@utils/routes';
+import { Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 // Importar páginas públicas
@@ -20,95 +21,106 @@ import HistorialNotificaciones from '@pages/HistorialNotificaciones';
 import PaginaCarrito from '@pages/PaginaCarrito';
 import PerfilCliente from '@pages/PerfilCliente';
 
+// Spinner local para estados de carga
+function LoadingSpinner() {
+  return (
+    <div className="d-flex justify-content-center align-items-center vh-100 app-routes-loading">
+      <div className="spinner-border text-info" role="status" style={{ width: '3rem', height: '3rem' }}>
+        <span className="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  );
+}
+
 export default function AppRoutes() {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center app-routes-loading">
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">Cargando...</span>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
-    <Routes>
-      {/* ========== RUTAS PÚBLICAS ========== */}
-      <Route path={ROUTES.HOME} element={<Inicio />} />
-      <Route path={ROUTES.INICIO} element={<Inicio />} />
+    <Suspense fallback={<LoadingSpinner />}>
+      <Routes>
+        {/* ========== RUTAS PÚBLICAS ========== */}
+        <Route path={ROUTES.HOME} element={<Inicio />} />
+        <Route path={ROUTES.INICIO} element={<Inicio />} />
 
-      <Route
-        path={ROUTES.LOGIN}
-        element={
-          isAuthenticated ? <Navigate to={ROUTES.INICIO} replace /> : <Login />
-        }
-      />
+        <Route
+          path={ROUTES.LOGIN}
+          element={
+            isAuthenticated ? (
+              <Navigate to={ROUTES.INICIO} replace />
+            ) : (
+              <Login />
+            )
+          }
+        />
 
-      <Route
-        path={ROUTES.REGISTRO}
-        element={
-          isAuthenticated ? (
-            <Navigate to={ROUTES.INICIO} replace />
-          ) : (
-            <Registro />
-          )
-        }
-      />
+        <Route
+          path={ROUTES.REGISTRO}
+          element={
+            isAuthenticated ? (
+              <Navigate to={ROUTES.INICIO} replace />
+            ) : (
+              <Registro />
+            )
+          }
+        />
 
-      <Route path="/terminos" element={<TerminosCondiciones />} />
-      <Route path="/privacidad" element={<PoliticaPrivacidad />} />
+        <Route path="/terminos" element={<TerminosCondiciones />} />
+        <Route path="/privacidad" element={<PoliticaPrivacidad />} />
 
-      {/* ========== RUTAS PÚBLICAS - EVENTOS ========== */}
-      <Route path="/evento/:id" element={<DetalleEvento />} />
-      <Route path={ROUTES.EVENTOS} element={<Eventos />} />
-      <Route path={ROUTES.NOSOTROS} element={<Nosotros />} />
-      <Route path={ROUTES.CONTACTO} element={<Contacto />} />
+        {/* ========== RUTAS PÚBLICAS - EVENTOS ========== */}
+        <Route path="/evento/:id" element={<DetalleEvento />} />
+        <Route path={ROUTES.EVENTOS} element={<Eventos />} />
+        <Route path={ROUTES.NOSOTROS} element={<Nosotros />} />
+        <Route path={ROUTES.CONTACTO} element={<Contacto />} />
 
-      {/* ========== RUTAS PROTEGIDAS - CLIENTE ========== */}
-      <Route
-        path={ROUTES.PERFIL}
-        element={
-          <ProtectedRoute
-            element={<PerfilCliente />}
-            requiredRole={ROLES.CLIENTE}
-          />
-        }
-      />
+        {/* ========== RUTAS PROTEGIDAS - CLIENTE ========== */}
+        <Route
+          path={ROUTES.PERFIL}
+          element={
+            <ProtectedRoute
+              element={<PerfilCliente />}
+              requiredRole={ROLES.CLIENTE}
+            />
+          }
+        />
 
-      <Route
-        path={ROUTES.NOTIFICACIONES}
-        element={<ProtectedRoute element={<HistorialNotificaciones />} />}
-      />
+        <Route
+          path={ROUTES.NOTIFICACIONES}
+          element={<ProtectedRoute element={<HistorialNotificaciones />} />}
+        />
 
-      <Route path="/carrito" element={<PaginaCarrito />} />
-      <Route path="/carrito/:carritoId" element={<PaginaCarrito />} />
+        <Route path="/carrito" element={<PaginaCarrito />} />
+        <Route path="/carrito/:carritoId" element={<PaginaCarrito />} />
 
-      {/* ========== RUTAS PROTEGIDAS - ADMIN PLATAFORMA ========== */}
-      <Route
-        path={ROUTES.ADMIN_DASHBOARD}
-        element={
-          <ProtectedRoute
-            element={<DashboardAdmin />}
-            requiredRole={ROLES.ADMINPLATAFORMA}
-          />
-        }
-      />
+        {/* ========== RUTAS PROTEGIDAS - ADMIN PLATAFORMA ========== */}
+        <Route
+          path={ROUTES.ADMIN_DASHBOARD}
+          element={
+            <ProtectedRoute
+              element={<DashboardAdmin />}
+              requiredRole={ROLES.ADMINPLATAFORMA}
+            />
+          }
+        />
 
-      {/* ========== RUTAS PROTEGIDAS - ORGANIZADOR ========== */}
-      <Route
-        path={ROUTES.ORGANIZADOR_DASHBOARD}
-        element={
-          <ProtectedRoute
-            element={<DashboardOrganizador />}
-            requiredRole={ROLES.ORGANIZADOR}
-          />
-        }
-      />
+        {/* ========== RUTAS PROTEGIDAS - ORGANIZADOR ========== */}
+        <Route
+          path={ROUTES.ORGANIZADOR_DASHBOARD}
+          element={
+            <ProtectedRoute
+              element={<DashboardOrganizador />}
+              requiredRole={ROLES.ORGANIZADOR}
+            />
+          }
+        />
 
-      {/* ========== RUTA 404 - NO ENCONTRADO ========== */}
-      <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
-    </Routes>
+        {/* ========== RUTA 404 - NO ENCONTRADO ========== */}
+        <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
+      </Routes>
+    </Suspense>
   );
 }

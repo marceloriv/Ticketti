@@ -1,4 +1,5 @@
 import clienteApi from './clienteApi';
+import logger from '../utils/logger';
 
 /**
  * Módulo de API para el microservicio MS-Donaciones (puerto 8004).
@@ -220,7 +221,7 @@ export const getCausas = async () => {
  * @returns {Promise<null>} No hace nada mientras no exista el endpoint.
  */
 export const activarCausa = async (_idCausa) => {
-  console.warn('[donacionesApi] activarCausa: endpoint aún no implementado en MS-Donaciones');
+  logger.warn('[donacionesApi] activarCausa: endpoint aún no implementado en MS-Donaciones');
   return null;
 };
 

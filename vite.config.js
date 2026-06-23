@@ -26,28 +26,13 @@ export default defineConfig({
     proxy: {
       // Todas las rutas /api pasan por el BFF para validar JWT, roles y errores antes de llegar al API Gateway.
       '/api/v1': {
-        target: 'http://localhost:8081',//
+        target: 'http://localhost:8081',
         changeOrigin: true,
         secure: false,
-        configure: (proxy) => {
-          proxy.on('error', (err) => {
-            console.log('proxy error', err);
-          });
-          proxy.on('proxyReq', (proxyReq, req) => {
-            console.log('Sending request to the target:', req.method, req.url);
-          });
-          proxy.on('proxyRes', (proxyRes, req) => {
-            console.log(
-              'Received response from the target:',
-              proxyRes.statusCode,
-              req.url
-            );
-          });
-        },
       },
       '/api/v0': {
-        target: 'http://localhost:8081',// El bff maneja rutas publicas y privadas 
-        changeOrigin: true, // Necesario para evitar problemas de CORS al redirigir a servicios internos.
+        target: 'http://localhost:8081',
+        changeOrigin: true,
         secure: false,
       },
       '/api': {
@@ -58,10 +43,13 @@ export default defineConfig({
 
       // Login/autenticación también vive en el BFF.
       '/auth': {
-        target: 'http://localhost:8081', 
+        target: 'http://localhost:8081',
         changeOrigin: true,
         secure: false,
       },
     },
+  },
+  build: {
+    sourcemap: false,
   },
 });

@@ -2,6 +2,7 @@ import { RefreshCw, Ticket, Trash } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Badge, Button, Card } from 'react-bootstrap';
 import { buscarEvento } from '../api/eventosApi';
+import logger from '../utils/logger';
 import '../styles/components/ListaEntradasCarrito.css';
 
 /**
@@ -50,7 +51,7 @@ const ItemEntradaCarrito = ({
           setEventInfo(data);
         })
         .catch((err) => {
-          console.warn('[ListaEntradasCarrito] Error cargando info del evento:', err);
+          logger.warn('[ListaEntradasCarrito] Error cargando info del evento:', err);
         });
     }
   }, [eventoId, item]);

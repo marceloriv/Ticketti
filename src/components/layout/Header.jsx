@@ -2,6 +2,7 @@ import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
 import { useCarritoGuest } from '@hooks/useCarritoGuest';
 import { ROUTES } from '@utils/routes';
+import logger from '@utils/logger';
 import { jwtDecode } from 'jwt-decode';
 import { LogOut, ShoppingCart, Ticket, User } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
@@ -13,7 +14,8 @@ import { useNavigate } from 'react-router-dom';
  * Muestra el logo, enlaces de navegación, botón de carrito y opciones de usuario
  */
 const Header = () => {
-  const { usuario, logout, carritoId, establecerCarritoId, isAuthenticated } = useAuth();
+  const { usuario, logout, carritoId, establecerCarritoId, isAuthenticated } =
+    useAuth();
   const navigate = useNavigate();
   const { obtenerResumen, resumen, inicializarCarrito } = useCarrito(carritoId);
   const { totalEntradas: guestTotalEntradas } = useCarritoGuest();
@@ -21,7 +23,10 @@ const Header = () => {
 
   /** Cantidad de items en el carrito (backend para autenticados, localStorage para invitados) */
   const cantidadCarrito = isAuthenticated
-    ? (resumen?.items || []).reduce((sum, item) => sum + (item.cantidad || 0), 0)
+    ? (resumen?.items || []).reduce(
+        (sum, item) => sum + (item.cantidad || 0),
+        0
+      )
     : guestTotalEntradas;
 
   useEffect(() => {
@@ -30,28 +35,35 @@ const Header = () => {
 
   useEffect(() => {
     if (carritoId) {
-      obtenerResumenRef.current().then((res) => {
-        if (res && (res.estadoCarrito || res.estado) === 'PAGADO') {
-          console.log('[Carrito] Carrito actual ya está PAGADO. Limpiando ID...');
-          establecerCarritoId(null);
-        }
-      }).catch((e) => {
-        console.error('[Carrito] Error al obtener resumen:', e);
-        const errorStr = (e.message || '').toLowerCase();
-        if (
-          errorStr.includes('no pertenece') ||
-          errorStr.includes('no encontrado') ||
-          errorStr.includes('400') ||
-          errorStr.includes('404')
-        ) {
-          console.log('[Carrito] ID de carrito inválido o ajeno detectado. Reinicializando...');
-          inicializarCarrito().then((res) => {
-            if (res?.carritoId) {
-              establecerCarritoId(res.carritoId);
-            }
-          });
-        }
-      });
+      obtenerResumenRef
+        .current()
+        .then((res) => {
+          if (res && (res.estadoCarrito || res.estado) === 'PAGADO') {
+            logger.log(
+              '[Carrito] Carrito actual ya está PAGADO. Limpiando ID...'
+            );
+            establecerCarritoId(null);
+          }
+        })
+        .catch((e) => {
+          logger.error('[Carrito] Error al obtener resumen:', e);
+          const errorStr = (e.message || '').toLowerCase();
+          if (
+            errorStr.includes('no pertenece') ||
+            errorStr.includes('no encontrado') ||
+            errorStr.includes('400') ||
+            errorStr.includes('404')
+          ) {
+            logger.log(
+              '[Carrito] ID de carrito inválido o ajeno detectado. Reinicializando...'
+            );
+            inicializarCarrito().then((res) => {
+              if (res?.carritoId) {
+                establecerCarritoId(res.carritoId);
+              }
+            });
+          }
+        });
     }
   }, [carritoId, establecerCarritoId, inicializarCarrito]);
 
@@ -90,12 +102,7 @@ const Header = () => {
   const obtenerNombreUsuario = () => {
     const payload = obtenerPayloadDesdeToken();
 
-    return (
-      usuario?.nombre ||
-      payload?.nombre ||
-      payload?.sub ||
-      'Usuario'
-    );
+    return usuario?.nombre || payload?.nombre || payload?.sub || 'Usuario';
   };
 
   /**
@@ -104,7 +111,7 @@ const Header = () => {
   const handleIrPerfilUsuario = () => {
     const rol = obtenerRolDesdeToken() || usuario?.rol;
 
-    console.log('[Header] Rol detectado:', rol);
+    logger.log('[Header] Rol detectado:', rol);
     // Redirigir según el rol del usuario.
     if (rol === 'ADMINPLATAFORMA') {
       navigate('/admin/dashboard');
@@ -125,45 +132,31 @@ const Header = () => {
    * Para usuarios invitados, navega a /carrito
    */
   const handleIrCarrito = useCallback(async () => {
-    console.log('[Carrito] Click en icono carrito', {
-      carritoId,
-      usuarioRol: usuario?.rol,
-      isAuthenticated,
-    });
-
     if (isAuthenticated) {
       let id = carritoId;
 
       if (!id) {
         try {
-          console.log('[Carrito] Sin carritoId, inicializando...');
           const resultado = await inicializarCarrito();
-
-          console.log('[Carrito] Carrito inicializado:', resultado);
 
           if (resultado?.carritoId) {
             establecerCarritoId(resultado.carritoId);
             id = resultado.carritoId;
           }
-        } catch (e) {
-          console.error('[Carrito] Error al inicializar carrito:', e);
+        } catch {
           // Fallback: navegar a /carrito (carrito de invitado) si el backend falla
-          console.log('[Carrito] Backend falló, navegando a /carrito (carrito de invitado)');
           navigate('/carrito');
           return;
         }
       }
 
       if (id) {
-        console.log('[Carrito] Navegando a:', `/carrito/${id}`);
         navigate(`/carrito/${id}`);
       } else {
-        console.warn('[Carrito] No hay carritoId después de inicializar, usando carrito de invitado');
         navigate('/carrito');
       }
     } else {
       // Usuario invitado: navegar a /carrito (sin ID)
-      console.log('[Carrito] Usuario invitado, navegando a /carrito');
       navigate('/carrito');
     }
   }, [
@@ -194,6 +187,7 @@ const Header = () => {
       expand="md"
       sticky="top"
       className="border-bottom shadow-sm"
+      aria-label="Navegación principal"
     >
       <Container>
         <Navbar.Brand
@@ -229,24 +223,27 @@ const Header = () => {
                   {nombreUsuario}
                 </Button>
 
-                {(rolActual === 'CLIENTE' || rolActual === 'ORGANIZADOR' || rolActual === 'ADMINPLATAFORMA' || !isAuthenticated) && (
+                {(rolActual === 'CLIENTE' ||
+                  rolActual === 'ORGANIZADOR' ||
+                  rolActual === 'ADMINPLATAFORMA' ||
+                  !isAuthenticated) && (
                   <Button
                     variant="outline-secondary"
                     size="sm"
                     onClick={handleIrCarrito}
                     className="position-relative"
+                    aria-label={`Ver carrito, ${cantidadCarrito} entradas añadidas`}
                   >
-                    <ShoppingCart size={14} className="me-1" />
+                    <ShoppingCart
+                      size={14}
+                      className="me-1"
+                      aria-hidden="true"
+                    />
                     Carrito
-
                     {cantidadCarrito > 0 && (
                       <span
-                        role="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleIrCarrito();
-                        }}
                         className="carrito-badge-ticketti"
+                        aria-hidden="true"
                       >
                         {cantidadCarrito}
                       </span>
@@ -259,8 +256,9 @@ const Header = () => {
                   size="sm"
                   onClick={logout}
                   className="d-flex align-items-center gap-1"
+                  aria-label="Cerrar sesión de la cuenta"
                 >
-                  <LogOut size={16} />
+                  <LogOut size={16} aria-hidden="true" />
                   Salir
                 </Button>
               </>
@@ -271,24 +269,22 @@ const Header = () => {
                   size="sm"
                   onClick={handleIrCarrito}
                   className="position-relative"
+                  aria-label={`Ver carrito, ${cantidadCarrito} entradas añadidas`}
                 >
-                  <ShoppingCart size={14} className="me-1" />
+                  <ShoppingCart size={14} className="me-1" aria-hidden="true" />
                   Carrito
-
                   {cantidadCarrito > 0 && (
-                    <span
-                      role="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleIrCarrito();
-                      }}
-                      className="carrito-badge-ticketti"
-                    >
+                    <span className="carrito-badge-ticketti" aria-hidden="true">
                       {cantidadCarrito}
                     </span>
                   )}
                 </Button>
-                <Button as="a" href="/login" className="btn-primary">
+                <Button
+                  as="a"
+                  href="/login"
+                  className="btn-primary"
+                  aria-label="Acceder a la plataforma"
+                >
                   Acceso
                 </Button>
               </>

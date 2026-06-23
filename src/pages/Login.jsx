@@ -30,6 +30,20 @@ export default function Login() {
     }
   }, [isAuthenticated, navigate]);
 
+  // Preload de la imagen de fondo dinámicamente cuando se entra a la página de login
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.href = '/img/loginimagen2.jpg';
+    link.as = 'image';
+    link.fetchPriority = 'high';
+    document.head.appendChild(link);
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, []);
+
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -45,6 +59,7 @@ export default function Login() {
       navigate(ROUTES.INICIO);
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión');
+      setPassword(''); // Limpia el input de contraseña ante fallos por buenas prácticas de seguridad
     } finally {
       setLoading(false);
     }
@@ -60,11 +75,17 @@ export default function Login() {
               <Card.Body>
                 <h2 className="text-center mb-4">Iniciar Sesión</h2>
 
-                {error && (
-                  <Alert variant="danger" className="mb-3">
-                    {error}
-                  </Alert>
-                )}
+                <div style={{ minHeight: '48px' }} className="mb-3 d-flex align-items-center justify-content-center">
+                  {error ? (
+                    <Alert variant="danger" className="w-100 m-0 py-2 text-center">
+                      {error}
+                    </Alert>
+                  ) : (
+                    <p className="text-white-50 small m-0 text-center">
+                      Ingresa tus credenciales para continuar
+                    </p>
+                  )}
+                </div>
 
                 <Form onSubmit={handleLogin}>
                   <FloatingLabel
@@ -100,6 +121,7 @@ export default function Login() {
                       className="btn btn-ticketti"
                       type="submit"
                       disabled={loading}
+                      style={{ minWidth: '130px', minHeight: '38px' }}
                     >
                       {loading ? (
                         <>

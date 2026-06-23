@@ -1,5 +1,5 @@
 import api from '@api/api';
-import { getCausasActivas, getOrganizaciones } from '@api/donacionesApi';
+import { getCausasActivas, getOrganizacionesActivas } from '@api/donacionesApi';
 import CommonCarousel from '@components/common/Carousel';
 import ProductCard from '@components/common/ProductCard';
 import CategoryCard from '@components/common/CategoryCard';
@@ -9,6 +9,7 @@ import Header from '@components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
 import { useCarritoGuest } from '@hooks/useCarritoGuest';
+import logger from '@utils/logger';
 import { Building2, Heart, Search } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -91,7 +92,7 @@ const Inicio = () => {
       const datos = response.data || [];
       setEventos(datos);
     } catch (err) {
-      console.error('Error al cargar eventos:', err);
+      logger.error('Error al cargar eventos:', err);
       setError(
         'No se pudieron cargar los eventos. Por favor, intenta más tarde.'
       );
@@ -113,7 +114,7 @@ const Inicio = () => {
       try {
         const [causasData, orgsData] = await Promise.all([
           getCausasActivas(),
-          getOrganizaciones(),
+          getOrganizacionesActivas(),
         ]);
         setCausas(causasData);
         setOrganizaciones(orgsData);
@@ -155,7 +156,7 @@ const Inicio = () => {
           );
         } catch (backendError) {
           // Fallback: usar carrito de invitado si el backend falla
-          console.warn(
+          logger.warn(
             'Backend falló, usando carrito de invitado como fallback:',
             backendError
           );
@@ -288,7 +289,7 @@ const Inicio = () => {
                     <ProductCard
                       evento={{
                         id: evento.id,
-                        imagen: evento.imagenUrl || '/assets/hero.png',
+                        imagen: evento.imagenUrl || '/img/mascota1.png',
                         titulo: evento.nombre || 'Evento sin nombre',
                         fecha: evento.fecha,
                         ubicacion: evento.recinto?.ubicacion || 'Ubicación por confirmar',

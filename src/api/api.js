@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import logger from '../utils/logger';
 
 /**
  * URL base de la API para las peticiones de Ticketti. pk en el bff se configura el proxy para redirigir a los microservicios.
@@ -47,28 +48,16 @@ api.interceptors.request.use(
       // Decodificar JWT para extraer usuarioId
       try {
         const decoded = jwtDecode(token);
-        console.log('[API] JWT decodificado:', decoded);
         if (decoded.usuarioId) {
           // El JWT tiene el usuarioId en el claim "usuarioId"
           // Convertir a Number para asegurar que el backend reciba un Long
           const usuarioId = Number(decoded.usuarioId);
           if (!Number.isNaN(usuarioId)) {
             config.headers['X-Usuario-Id'] = usuarioId;
-            console.log('[API] X-Usuario-Id header agregado:', usuarioId);
-          } else {
-            console.warn(
-              '[API] usuarioId no es un número válido:',
-              decoded.usuarioId
-            );
           }
-        } else {
-          console.warn(
-            '[API] JWT no tiene claim usuarioId. Claims disponibles:',
-            Object.keys(decoded)
-          );
         }
-      } catch (e) {
-        console.error('[API] Error decodificando JWT:', e);
+      } catch {
+        // Ignorar silenciosamente o registrar en dev
       }
     }
 
@@ -90,25 +79,30 @@ api.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          console.error('Sesión expirada o no autorizada');
-          // No eliminar token ni redirigir automáticamente para evitar deslogueos indeseados
+          logger.error('Sesión expirada o no autorizada (401)');
+          if (localStorage.getItem('token')) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('carritoId');
+            globalThis.location.href = '/login';
+          }
           break;
         case 403:
-          console.error('Acceso prohibido');
+          logger.error('Acceso prohibido');
           break;
         case 404:
-          console.error('Recurso no encontrado');
+          logger.error('Recurso no encontrado');
           break;
         case 500:
-          console.error('Error interno del servidor');
+          logger.error('Error interno del servidor');
           break;
         default:
-          console.error(`Error HTTP: ${error.response.status}`);
+          logger.error(`Error HTTP: ${error.response.status}`);
       }
     } else if (error.request) {
-      console.error('No se pudo conectar con el servidor');
+      logger.error('No se pudo conectar con el servidor');
     } else {
-      console.error('Error en la configuración de la petición:', error.message);
+      logger.error('Error en la configuración de la petición:', error.message);
     }
 
     return Promise.reject(error);

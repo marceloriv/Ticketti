@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import logger from '../utils/logger';
 
 /**
  * URL base para las peticiones de la API de Ticketti.
@@ -47,26 +48,17 @@ clienteApi.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
 
       try {
-        // Decodificar el token para extraer el usuarioId y rol requeridos por los microservicios
         const decoded = jwtDecode(token);
         if (decoded) {
-          console.log('[API] JWT decodificado:', decoded);
           if (decoded.usuarioId) {
             config.headers['X-Usuario-Id'] = String(decoded.usuarioId);
-            console.log(
-              '[API] X-Usuario-Id header agregado:',
-              decoded.usuarioId
-            );
           }
           if (decoded.rol) {
             config.headers['X-Rol-Usuario-Id'] = String(decoded.rol);
           }
         }
-      } catch (e) {
-        console.warn(
-          '[API] Error al decodificar JWT para inyectar cabeceras:',
-          e
-        );
+      } catch {
+        // Ignorar
       }
     }
     return config;
@@ -85,26 +77,32 @@ clienteApi.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          console.error('Sesión expirada o no autorizada (401)');
+          logger.error('Sesión expirada o no autorizada (401)');
+          if (localStorage.getItem('token')) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('carritoId');
+            globalThis.location.href = '/login';
+          }
           break;
         case 403:
-          console.error('Acceso prohibido al recurso (403)');
+          logger.error('Acceso prohibido al recurso (403)');
           break;
         case 404:
-          console.error('Recurso no encontrado en el servidor (404)');
+          logger.error('Recurso no encontrado en el servidor (404)');
           break;
         case 500:
-          console.error('Error interno del servidor en el backend (500)');
+          logger.error('Error interno del servidor en el backend (500)');
           break;
         default:
-          console.error(
+          logger.error(
             `Error HTTP no manejado específicamente: ${error.response.status}`
           );
       }
     } else if (error.request) {
-      console.error('No se pudo conectar con el servidor, comprueba tu red.');
+      logger.error('No se pudo conectar con el servidor, comprueba tu red.');
     } else {
-      console.error('Error al configurar la petición HTTP:', error.message);
+      logger.error('Error al configurar la petición HTTP:', error.message);
     }
 
     return Promise.reject(error);

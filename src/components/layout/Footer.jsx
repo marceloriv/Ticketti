@@ -5,19 +5,15 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const enlacesRapidos = [
-    { nombre: 'Inicio', href: '#home' },
-    { nombre: 'Eventos', href: '#events' },
-    { nombre: 'Sobre Nosotros', href: '#about' },
-    { nombre: 'Contacto', href: '#contact' },
-    { nombre: 'Términos y Condiciones', href: '#terms' },
-    { nombre: 'Política de Privacidad', href: '#privacy' },
+    { nombre: 'Inicio', href: '/inicio' },
+    { nombre: 'Eventos', href: '/eventos' },
+    { nombre: 'Sobre Nosotros', href: '/nosotros' },
+    { nombre: 'Contacto', href: '/contacto' },
   ];
 
   const redesSociales = [
-    { nombre: 'Facebook', href: '#' },
-    { nombre: 'Twitter', href: '#' },
-    { nombre: 'Instagram', href: '#' },
-    { nombre: 'LinkedIn', href: '#' },
+    { nombre: 'Facebook', href: 'https://facebook.com/ticketti', external: true },
+    { nombre: 'Instagram', href: 'https://instagram.com/ticketti', external: true },
   ];
 
   return (
@@ -41,6 +37,8 @@ const Footer = () => {
                   href={red.href}
                   className="text-white-50 text-decoration-none d-flex align-items-center gap-1 footer-social-link"
                   aria-label={red.nombre}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <Globe size={16} />
                   {red.nombre}

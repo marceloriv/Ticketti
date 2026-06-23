@@ -1,4 +1,23 @@
-@import './styles/brand.css';
+/* Skip Link de Accesibilidad */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  background: #a370f7;
+  color: white;
+  padding: 10px 15px;
+  z-index: 9999;
+  font-weight: bold;
+  border-radius: 0 0 5px 5px;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  outline: none;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
 
 :root {
   color-scheme: light;

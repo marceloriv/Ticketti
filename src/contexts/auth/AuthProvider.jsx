@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useCallback, useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import logger from '../../utils/logger';
 import clienteApi from '../../api/clienteApi';
 import usuariosApi from '../../api/usuariosApi';
 import { AuthContext } from './AuthContext';
@@ -11,6 +12,12 @@ const TOKEN_KEY = 'token';
 const USER_KEY = 'user';
 /** Clave de localStorage para el ID del carrito activo */
 const CARRITO_ID_KEY = 'carritoId';
+
+/**
+ * Token en memoria (no accesible por scripts de terceros).
+ * Se usa como fuente de verdad; localStorage es solo persistencia.
+ */
+let inMemoryToken = null;
 
 /**
  * Cliente Axios configurado localmente para el microservicio de autenticación (/auth).
@@ -45,6 +52,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const tokenGuardado = localStorage.getItem(TOKEN_KEY);
     if (tokenGuardado) {
+      inMemoryToken = tokenGuardado;
       setToken(tokenGuardado);
     }
     const usuarioGuardado = localStorage.getItem(USER_KEY);
@@ -121,12 +129,13 @@ export function AuthProvider({ children }) {
           };
         }
       } catch (decodeErr) {
-        console.warn('[AuthProvider] Error decodificando token tras login:', decodeErr);
+        logger.warn('[AuthProvider] Error decodificando token tras login:', decodeErr);
       }
 
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(USER_KEY, JSON.stringify(usuarioData));
 
+      inMemoryToken = data.token;
       setToken(data.token);
       setUsuario(usuarioData);
 
@@ -137,8 +146,16 @@ export function AuthProvider({ children }) {
 
       return data.token;
     } catch (err) {
-      const msg =
-        err.response?.data?.mensaje || err.message || 'Error al iniciar sesión';
+      let msg = 'Error al iniciar sesión';
+      if (err.response) {
+        if (err.response.status === 401) {
+          msg = 'Correo electrónico o contraseña incorrectos';
+        } else {
+          msg = err.response.data?.mensaje || err.response.data?.message || msg;
+        }
+      } else {
+        msg = err.message || msg;
+      }
       throw new Error(msg);
     }
   };
@@ -187,7 +204,7 @@ export function AuthProvider({ children }) {
             }
           );
         } catch (err) {
-          console.error(
+          logger.error(
             '[AuthProvider] Error migrando entrada individual:',
             err
           );
@@ -197,7 +214,7 @@ export function AuthProvider({ children }) {
       // Limpiar el carrito local tras la migración exitosa
       localStorage.removeItem(GUEST_CART_KEY);
     } catch (err) {
-      console.error('[AuthProvider] Error al migrar carrito de invitado:', err);
+      logger.error('[AuthProvider] Error al migrar carrito de invitado:', err);
     }
   };
 
@@ -208,6 +225,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(CARRITO_ID_KEY);
+    inMemoryToken = null;
     setToken(null);
     setUsuario(null);
     setCarritoIdState(null);
@@ -235,7 +253,7 @@ export function AuthProvider({ children }) {
    * inyectando las cabeceras JWT en la llamada.
    */
   const authFetch = async (url, options = {}) => {
-    const tokenActual = localStorage.getItem(TOKEN_KEY);
+    const tokenActual = inMemoryToken || localStorage.getItem(TOKEN_KEY);
     const headers = { ...(options.headers || {}) };
     if (tokenActual) headers.Authorization = `Bearer ${tokenActual}`;
     return clienteApi({ url, headers, ...options });

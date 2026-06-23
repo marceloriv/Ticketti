@@ -5,6 +5,7 @@ import { Alert, Button, Card, Col, Container, Row } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import { Link, useNavigate } from 'react-router-dom';
 
+
 // se agrega un estado inicial para el formulario para facilitar el reseteo después del registro exitoso
 const initialFormData = {
   nombre: '',
@@ -229,7 +230,8 @@ export default function Registro() {
   };
 
   return (
-    <div>
+    <>
+      <Header />
       <main className="registro-page">
         <Container className="containerRegistro py-5">
           <Row className="justify-content-center">
@@ -251,7 +253,9 @@ export default function Registro() {
 
                   <Card className="registro-requisitos mb-4">
                     <Card.Body>
-                      <h6 className="mb-2">Requisitos mínimos para registrarte</h6>
+                      <h6 className="mb-2">
+                        Requisitos mínimos para registrarte
+                      </h6>
 
                       <ul className="mb-0">
                         <li>El nombre debe tener entre 3 y 100 caracteres.</li>
@@ -261,8 +265,13 @@ export default function Registro() {
                           una minúscula y un número.
                         </li>
                         <li>El teléfono debe tener exactamente 9 dígitos.</li>
-                        <li>La dirección debe tener entre 5 y 255 caracteres.</li>
-                        <li>Debes leer y aceptar los Términos y la Política de Privacidad.</li>
+                        <li>
+                          La dirección debe tener entre 5 y 255 caracteres.
+                        </li>
+                        <li>
+                          Debes leer y aceptar los Términos y la Política de
+                          Privacidad.
+                        </li>
                       </ul>
                     </Card.Body>
                   </Card>
@@ -361,7 +370,8 @@ export default function Registro() {
                         />
 
                         <Form.Check.Label htmlFor="aceptaTerminos">
-                          Acepto los Términos y Condiciones de uso de Ticketti.{' '}
+                          Acepto los Términos y Condiciones de uso de
+                          Ticketti.{' '}
                         </Form.Check.Label>
                         <Link className="legal-check-link" to="/terminos">
                           Ver términos
@@ -394,9 +404,10 @@ export default function Registro() {
                         />
 
                         <Form.Check.Label htmlFor="aceptaPrivacidad">
-                          He leído y acepto la Política de Privacidad y autorizo el
-                          tratamiento de mis datos personales para crear y gestionar
-                          mi cuenta en Ticketti, conforme a la Ley N° 21.719.{' '}
+                          He leído y acepto la Política de Privacidad y autorizo
+                          el tratamiento de mis datos personales para crear y
+                          gestionar mi cuenta en Ticketti, conforme a la Ley N°
+                          21.719.{' '}
                         </Form.Check.Label>
                         <Link className="legal-check-link" to="/privacidad">
                           Ver política
@@ -442,7 +453,7 @@ export default function Registro() {
             </Col>
           </Row>
         </Container>
-      </main >
-    </div>
+      </main>
+    </>
   );
 }

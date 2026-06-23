@@ -69,11 +69,14 @@ const Nosotros = () => {
             </div>
             <div className="col-lg-6">
               <div className="position-relative">
-                <img
-                  src="/public/img/listicle_1686140315148_74ycs_1040x500.jpg"
-                  alt="Eventos con enfoque social"
-                  className="img-fluid rounded-4 shadow-lg"
-                />
+                  <img
+                    src="/img/listicle_1686140315148_74ycs_1040x500.jpg"
+                    alt="Eventos con enfoque social"
+                    className="img-fluid rounded-4 shadow-lg"
+                    width="600"
+                    height="288"
+                    loading="lazy"
+                  />
                 <div className="position-absolute rounded-4 nosotros-frame-ticketti" />
               </div>
             </div>

@@ -1,6 +1,7 @@
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
+import logger from '@utils/logger';
 import { BarChart2, Calendar, Plus, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
@@ -69,7 +70,7 @@ const DashboardOrganizador = () => {
         const response = await api.get('/eventos/mis');
         setMisEventos(response.data || []);
       } catch (err) {
-        console.error('Error cargando eventos:', err);
+        logger.error('Error cargando eventos:', err);
       } finally {
         setCargandoEventos(false);
       }
@@ -102,7 +103,7 @@ const DashboardOrganizador = () => {
       const response = await api.get('/causas/activas');
       setCausasActivas(response.data || []);
     } catch (err) {
-      console.error('Error cargando causas activas:', err);
+      logger.error('Error cargando causas activas:', err);
       setCausasActivas([]);
     } finally {
       setCargandoCausas(false);
@@ -223,6 +224,7 @@ const DashboardOrganizador = () => {
       };
 
       await api.post('/eventos/crear', payload);
+      logger.info('Evento creado:', payload);
       setExito(true);
       setTimeout(() => {
         setMostrarModal(false);
@@ -237,7 +239,7 @@ const DashboardOrganizador = () => {
         setArchivoImagen(null);
       }, 1500);
     } catch (err) {
-      console.error('Error creando evento:', err);
+      logger.error('Error creando evento:', err);
       const mensaje = err.response?.data?.message || err.response?.data || err.message || 'Error al crear el evento. Verifica los datos.';
       setError(`Error al crear el evento. ${mensaje}`);
     } finally {
