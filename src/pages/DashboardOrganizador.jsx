@@ -224,6 +224,7 @@ const DashboardOrganizador = () => {
       };
 
       await api.post('/eventos/crear', payload);
+      logger.info('Evento creado:', payload);
       setExito(true);
       setTimeout(() => {
         setMostrarModal(false);

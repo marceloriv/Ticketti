@@ -145,7 +145,7 @@ const Eventos = () => {
                 {eventosFiltrados.map((evento) => (
                   <Col key={evento.id}>
                     <ProductCard
-                      evento={{ id: evento.id, imagen: evento.imagenUrl || '/assets/hero.png', titulo: evento.nombre || 'Evento sin nombre', fecha: evento.fecha, ubicacion: evento.recinto?.ubicacion || 'Ubicación por confirmar', precio: evento.precioEntrada || 0 }}
+                      evento={{ id: evento.id, imagen: evento.imagenUrl || '/img/mascota1.png', titulo: evento.nombre || 'Evento sin nombre', fecha: evento.fecha, ubicacion: evento.recinto?.ubicacion || 'Ubicación por confirmar', precio: evento.precioEntrada || 0 }}
                       onComprar={() => handleAddToCart(evento)}
                     />
                   </Col>

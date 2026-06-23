@@ -16,7 +16,7 @@ import { Calendar, MapPin, Ticket } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import { Button, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-const IMG_PLACEHOLDER = '/assets/hero.png';
+const IMG_PLACEHOLDER = '/img/mascota1.png';
 
 
 // Formateadores ────────────────────────────────────────────────────────────
