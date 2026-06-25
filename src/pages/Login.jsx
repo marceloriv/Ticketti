@@ -1,4 +1,6 @@
+import Header from '@/components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
+import { ROUTES } from '@utils/routes';
 import { useEffect, useState } from 'react';
 import {
   Alert,
@@ -12,7 +14,6 @@ import {
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
 import { Link, useNavigate } from 'react-router-dom';
-import { COLOR_MARCA } from '@utils/constantes';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -22,12 +23,26 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Redirigir si ya está autenticado
+  // Si ya está autenticado, mandarlo al home
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/home');
+      navigate(ROUTES.INICIO);
     }
   }, [isAuthenticated, navigate]);
+
+  // Preload de la imagen de fondo dinámicamente cuando se entra a la página de login
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.href = '/img/loginimagen2.jpg';
+    link.as = 'image';
+    link.fetchPriority = 'high';
+    document.head.appendChild(link);
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, []);
+
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -39,89 +54,102 @@ export default function Login() {
         email,
         password,
       });
-      navigate('/home');
+
+      // Después del login, todos van al home
+      navigate(ROUTES.INICIO);
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión');
+      setPassword(''); // Limpia el input de contraseña ante fallos por buenas prácticas de seguridad
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Container className="loginContainer py-5">
-      <Row className="justify-content-center">
-        <Col md={10} lg={4} className="mx-auto">
-          <Card className="login-card shadow">
-            <Card.Body>
-              <h2 className="text-center mb-4">Iniciar Sesión</h2>
+    <div className="login-page">
+      <Header />
+      <Container className="loginContainer py-5 flex-grow-1 d-flex align-items-center">
+        <Row className="justify-content-center w-100 m-0">
+          <Col md={6} lg={4} className="mx-auto px-0">
+            <Card className="login-card shadow w-100">
+              <Card.Body>
+                <h2 className="text-center mb-4">Iniciar Sesión</h2>
 
-              {error && (
-                <Alert variant="danger" className="mb-3">
-                  {error}
-                </Alert>
-              )}
-
-              <Form onSubmit={handleLogin}>
-                <FloatingLabel
-                  controlId="floatingInput"
-                  label="Correo Electrónico"
-                  className="mb-3"
-                >
-                  <Form.Control
-                    type="email"
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </FloatingLabel>
-
-                <FloatingLabel
-                  controlId="floatingPassword"
-                  label="Contraseña"
-                  className="mb-3"
-                >
-                  <Form.Control
-                    type="password"
-                    placeholder="Contraseña"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </FloatingLabel>
-
-                <div className="text-center">
-                  <Button
-                    className="btn btn-ticketti"
-                    type="submit"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <>
-                        <Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          role="status"
-                          aria-hidden="true"
-                          className="me-2"
-                        />
-                        Ingresando...
-                      </>
-                    ) : (
-                      'Ingresar'
-                    )}
-                  </Button>
+                <div style={{ minHeight: '48px' }} className="mb-3 d-flex align-items-center justify-content-center">
+                  {error ? (
+                    <Alert variant="danger" className="w-100 m-0 py-2 text-center">
+                      {error}
+                    </Alert>
+                  ) : (
+                    <p className="text-white-50 small m-0 text-center">
+                      Ingresa tus credenciales para continuar
+                    </p>
+                  )}
                 </div>
-              </Form>
 
-              <p className="text-center mt-3">
-                ¿No tienes cuenta? <Link to="/registro">Regístrate aquí</Link>
-              </p>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+                <Form onSubmit={handleLogin}>
+                  <FloatingLabel
+                    controlId="floatingInput"
+                    label="Correo Electrónico"
+                    className="mb-3"
+                  >
+                    <Form.Control
+                      type="email"
+                      placeholder="name@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </FloatingLabel>
+
+                  <FloatingLabel
+                    controlId="floatingPassword"
+                    label="Contraseña"
+                    className="mb-3"
+                  >
+                    <Form.Control
+                      type="password"
+                      placeholder="Contraseña"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </FloatingLabel>
+
+                  <div className="text-center">
+                    <Button
+                      className="btn btn-ticketti"
+                      type="submit"
+                      disabled={loading}
+                      style={{ minWidth: '130px', minHeight: '38px' }}
+                    >
+                      {loading ? (
+                        <>
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                            className="me-2"
+                          />
+                          Ingresando...
+                        </>
+                      ) : (
+                        'Ingresar'
+                      )}
+                    </Button>
+                  </div>
+                </Form>
+
+                <p className="text-center mt-3">
+                  ¿No tienes cuenta? <Link to="/registro">Regístrate aquí</Link>
+                </p>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 }

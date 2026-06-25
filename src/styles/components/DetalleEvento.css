@@ -1,0 +1,141 @@
+/**
+ * Estilos premium para la vista de Detalle de Evento de Ticketti.
+ */
+
+.detalle-evento-container {
+  padding: 3rem 0;
+  background: #f8fafc;
+}
+
+/* Imagen del Evento */
+.detalle-evento-imagen {
+  object-fit: cover;
+  max-height: 450px;
+  width: 100%;
+  border-radius: 24px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.detalle-evento-imagen:hover {
+  transform: scale(1.01);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Contenido e Información */
+.detalle-evento-titulo {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+}
+
+.detalle-evento-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.detalle-evento-descripcion-texto {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #475569;
+}
+
+/* Tarjetas de Información en Bloque */
+.detalle-evento-info-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.detalle-evento-info-card:hover {
+  transform: translateX(4px);
+  border-color: rgba(44, 172, 173, 0.2);
+}
+
+.detalle-evento-info-icono {
+  color: #2cacad;
+}
+
+/* Panel de Compra (Precio y CTA) */
+.detalle-evento-precio-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.detalle-evento-precio-etiqueta {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detalle-evento-precio-valor {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #2cacad;
+  letter-spacing: -0.5px;
+}
+
+.detalle-evento-boton-agregar {
+  background: linear-gradient(135deg, #2cacad 0%, #1a8a8b 100%);
+  border: none;
+  border-radius: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(44, 172, 173, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.detalle-evento-boton-agregar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(44, 172, 173, 0.45);
+  background: linear-gradient(135deg, #1a8a8b 0%, #0f6a6b 100%);
+}
+
+.detalle-evento-boton-agregar:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Ventana Modal de Compra */
+.detalle-evento-modal .modal-content {
+  border-radius: 24px;
+  border: none;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  padding: 1rem;
+}
+
+.detalle-evento-modal-info {
+  border: 1px solid #e2e8f0;
+}
+
+.detalle-evento-modal .form-control {
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  font-weight: 600;
+}
+
+.detalle-evento-modal .form-control:focus {
+  border-color: #2cacad;
+  box-shadow: 0 0 0 4px rgba(44, 172, 173, 0.15);
+}
+
+.detalle-evento-modal .btn-ticketti {
+  background: linear-gradient(135deg, #2cacad 0%, #1a8a8b 100%);
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.detalle-evento-modal .btn-ticketti:hover {
+  background: linear-gradient(135deg, #1a8a8b 0%, #0f6a6b 100%);
+}

@@ -1,0 +1,18 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ticketti-frontend
+    restart: unless-stopped
+    networks:
+      - ticketti-network
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    environment:
+      - NODE_ENV=production
+
+networks:
+  ticketti-network:
+    external: true
+    name: ticketti-network

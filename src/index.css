@@ -1,0 +1,58 @@
+/* Skip Link de Accesibilidad */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  background: #a370f7;
+  color: white;
+  padding: 10px 15px;
+  z-index: 9999;
+  font-weight: bold;
+  border-radius: 0 0 5px 5px;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  outline: none;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+:root {
+  color-scheme: light;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #1f2937;
+  background: #f8fafc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #f8fafc;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  text-decoration: none;
+}

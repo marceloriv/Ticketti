@@ -14,6 +14,7 @@ export default defineConfig({
       '@pages': path.resolve(process.cwd(), './src/pages'),
       '@routes': path.resolve(process.cwd(), './src/routes'),
       '@services': path.resolve(process.cwd(), './src/services'),
+      '@api': path.resolve(process.cwd(), './src/api'),
       '@contexts': path.resolve(process.cwd(), './src/contexts'),
       '@hooks': path.resolve(process.cwd(), './src/hooks'),
       '@utils': path.resolve(process.cwd(), './src/utils'),
@@ -23,26 +24,45 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      // Todas las rutas /api pasan por el BFF para validar JWT, roles y errores antes de llegar al API Gateway.
       '/api/v1': {
-        target: 'http://localhost:8222',
+        target: 'http://localhost:8081',
         changeOrigin: true,
         secure: false,
       },
       '/api/v0': {
-        target: 'http://localhost:8222',
+        target: 'http://localhost:8081',
         changeOrigin: true,
         secure: false,
       },
       '/api': {
-        target: 'http://localhost:8222',
+        target: 'http://localhost:8081',
         changeOrigin: true,
         secure: false,
       },
+
+      // Login/autenticación también vive en el BFF.
       '/auth': {
         target: 'http://localhost:8081',
         changeOrigin: true,
         secure: false,
       },
+    },
+  },
+  build: {
+    sourcemap: false,
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './test/setup.js',
+    include: ['test/**/*.test.{js,jsx}'],
+    css: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.{js,jsx}'],
+      exclude: ['node_modules/'],
     },
   },
 });

@@ -1,24 +1,51 @@
 import { useAuth } from '@hooks/useAuth';
+import { ROUTES } from '@utils/routes';
+import { jwtDecode } from 'jwt-decode';
 import { Navigate } from 'react-router-dom';
 
 /**
  * Componente ProtectedRoute para rutas que requieren autenticación
- * @param {Object} props - Props del componente
- * @param {React.ReactElement} props.element - Elemento a renderizar si está autenticado
- * @param {string|null} props.requiredRole - Rol requerido (opcional)
- * @returns {React.ReactElement}
  */
 export default function ProtectedRoute({ element, requiredRole = null }) {
-  const { isAuthenticated, usuario } = useAuth();
+  const { isAuthenticated } = useAuth();
 
-  // Si no está autenticado, redirigir a login
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+  const obtenerRolDesdeToken = (token) => {
+    try {
+      const decoded = jwtDecode(token);
+      return decoded?.rol || null;
+    } catch {
+      return null;
+    }
+  };
+
+  const token = localStorage.getItem('token');
+  const rol = obtenerRolDesdeToken(token);
+
+  // Si no está autenticado o no hay token, redirigir a login
+  if (!isAuthenticated || !token) {
+    return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
-  // Si se requiere un rol específico, validar
-  if (requiredRole && usuario?.rol !== requiredRole) {
-    return <Navigate to="/login" replace />;
+  // Definir la jerarquía de roles en el frontend
+  const tieneAcceso = (rolUsuario, rolRequerido) => {
+    if (!rolRequerido) return true;
+    if (!rolUsuario) return false;
+
+    const jerarquia = {
+      CLIENTE: 1,
+      ORGANIZADOR: 2,
+      ADMINPLATAFORMA: 3,
+    };
+
+    const nivelUsuario = jerarquia[rolUsuario.toUpperCase()] || 0;
+    const nivelRequerido = jerarquia[rolRequerido.toUpperCase()] || 0;
+
+    return nivelUsuario >= nivelRequerido;
+  };
+
+  // Si se requiere un rol específico y no coincide jerárquicamente, mandarlo al home
+  if (requiredRole && !tieneAcceso(rol, requiredRole)) {
+    return <Navigate to={ROUTES.INICIO} replace />;
   }
 
   return element;

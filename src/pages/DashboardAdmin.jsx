@@ -1,12 +1,6 @@
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
-import {
-  Building2,
-  Heart,
-  Plus,
-  ShoppingBag,
-  TrendingUp
-} from 'lucide-react';
+import { Building2, Heart, Plus, ShoppingBag, TrendingUp } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -23,38 +17,40 @@ import {
   Tab,
   Table,
 } from 'react-bootstrap';
-import { COLOR_MARCA } from '@utils/constantes';
+import {
+  getOrganizaciones,
+  getCausasActivas,
+  getTotalPorOrganizacion,
+  crearOrganizacionActiva,
+  crearCausaActiva,
+  activarOrganizacion,
+} from '@api/donacionesApi';
 
-// Los endpoints de donaciones provienen de un microservicio externo.
-// Para mantener la UI funcional en este repo se usan stubs locales.
-const getOrganizaciones = async () => [];
-const getCausasActivas = async () => [];
-const getTotalPorOrganizacion = async () => 0;
-const crearOrganizacion = async () => {};
-const crearCausa = async () => {};
+const STAT_VARIANTS = {
+  brand: 'dashboard-stat-icon-brand',
+  pink: 'dashboard-stat-icon-pink',
+  success: 'dashboard-stat-icon-success',
+};
 
 // Tarjeta de estadística reutilizable
-const StatCard = ({ icon: Icon, titulo, valor, color, cargando }) => (
+const StatCard = ({
+  icon: Icon,
+  titulo,
+  valor,
+  variant = 'brand',
+  cargando,
+}) => (
   <Card className="border-0 shadow-sm h-100">
     <Card.Body className="d-flex align-items-center gap-3 p-4">
       <div
-        style={{
-          background: `${color}20`,
-          borderRadius: '50%',
-          width: 52,
-          height: 52,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
+        className={`dashboard-stat-icon ${STAT_VARIANTS[variant] || STAT_VARIANTS.brand}`}
       >
-        {Icon ? <Icon size={24} style={{ color }} /> : null}
+        {Icon ? <Icon size={24} /> : null}
       </div>
       <div>
         <p className="text-muted small mb-1">{titulo}</p>
         {cargando ? (
-          <Spinner size="sm" />
+          <Spinner size="sm" className="spinner-ticketti" />
         ) : (
           <h4 className="fw-bold mb-0">{valor}</h4>
         )}
@@ -65,10 +61,7 @@ const StatCard = ({ icon: Icon, titulo, valor, color, cargando }) => (
 
 // Placeholder para secciones de otros microservicios
 const Placeholder = ({ ms, descripcion }) => (
-  <Card
-    className="border-0 border-dashed shadow-sm"
-    style={{ border: '2px dashed #dee2e6 !important' }}
-  >
+  <Card className="border-0 border-dashed shadow-sm dashboard-placeholder-card">
     <Card.Body className="text-center py-5">
       <p className="text-muted mb-1 fw-semibold">🔧 Pendiente — {ms}</p>
       <p className="text-muted small mb-0">{descripcion}</p>
@@ -87,6 +80,7 @@ const DashboardAdmin = () => {
   const [exito, setExito] = useState('');
   const [error, setError] = useState('');
 
+  // Formulario "Nueva Organización" (admin crea desde cero -> queda ACTIVA)
   const [formOrg, setFormOrg] = useState({
     nombre: '',
     rut: '',
@@ -100,6 +94,20 @@ const DashboardAdmin = () => {
     rutTitular: '',
     metodoPagoPreferido: 'TRANSFERENCIA',
   });
+
+  // Formulario "Activar Organización" (admin completa datos bancarios
+  // de una organización PENDIENTE creada por el Organizador)
+  const [formActivar, setFormActivar] = useState({
+    banco: '',
+    tipoCuenta: '',
+    numeroCuenta: '',
+    titularCuenta: '',
+    rutTitular: '',
+    metodoPagoPreferido: 'TRANSFERENCIA',
+  });
+  const [orgAActivar, setOrgAActivar] = useState(null);
+  const [showModalActivar, setShowModalActivar] = useState(false);
+
   const [formCausa, setFormCausa] = useState({
     idOrganizacion: '',
     nombre: '',
@@ -147,12 +155,39 @@ const DashboardAdmin = () => {
     0
   );
 
+  const fmt = (n) =>
+    new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0,
+    }).format(n || 0);
+
+  // ── Handlers: Organizaciones ──────────────────────────────
+
   const handleCrearOrg = async (e) => {
     e.preventDefault();
     setGuardando(true);
     try {
-      await crearOrganizacion(formOrg);
-      setExito('Organización creada.');
+      const {
+        banco,
+        tipoCuenta,
+        numeroCuenta,
+        titularCuenta,
+        rutTitular,
+        metodoPagoPreferido,
+        ...datosBasicos
+      } = formOrg;
+
+      await crearOrganizacionActiva(datosBasicos, {
+        banco,
+        tipoCuenta,
+        numeroCuenta,
+        titularCuenta,
+        rutTitular,
+        metodoPagoPreferido,
+      });
+
+      setExito('Organización creada y activada.');
       setShowModalOrg(false);
       cargar();
       setTimeout(() => setExito(''), 3000);
@@ -163,15 +198,46 @@ const DashboardAdmin = () => {
     }
   };
 
+  const abrirModalActivar = (org) => {
+    setOrgAActivar(org);
+    setShowModalActivar(true);
+  };
+
+  const handleActivarOrg = async (e) => {
+    e.preventDefault();
+    setGuardando(true);
+    try {
+      await activarOrganizacion(orgAActivar.idOrganizacion, formActivar);
+      setExito('Organización activada correctamente.');
+      setShowModalActivar(false);
+      setFormActivar({
+        banco: '',
+        tipoCuenta: '',
+        numeroCuenta: '',
+        titularCuenta: '',
+        rutTitular: '',
+        metodoPagoPreferido: 'TRANSFERENCIA',
+      });
+      cargar();
+      setTimeout(() => setExito(''), 3000);
+    } catch {
+      setError('Error al activar la organización.');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  // ── Handlers: Causas Sociales ─────────────────────────────
+
   const handleCrearCausa = async (e) => {
     e.preventDefault();
     setGuardando(true);
     try {
-      await crearCausa({
+      await crearCausaActiva({
         ...formCausa,
         idOrganizacion: Number(formCausa.idOrganizacion),
       });
-      setExito('Causa social creada.');
+      setExito('Causa social creada y activada.');
       setShowModalCausa(false);
       cargar();
       setTimeout(() => setExito(''), 3000);
@@ -182,17 +248,10 @@ const DashboardAdmin = () => {
     }
   };
 
-  const fmt = (n) =>
-    new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      minimumFractionDigits: 0,
-    }).format(n || 0);
-
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
-      <main className="flex-grow-1 py-4" style={{ background: '#f8f9fa' }}>
+      <main className="grow py-4 dashboard-admin-main">
         <Container fluid="lg">
           <h2 className="fw-bold mb-4">Panel Administrador</h2>
 
@@ -214,7 +273,7 @@ const DashboardAdmin = () => {
                 icon={Building2}
                 titulo="Organizaciones"
                 valor={organizaciones.length}
-                color={COLOR_MARCA}
+                variant="brand"
                 cargando={cargando}
               />
             </Col>
@@ -223,7 +282,7 @@ const DashboardAdmin = () => {
                 icon={Heart}
                 titulo="Causas activas"
                 valor={causas.length}
-                color="#e83e8c"
+                variant="pink"
                 cargando={cargando}
               />
             </Col>
@@ -232,7 +291,7 @@ const DashboardAdmin = () => {
                 icon={TrendingUp}
                 titulo="Total donado"
                 valor={fmt(totalRecaudado)}
-                color="#28a745"
+                variant="success"
                 cargando={cargando}
               />
             </Col>
@@ -240,18 +299,8 @@ const DashboardAdmin = () => {
               {/* Placeholder ventas — MSCarrito */}
               <Card className="border-0 shadow-sm h-100">
                 <Card.Body className="d-flex align-items-center gap-3 p-4">
-                  <div
-                    style={{
-                      background: '#ffc10720',
-                      borderRadius: '50%',
-                      width: 52,
-                      height: 52,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <ShoppingBag size={24} style={{ color: '#ffc107' }} />
+                  <div className="dashboard-stat-icon dashboard-stat-icon-warning">
+                    <ShoppingBag size={24} />
                   </div>
                   <div>
                     <p className="text-muted small mb-1">Total ventas</p>
@@ -296,18 +345,14 @@ const DashboardAdmin = () => {
                       <Button
                         size="sm"
                         onClick={() => setShowModalOrg(true)}
-                        style={{
-                          backgroundColor: COLOR_MARCA,
-                          borderColor: COLOR_MARCA,
-                          color: '#000',
-                        }}
+                        variant="primary"
                       >
                         <Plus size={16} /> Nueva
                       </Button>
                     </div>
                     {cargando ? (
                       <div className="text-center py-4">
-                        <Spinner style={{ color: COLOR_MARCA }} />
+                        <Spinner className="spinner-ticketti" />
                       </div>
                     ) : (
                       <Table hover responsive size="sm">
@@ -318,6 +363,7 @@ const DashboardAdmin = () => {
                             <th>Email</th>
                             <th>Estado</th>
                             <th>Total donado</th>
+                            <th>Acciones</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -337,11 +383,19 @@ const DashboardAdmin = () => {
                                   {o.estado}
                                 </Badge>
                               </td>
-                              <td
-                                className="fw-semibold"
-                                style={{ color: '#28a745' }}
-                              >
+                              <td className="fw-semibold text-success">
                                 {fmt(totales[o.idOrganizacion])}
+                              </td>
+                              <td>
+                                {o.estado === 'PENDIENTE' && (
+                                  <Button
+                                    size="sm"
+                                    variant="success"
+                                    onClick={() => abrirModalActivar(o)}
+                                  >
+                                    Activar
+                                  </Button>
+                                )}
                               </td>
                             </tr>
                           ))}
@@ -357,18 +411,14 @@ const DashboardAdmin = () => {
                       <Button
                         size="sm"
                         onClick={() => setShowModalCausa(true)}
-                        style={{
-                          backgroundColor: COLOR_MARCA,
-                          borderColor: COLOR_MARCA,
-                          color: '#000',
-                        }}
+                        variant="primary"
                       >
                         <Plus size={16} /> Nueva causa
                       </Button>
                     </div>
                     {cargando ? (
                       <div className="text-center py-4">
-                        <Spinner style={{ color: COLOR_MARCA }} />
+                        <Spinner className="spinner-ticketti" />
                       </div>
                     ) : (
                       <Table hover responsive size="sm">
@@ -385,7 +435,7 @@ const DashboardAdmin = () => {
                             <tr key={c.idCausa}>
                               <td className="fw-semibold">{c.nombre}</td>
                               <td className="text-muted small">
-                                {c.organizacion?.nombre || '—'}
+                                {c.nombreOrganizacion || '—'}
                               </td>
                               <td className="text-muted small">
                                 {c.objetivoMonto
@@ -432,7 +482,7 @@ const DashboardAdmin = () => {
         </Container>
       </main>
 
-      {/* Modal nueva organización */}
+      {/* Modal nueva organización (admin: crea y activa de inmediato) */}
       <Modal
         show={showModalOrg}
         onHide={() => setShowModalOrg(false)}
@@ -483,7 +533,7 @@ const DashboardAdmin = () => {
                     onChange={(e) =>
                       setFormOrg({
                         ...formOrg,
-                        metodoPagoPreferido: e.target.value,
+                        metodoPago: e.target.value,
                       })
                     }
                   >
@@ -500,23 +550,88 @@ const DashboardAdmin = () => {
               >
                 Cancelar
               </Button>
-              <Button
-                type="submit"
-                disabled={guardando}
-                style={{
-                  backgroundColor: COLOR_MARCA,
-                  borderColor: COLOR_MARCA,
-                  color: '#000',
-                }}
-              >
-                {guardando ? <Spinner size="sm" /> : 'Guardar'}
+              <Button type="submit" disabled={guardando} variant="primary">
+                {guardando ? (
+                  <Spinner size="sm" className="spinner-ticketti" />
+                ) : (
+                  'Guardar'
+                )}
               </Button>
             </div>
           </Form>
         </Modal.Body>
       </Modal>
 
-      {/* Modal nueva causa */}
+      {/* Modal activar organización (admin completa datos bancarios de una PENDIENTE) */}
+      <Modal
+        show={showModalActivar}
+        onHide={() => setShowModalActivar(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Activar Organización</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="text-muted small">
+            Completa los datos bancarios de{' '}
+            <strong>{orgAActivar?.nombre}</strong> para activarla.
+          </p>
+          <Form onSubmit={handleActivarOrg}>
+            <Row className="g-3">
+              {['banco', 'tipoCuenta', 'numeroCuenta', 'titularCuenta', 'rutTitular'].map(
+                (f) => (
+                  <Col md={6} key={f}>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-capitalize">
+                        {f}
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={formActivar[f]}
+                        onChange={(e) =>
+                          setFormActivar({ ...formActivar, [f]: e.target.value })
+                        }
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                )
+              )}
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold">Método de pago</Form.Label>
+                  <Form.Select
+                    value={formActivar.metodoPagoPreferido}
+                    onChange={(e) =>
+                      setFormActivar({ ...formActivar, metodoPagoPreferido: e.target.value })
+                    }
+                  >
+                    <option value="TRANSFERENCIA">Transferencia</option>
+                    <option value="DEPOSITO">Depósito</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+            <div className="d-flex justify-content-end gap-2 mt-4">
+              <Button
+                variant="outline-secondary"
+                onClick={() => setShowModalActivar(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={guardando} variant="success">
+                {guardando ? (
+                  <Spinner size="sm" className="spinner-ticketti" />
+                ) : (
+                  'Activar'
+                )}
+              </Button>
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* Modal nueva causa (admin: crea y activa de inmediato) */}
       <Modal
         show={showModalCausa}
         onHide={() => setShowModalCausa(false)}
@@ -609,16 +724,12 @@ const DashboardAdmin = () => {
               >
                 Cancelar
               </Button>
-              <Button
-                type="submit"
-                disabled={guardando}
-                style={{
-                  backgroundColor: COLOR_MARCA,
-                  borderColor: COLOR_MARCA,
-                  color: '#000',
-                }}
-              >
-                {guardando ? <Spinner size="sm" /> : 'Guardar'}
+              <Button type="submit" disabled={guardando} variant="primary">
+                {guardando ? (
+                  <Spinner size="sm" className="spinner-ticketti" />
+                ) : (
+                  'Guardar'
+                )}
               </Button>
             </div>
           </Form>
