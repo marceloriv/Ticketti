@@ -1,20 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-  listarEventos: vi.fn(),
-  buscarEvento: vi.fn(),
-  listarMisEventos: vi.fn(),
+  get: vi.fn(),
 }));
 
-vi.mock('../../src/api/eventosApi', () => ({
-  eventosApi: {
-    listarEventos: mocks.listarEventos,
-    buscarEvento: mocks.buscarEvento,
-    listarMisEventos: mocks.listarMisEventos,
-  },
+vi.mock('../../src/api/clienteApi', () => ({
+  default: { get: mocks.get },
 }));
 
-import { eventosApi } from '../../src/api/eventosApi';
+import * as eventosApi from '../../src/api/eventosApi';
 
 describe('eventosApi', () => {
   beforeEach(() => {
@@ -23,18 +17,21 @@ describe('eventosApi', () => {
 
   describe('listarEventos', () => {
     it('retorna la lista de eventos', async () => {
-      const mockEventos = [
-        { id: 1, titulo: 'Concierto' },
-        { id: 2, titulo: 'Festival' },
-      ];
-      mocks.listarEventos.mockResolvedValue(mockEventos);
+      const mockData = [{ id: 1, titulo: 'Concierto' }];
+      mocks.get.mockResolvedValue({ data: mockData });
       const result = await eventosApi.listarEventos();
-      expect(mocks.listarEventos).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(mockEventos);
+      expect(mocks.get).toHaveBeenCalledWith('/eventos/listarEventos');
+      expect(result).toEqual(mockData);
     });
 
-    it('retorna array vacío cuando no hay eventos', async () => {
-      mocks.listarEventos.mockResolvedValue([]);
+    it('retorna array vacío cuando response.data es null', async () => {
+      mocks.get.mockResolvedValue({ data: null });
+      const result = await eventosApi.listarEventos();
+      expect(result).toEqual([]);
+    });
+
+    it('retorna array vacío cuando response.data es undefined', async () => {
+      mocks.get.mockResolvedValue({});
       const result = await eventosApi.listarEventos();
       expect(result).toEqual([]);
     });
@@ -42,27 +39,42 @@ describe('eventosApi', () => {
 
   describe('buscarEvento', () => {
     it('busca un evento por ID', async () => {
-      const mockEvento = { id: 1, titulo: 'Concierto', fecha: '2025-01-01' };
-      mocks.buscarEvento.mockResolvedValue(mockEvento);
+      const mockData = { id: 1, titulo: 'Concierto' };
+      mocks.get.mockResolvedValue({ data: mockData });
       const result = await eventosApi.buscarEvento(1);
-      expect(mocks.buscarEvento).toHaveBeenCalledWith(1);
-      expect(result).toEqual(mockEvento);
+      expect(mocks.get).toHaveBeenCalledWith('/eventos/buscarEvento/1');
+      expect(result).toEqual(mockData);
+    });
+
+    it('retorna undefined cuando no existe', async () => {
+      mocks.get.mockResolvedValue({ data: undefined });
+      const result = await eventosApi.buscarEvento(999);
+      expect(result).toBeUndefined();
     });
   });
 
   describe('listarMisEventos', () => {
     it('lista los eventos del organizador', async () => {
-      const mockEventos = [{ id: 1, titulo: 'Mi Evento' }];
-      mocks.listarMisEventos.mockResolvedValue(mockEventos);
+      const mockData = [{ id: 1, titulo: 'Mi Evento' }];
+      mocks.get.mockResolvedValue({ data: mockData });
       const result = await eventosApi.listarMisEventos();
-      expect(mocks.listarMisEventos).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(mockEventos);
+      expect(mocks.get).toHaveBeenCalledWith('/eventos/mis');
+      expect(result).toEqual(mockData);
     });
 
     it('retorna array vacío cuando no hay eventos', async () => {
-      mocks.listarMisEventos.mockResolvedValue([]);
+      mocks.get.mockResolvedValue({ data: null });
       const result = await eventosApi.listarMisEventos();
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('default export', () => {
+    it('exporta todas las funciones', () => {
+      expect(eventosApi.default).toBeDefined();
+      expect(typeof eventosApi.default.listarEventos).toBe('function');
+      expect(typeof eventosApi.default.buscarEvento).toBe('function');
+      expect(typeof eventosApi.default.listarMisEventos).toBe('function');
     });
   });
 });
