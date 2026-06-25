@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Badge, Button, Form, Spinner, Table } from 'react-bootstrap';
 import { Trash2, Edit, RefreshCw } from 'lucide-react';
-import { actualizarUsuario, listarUsuarios } from '@api/usuariosApi';
+import { actualizarUsuario, eliminarUsuario, listarUsuarios } from '@api/usuariosApi';
 
 const ROLES_USUARIO = [
   'CLIENTE',
@@ -22,6 +22,8 @@ export default function DashAdminUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [guardandoId, setGuardandoId] = useState(null);
+  const [eliminandoId, setEliminandoId] = useState(null);
+
   const [error, setError] = useState('');
   const [exito, setExito] = useState('');
 
@@ -107,19 +109,38 @@ export default function DashAdminUsuarios() {
     }
   };
 
-  const handleEliminarUsuario = (idUsuario) => {
+  // Elimina un usuario desde el backend y luego lo quita de la tabla
+  const handleEliminarUsuario = async (idUsuario) => {
     const confirmar = window.confirm(
-      '¿Seguro que quieres eliminar este usuario?'
+      '¿Seguro que quieres eliminar este usuario? Esta acción no se puede deshacer.'
     );
 
     if (!confirmar) return;
 
-    setUsuarios((prev) =>
-      prev.filter((usuario) => usuario.id !== idUsuario)
-    );
+    setEliminandoId(idUsuario);
+    setError('');
+    setExito('');
 
-    // Después aquí irá el DELETE al MSUsuarios
-    console.log('Usuario eliminado:', idUsuario);
+    try {
+      // Llamada al backend: DELETE /usuarios/{id}
+      await eliminarUsuario(idUsuario);
+
+      // Si el backend responde bien, se elimina visualmente de la tabla
+      setUsuarios((prev) =>
+        prev.filter((usuario) => usuario.id !== idUsuario)
+      );
+
+      setExito('Usuario eliminado correctamente.');
+    } catch (err) {
+      setError(
+        err.response?.data?.mensaje ||
+        err.response?.data?.message ||
+        err.message ||
+        'No se pudo eliminar el usuario.'
+      );
+    } finally {
+      setEliminandoId(null);
+    }
   };
 
   return (
@@ -214,12 +235,13 @@ export default function DashAdminUsuarios() {
                   >
                     <Edit size={14} />
                   </Button>
-
+                  
                   <Button
                     size="sm"
                     variant="outline-danger"
                     title="Eliminar usuario"
                     onClick={() => handleEliminarUsuario(usuario.id)}
+                    disabled={eliminandoId === usuario.id}
                   >
                     <Trash2 size={14} />
                   </Button>

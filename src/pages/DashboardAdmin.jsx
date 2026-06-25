@@ -1,7 +1,9 @@
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
+import DashAdminUsuarios from '@/components/admin/DashAdminUsuarios';
 import { Building2, Heart, Plus, ShoppingBag, TrendingUp } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+
 import {
   Alert,
   Badge,
@@ -470,10 +472,7 @@ const DashboardAdmin = () => {
 
                   {/* USUARIOS — placeholder MSUsuarios */}
                   <Tab.Pane eventKey="usuarios">
-                    <Placeholder
-                      ms="MSUsuarios"
-                      descripcion="Gestión de usuarios y roles — implementar con endpoint de MSUsuarios (Ingrid)"
-                    />
+                    <DashAdminUsuarios />
                   </Tab.Pane>
                 </Tab.Content>
               </Card.Body>

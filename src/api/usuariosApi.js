@@ -1,5 +1,6 @@
 import clienteApi from './clienteApi';
 
+
 /**
  * Módulo de API para el microservicio de Usuarios y Autenticación.
  */
@@ -21,6 +22,17 @@ export const registrarUsuario = async (datosRegistro) => {
   const response = await clienteApi.post('/usuarios', datosRegistro, {
     skipAuth: true,
   });
+  return response.data;
+};
+
+/**
+ * Lista todos los usuarios registrados en la plataforma.
+ * Se usa en el panel administrador para mostrar la gestión de usuarios.
+ *
+ * @returns {Promise<Array>} Lista de usuarios registrados.
+ */
+export const listarUsuarios = async () => {
+  const response = await clienteApi.get('/usuarios');
   return response.data;
 };
 
@@ -47,8 +59,23 @@ export const actualizarUsuario = async (id, datos) => {
   return response.data;
 };
 
+/**
+ * Elimina un usuario existente por su ID.
+ * Se usa desde el panel administrador.
+ *
+ * @param {number|string} id - ID del usuario a eliminar.
+ * @returns {Promise<Object>} Respuesta del backend.
+ */
+export const eliminarUsuario = async (id) => {
+  const response = await clienteApi.delete(`/usuarios/${id}`);
+  return response.data;
+};
+
+
 export default {
   registrarUsuario,
+  listarUsuarios,
   obtenerUsuario,
   actualizarUsuario,
+  eliminarUsuario,
 };
