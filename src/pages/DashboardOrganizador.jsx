@@ -6,9 +6,10 @@ import { BarChart2, Calendar, Plus, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
   Button, Card, Col, Container, Form,
-  Modal, Nav, Row, Tab
+  Modal, Nav, Row, Spinner, Tab
 } from 'react-bootstrap';
 import api from '@services/api';
+import { obtenerEstadisticasEventos } from '@api/carritoApi';
 
 const GENEROS = [
   'ROCK', 'JAZZ', 'POP', 'KPOP', 'METAL', 'RAP', 'RNB', 'INDIE', 'REGGAETON',
@@ -55,6 +56,8 @@ const DashboardOrganizador = () => {
   const [cargandoCausas, setCargandoCausas] = useState(false);
   const [misEventos, setMisEventos] = useState([]);
   const [cargandoEventos, setCargandoEventos] = useState(false);
+  const [estadisticas, setEstadisticas] = useState([]);
+  const [cargandoEstadisticas, setCargandoEstadisticas] = useState(false);
 
   // Cargar causas activas cuando se abre el modal
   useEffect(() => {
@@ -77,6 +80,24 @@ const DashboardOrganizador = () => {
     };
     cargarMisEventos();
   }, []);
+
+  useEffect(() => {
+    if (misEventos.length === 0) return;
+    const cargarEstadisticas = async () => {
+      setCargandoEstadisticas(true);
+      try {
+        const eventoIds = misEventos.map(e => e.id);
+        const stats = await obtenerEstadisticasEventos(eventoIds);
+        setEstadisticas(stats);
+      } catch (err) {
+        logger.error('Error cargando estadisticas:', err);
+        setEstadisticas([]);
+      } finally {
+        setCargandoEstadisticas(false);
+      }
+    };
+    cargarEstadisticas();
+  }, [misEventos]);
 
   // Actualizar nombre de causa y organización cuando se selecciona una causa activa
   useEffect(() => {
@@ -267,7 +288,7 @@ const DashboardOrganizador = () => {
             </Button>
           </div>
 
-          {/* Estadísticas ms eventos, falta ms carrito */}
+          {/* Estadísticas */}
           <Row className="g-3 mb-4">
             <Col xs={6} md={3}>
               <Card className="border-0 shadow-sm h-100">
@@ -277,7 +298,7 @@ const DashboardOrganizador = () => {
                   </div>
                   <div>
                     <p className="text-muted small mb-1">Mis eventos</p>
-                    <p className="text-muted small fst-italic mb-0">Pendiente MSEventos</p>
+                    <h5 className="fw-bold mb-0">{cargandoEventos ? '...' : misEventos.length}</h5>
                   </div>
                 </Card.Body>
               </Card>
@@ -290,7 +311,9 @@ const DashboardOrganizador = () => {
                   </div>
                   <div>
                     <p className="text-muted small mb-1">Entradas vendidas</p>
-                    <p className="text-muted small fst-italic mb-0">Pendiente MSCarrito</p>
+                    <h5 className="fw-bold mb-0">
+                      {cargandoEstadisticas ? '...' : estadisticas.reduce((sum, e) => sum + Number(e.entradasVendidas || 0), 0)}
+                    </h5>
                   </div>
                 </Card.Body>
               </Card>
@@ -303,7 +326,9 @@ const DashboardOrganizador = () => {
                   </div>
                   <div>
                     <p className="text-muted small mb-1">Ingresos</p>
-                    <p className="text-muted small fst-italic mb-0">Pendiente MSCarrito</p>
+                    <h5 className="fw-bold mb-0">
+                      {cargandoEstadisticas ? '...' : `$${estadisticas.reduce((sum, e) => sum + Number(e.ingresos || 0), 0).toLocaleString('es-CL')}`}
+                    </h5>
                   </div>
                 </Card.Body>
               </Card>
@@ -374,7 +399,47 @@ const DashboardOrganizador = () => {
                     )}
                   </Tab.Pane>
                   <Tab.Pane eventKey="ventas">
-                    <Placeholder ms="MSCarrito" descripcion="Ventas por evento" altura={250} />
+                    {cargandoEstadisticas ? (
+                      <p className="text-muted text-center py-4">Cargando estadisticas...</p>
+                    ) : misEventos.length === 0 ? (
+                      <p className="text-muted text-center py-4">No hay eventos para mostrar.</p>
+                    ) : (
+                      <div className="table-responsive">
+                        <table className="table table-hover align-middle">
+                          <thead>
+                            <tr>
+                              <th>Evento</th>
+                              <th>Fecha</th>
+                              <th>Stock original</th>
+                              <th>Stock restante</th>
+                              <th>Vendidas</th>
+                              <th>Reembolsadas</th>
+                              <th>Precio</th>
+                              <th>Ingresos</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {misEventos.map(evento => {
+                              const stat = estadisticas.find(s => s.eventoId === evento.id);
+                              const vendidos = Number(stat?.entradasVendidas || 0);
+                              const ingresos = Number(stat?.ingresos || 0);
+                              return (
+                                <tr key={evento.id}>
+                                  <td className="fw-semibold">{evento.nombre}</td>
+                                  <td>{new Date(evento.fecha).toLocaleDateString('es-CL')}</td>
+                                  <td>{evento.aforo}</td>
+                                  <td>{evento.stock}</td>
+                                  <td>{vendidos}</td>
+                                  <td>{stat?.entradasReembolsadas || 0}</td>
+                                  <td>${evento.precioEntrada?.toLocaleString('es-CL')}</td>
+                                  <td className="fw-semibold">${ingresos.toLocaleString('es-CL')}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </Tab.Pane>
                   <Tab.Pane eventKey="reportes">
                     <Placeholder ms="MSEventos + MSCarrito" descripcion="Reportes de asistencia e ingresos" altura={250} />
