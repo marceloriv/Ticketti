@@ -155,6 +155,17 @@ export const solicitarDevolucion = async (carritoId, { razon = '' } = {}) => {
   return response.data?.data;
 };
 
+/**
+ * Obtiene estadisticas de ventas (entradas vendidas e ingresos) para una lista de eventos.
+ *
+ * @param {Array<number|string>} eventoIds - IDs de los eventos a consultar.
+ * @returns {Promise<Array>} Estadisticas por evento.
+ */
+export const obtenerEstadisticasEventos = async (eventoIds) => {
+  const response = await clienteApi.post('/Carrito/estadisticas', { eventoIds });
+  return response.data?.data || [];
+};
+
 export default {
   crearCarrito,
   obtenerCarrito,
@@ -167,4 +178,5 @@ export default {
   listarCarritos,
   procesarPagoManual,
   solicitarDevolucion,
+  obtenerEstadisticasEventos,
 };

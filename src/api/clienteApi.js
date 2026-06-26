@@ -73,7 +73,30 @@ clienteApi.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
+  async (error) => {
+    const config = error.config;
+
+    // Reintentar automáticamente en 503 (servicio no disponible) con exponential backoff
+    if (error.response?.status === 503 && !config?._retry) {
+      config._retry = true;
+      const maxRetries = 5;
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        const delay = 2000 * 1.5 ** attempt;
+        await new Promise(r => setTimeout(r, delay));
+        try {
+          return await clienteApi(config);
+        } catch (retryError) {
+          if (retryError.response?.status === 503) {
+            if (attempt === maxRetries - 1) {
+              logger.error(`Servicio no disponible tras ${maxRetries} reintentos (503)`);
+            }
+            continue;
+          }
+          throw retryError;
+        }
+      }
+    }
+
     if (error.response) {
       switch (error.response.status) {
         case 401:

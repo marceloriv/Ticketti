@@ -1,6 +1,7 @@
 import { ArrowRight, CheckCircle, Heart } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Form } from 'react-bootstrap';
+import { getCausasActivas } from '@api/donacionesApi';
 import '../styles/components/ResumenCarrito.css';
 
 /**
@@ -35,8 +36,25 @@ const ESTADO_CARRITO_VARIANT = {
  * La donación del 10% es OBLIGATORIA — no es opcional. Se calcula sobre el subtotal.
  */
 const ResumenCarrito = ({ resumen, onCheckout, loading, isGuest = false, esCarritoPagado = false }) => {
-  const [causaSocialId, setCausaSocialId] = useState('1');
+  const [causaSocialId, setCausaSocialId] = useState('');
   const [error, setError] = useState('');
+  const [causas, setCausas] = useState([]);
+  const [cargandoCausas, setCargandoCausas] = useState(false);
+
+  useEffect(() => {
+    const cargarCausas = async () => {
+      setCargandoCausas(true);
+      try {
+        const data = await getCausasActivas();
+        setCausas(data || []);
+      } catch {
+        // Silencioso
+      } finally {
+        setCargandoCausas(false);
+      }
+    };
+    cargarCausas();
+  }, []);
 
   const items = resumen?.items || [];
   const subtotal = resumen?.subtotal || 0;
@@ -147,15 +165,14 @@ const ResumenCarrito = ({ resumen, onCheckout, loading, isGuest = false, esCarri
             <Form.Select
               value={causaSocialId}
               onChange={(e) => setCausaSocialId(e.target.value)}
-              disabled={loading || esReservado || esCarritoPagado}
+              disabled={loading || esReservado || esCarritoPagado || cargandoCausas}
               className="resumen-carrito-select-causa"
               required
             >
-              <option value="">Seleccionar causa social...</option>
-              <option value="1">UNICEF</option>
-              <option value="2">MusiCares</option>
-              <option value="3">Global Green</option>
-              <option value="4">Fundación Salud Comunitaria</option>
+              <option value="">{cargandoCausas ? 'Cargando causas...' : 'Seleccionar causa social...'}</option>
+              {causas.map(c => (
+                <option key={c.idCausa} value={c.idCausa}>{c.nombre}</option>
+              ))}
             </Form.Select>
           )}
         </div>
