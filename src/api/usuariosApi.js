@@ -33,7 +33,7 @@ export const registrarUsuario = async (datosRegistro) => {
  */
 export const listarUsuarios = async () => {
   const response = await clienteApi.get('/usuarios');
-  return response.data;
+  return response.data || [];
 };
 
 /**
