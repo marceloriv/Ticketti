@@ -1,5 +1,6 @@
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
+import { enviarMensajeContacto } from '@api/mensajeriaApi';
 import {
   Clock,
   HelpCircle,
@@ -9,7 +10,7 @@ import {
   Send,
 } from 'lucide-react';
 import { useState } from 'react';
-import { Alert, Button, Col, Container, Form, Row } from 'react-bootstrap';
+import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
 import '@/styles/components/Contacto.css';
 /**
  * Página de contacto de la plataforma Ticketti.
@@ -26,17 +27,28 @@ const Contacto = () => {
     mensaje: '',
   });
   const [enviado, setEnviado] = useState(false);
+  const [error, setError] = useState('');
+  const [cargando, setCargando] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setEnviado(true);
-    setFormData({ nombre: '', email: '', asunto: '', mensaje: '' });
-    setTimeout(() => setEnviado(false), 3000);
+    setCargando(true);
+    setError('');
+    try {
+      await enviarMensajeContacto(formData);
+      setEnviado(true);
+      setFormData({ nombre: '', email: '', asunto: '', mensaje: '' });
+      setTimeout(() => setEnviado(false), 5000);
+    } catch {
+      setError('No se pudo enviar el mensaje. Por favor intenta nuevamente.');
+    } finally {
+      setCargando(false);
+    }
   };
   return (
     <div className="contacto-page">
@@ -130,7 +142,12 @@ const Contacto = () => {
                 <h3 className="fw-bold mb-4 text-dark">Enviar Mensaje</h3>
                 {enviado && (
                   <Alert variant="success" className="mb-3">
-                    Mensaje enviado correctamente. Nos contactaremos pronto.
+                    ¡Mensaje enviado! Revisa tu correo — te hemos enviado una confirmación y te responderemos a la brevedad.
+                  </Alert>
+                )}
+                {error && (
+                  <Alert variant="danger" className="mb-3">
+                    {error}
                   </Alert>
                 )}
                 <Form onSubmit={handleSubmit}>
@@ -186,9 +203,18 @@ const Contacto = () => {
                     />
                   </Form.Group>
                   <div className="text-end">
-                    <Button type="submit" className="btn-enviar-contacto d-flex align-items-center gap-2 ms-auto">
-                      <Send size={16} />
-                      Enviar mensaje
+                    <Button type="submit" className="btn-enviar-contacto d-flex align-items-center gap-2 ms-auto" disabled={cargando}>
+                      {cargando ? (
+                        <>
+                          <Spinner animation="border" size="sm" />
+                          Enviando...
+                        </>
+                      ) : (
+                        <>
+                          <Send size={16} />
+                          Enviar mensaje
+                        </>
+                      )}
                     </Button>
                   </div>
                 </Form>
