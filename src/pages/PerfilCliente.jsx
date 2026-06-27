@@ -20,6 +20,7 @@ import {
 import { Link } from 'react-router-dom';
 import { obtenerUsuario, actualizarUsuario } from '@api/usuariosApi';
 import { solicitarDevolucion, obtenerCarrito } from '@api/carritoApi';
+import { getMisDonaciones } from '@api/donacionesApi';
 
 const estadoLabelMap = {
   CREADO: 'Creado',
@@ -306,18 +307,9 @@ const PerfilCliente = () => {
                     <MisComprasTab usuarioId={usuario?.id} />
                   </Tab.Pane>
 
-                  {/* ── DONACIONES ── pendiente MSDonaciones */}
+                  {/* ── DONACIONES ── */}
                   <Tab.Pane eventKey="donaciones">
-                    <Alert variant="info" className="text-center py-4">
-                      <Heart size={24} className="mb-2 text-ticketti" />
-                      <p className="mb-1 fw-semibold">
-                        Historial de donaciones próximamente
-                      </p>
-                      <p className="text-muted small mb-0">
-                        MSDonaciones — GET
-                        /api/donaciones/usuario/&#123;id&#125;
-                      </p>
-                    </Alert>
+                    <MisDonacionesTab />
                   </Tab.Pane>
 
                   {/* ── PERFIL ── */}
@@ -723,6 +715,84 @@ function MisComprasTab({ usuarioId }) {
           )}
         </Modal.Footer>
       </Modal>
+    </div>
+  );
+}
+
+function MisDonacionesTab() {
+  const [donaciones, setDonaciones] = useState([]);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState('');
+
+  const cargarDonaciones = useCallback(async () => {
+    setCargando(true);
+    setError('');
+    try {
+      const data = await getMisDonaciones();
+      const aprobadas = (Array.isArray(data) ? data : []).filter(
+        (d) => d.estado === 'APROBADA'
+      );
+      setDonaciones(aprobadas);
+    } catch {
+      setError('No se pudieron cargar las donaciones.');
+    } finally {
+      setCargando(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    cargarDonaciones();
+  }, [cargarDonaciones]);
+
+  if (cargando)
+    return (
+      <div className="text-center py-4">
+        <Spinner className="spinner-ticketti" />
+      </div>
+    );
+
+  return (
+    <div>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h5 className="fw-bold mb-0">Historial de donaciones</h5>
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          onClick={cargarDonaciones}
+          className="d-flex align-items-center gap-1"
+        >
+          <RefreshCw size={14} /> Actualizar
+        </Button>
+      </div>
+
+      {error && <Alert variant="danger">{error}</Alert>}
+
+      {!error && donaciones.length === 0 && (
+        <Alert variant="info">Todavía no tienes donaciones registradas.</Alert>
+      )}
+
+      {donaciones.length > 0 && (
+        <Table hover responsive size="sm">
+          <thead className="table-light">
+            <tr>
+              <th>Causa</th>
+              <th>Organización</th>
+              <th>Monto</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {donaciones.map((d) => (
+              <tr key={d.idDonacion}>
+                <td className="fw-semibold">{d.nombreCausa || '—'}</td>
+                <td className="text-muted small">{d.nombreOrganizacion || '—'}</td>
+                <td className="fw-semibold">{formatearMoneda(d.monto)}</td>
+                <td className="text-muted small">{formatearFecha(d.fecha)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
     </div>
   );
 }
