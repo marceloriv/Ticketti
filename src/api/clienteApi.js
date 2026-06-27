@@ -76,8 +76,10 @@ clienteApi.interceptors.response.use(
   async (error) => {
     const config = error.config;
 
-    // Reintentar automáticamente en 503 (servicio no disponible) con exponential backoff
-    if (error.response?.status === 503 && !config?._retry) {
+    // Reintentar automáticamente en 503 (servicio no disponible) con exponential backoff solo para métodos seguros/idempotentes
+    const metodo = (config?.method || '').toLowerCase();
+    const esIdempotente = metodo === 'get' || metodo === 'put' || metodo === 'delete';
+    if (error.response?.status === 503 && esIdempotente && !config?._retry) {
       config._retry = true;
       const maxRetries = 5;
       for (let attempt = 0; attempt < maxRetries; attempt++) {
