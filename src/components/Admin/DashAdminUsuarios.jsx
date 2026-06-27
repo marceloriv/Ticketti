@@ -5,16 +5,13 @@ import { actualizarUsuario, eliminarUsuario, listarUsuarios } from '@api/usuario
 
 const ROLES_USUARIO = [
   'CLIENTE',
-  'ORGANIZADOR',
-  'ADMIN',
-  'ADMINPLATAFORMA',
+  'ORGANIZADOR'
+
 ];
 
 const ROL_VARIANT = {
   CLIENTE: 'primary',
   ORGANIZADOR: 'success',
-  ADMIN: 'warning',
-  ADMINPLATAFORMA: 'danger',
 };
 
 export default function DashAdminUsuarios() {
