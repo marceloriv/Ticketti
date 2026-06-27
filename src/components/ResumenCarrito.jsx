@@ -56,6 +56,15 @@ const ResumenCarrito = ({ resumen, onCheckout, loading, isGuest = false, esCarri
     cargarCausas();
   }, []);
 
+  // Sincronizar causa social desde el resumen (por ejemplo, en reservas activas)
+  useEffect(() => {
+    if (resumen?.causaSocialId) {
+      setCausaSocialId(String(resumen.causaSocialId));
+    } else {
+      setCausaSocialId('');
+    }
+  }, [resumen?.causaSocialId]);
+
   const items = resumen?.items || [];
   const subtotal = resumen?.subtotal || 0;
 

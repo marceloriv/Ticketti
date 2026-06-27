@@ -3,7 +3,7 @@ import Header from '@components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
 import logger from '@utils/logger';
 import { BarChart2, Calendar, Plus, TrendingUp } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Button, Card, Col, Container, Form,
   Modal, Nav, Row, Spinner, Tab
@@ -28,6 +28,7 @@ const Placeholder = ({ ms, descripcion, altura = 200 }) => (
 
 const DashboardOrganizador = () => {
   const { usuario } = useAuth();
+  const estaCreando = useRef(false);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(null);
@@ -66,18 +67,19 @@ const DashboardOrganizador = () => {
     }
   }, [mostrarModal]);
 
+  const cargarMisEventos = async () => {
+    setCargandoEventos(true);
+    try {
+      const response = await api.get('/eventos/mis');
+      setMisEventos(response.data || []);
+    } catch (err) {
+      logger.error('Error cargando eventos:', err);
+    } finally {
+      setCargandoEventos(false);
+    }
+  };
+
   useEffect(() => {
-    const cargarMisEventos = async () => {
-      setCargandoEventos(true);
-      try {
-        const response = await api.get('/eventos/mis');
-        setMisEventos(response.data || []);
-      } catch (err) {
-        logger.error('Error cargando eventos:', err);
-      } finally {
-        setCargandoEventos(false);
-      }
-    };
     cargarMisEventos();
   }, []);
 
@@ -218,11 +220,14 @@ const DashboardOrganizador = () => {
   };
 
   const handleSubmit = async () => {
+    if (estaCreando.current) return;
+    estaCreando.current = true;
     setCargando(true);
     setError(null);
     try {
       if (!validarFormulario()) {
         setCargando(false);
+        estaCreando.current = false;
         return;
       }
 
@@ -247,6 +252,7 @@ const DashboardOrganizador = () => {
       await api.post('/eventos/crear', payload);
       logger.info('Evento creado:', payload);
       setExito(true);
+      cargarMisEventos();
       setTimeout(() => {
         setMostrarModal(false);
         setExito(false);
@@ -258,11 +264,13 @@ const DashboardOrganizador = () => {
         });
         setArchivoPdf(null);
         setArchivoImagen(null);
+        estaCreando.current = false;
       }, 1500);
     } catch (err) {
       logger.error('Error creando evento:', err);
       const mensaje = err.response?.data?.message || err.response?.data || err.message || 'Error al crear el evento. Verifica los datos.';
       setError(`Error al crear el evento. ${mensaje}`);
+      estaCreando.current = false;
     } finally {
       setCargando(false);
     }
