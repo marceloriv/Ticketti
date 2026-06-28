@@ -1,7 +1,7 @@
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
 import DashAdminUsuarios from '@/components/admin/DashAdminUsuarios';
-import { Building2, Heart, Plus, ShoppingBag, TrendingUp } from 'lucide-react';
+import { Building2, Heart, Pencil, Plus, ShoppingBag, TrendingUp } from 'lucide-react';
 import { listarEventos } from '@api/eventosApi';
 import { obtenerEstadisticasEventos } from '@api/carritoApi';
 import { listarUsuarios } from '@api/usuariosApi';
@@ -24,11 +24,15 @@ import {
 } from 'react-bootstrap';
 import {
   getOrganizaciones,
-  getCausasActivas,
+  getCausas,
   getTotalPorOrganizacion,
   crearOrganizacionActiva,
   crearCausaActiva,
   activarOrganizacion,
+  editarOrganizacion,
+  activarCausa,
+  editarCausa,
+  eliminarCausa,
 } from '@api/donacionesApi';
 
 const STAT_VARIANTS = {
@@ -116,6 +120,16 @@ const DashboardAdmin = () => {
   const [orgAActivar, setOrgAActivar] = useState(null);
   const [showModalActivar, setShowModalActivar] = useState(false);
 
+  const [showModalEditarOrg, setShowModalEditarOrg] = useState(false);
+  const [orgAEditar, setOrgAEditar] = useState(null);
+  const [formEditarOrg, setFormEditarOrg] = useState({ nombre: '', email: '', telefono: '', direccion: '' });
+
+  const [showModalEditarCausa, setShowModalEditarCausa] = useState(false);
+  const [causaAEditar, setCausaAEditar] = useState(null);
+  const [formEditarCausa, setFormEditarCausa] = useState({
+    nombre: '', descripcion: '', objetivoMonto: '', fechaInicio: '', fechaFin: '', imagenUrl: '',
+  });
+
   const [formCausa, setFormCausa] = useState({
     idOrganizacion: '',
     nombre: '',
@@ -129,7 +143,7 @@ const DashboardAdmin = () => {
     try {
       const [orgs, causasData] = await Promise.all([
         getOrganizaciones(),
-        getCausasActivas(),
+        getCausas(),
       ]);
       setOrganizaciones(orgs);
       setCausas(causasData);
@@ -285,6 +299,98 @@ const DashboardAdmin = () => {
     }
   };
 
+  const abrirModalEditarOrg = (org) => {
+    setOrgAEditar(org);
+    setFormEditarOrg({
+      nombre: org.nombre,
+      email: org.email,
+      telefono: org.telefono || '',
+      direccion: org.direccion || '',
+    });
+    setShowModalEditarOrg(true);
+  };
+
+  const handleEditarOrg = async (e) => {
+    e.preventDefault();
+    setGuardando(true);
+    try {
+      await editarOrganizacion(orgAEditar.idOrganizacion, formEditarOrg);
+      setExito('Organización actualizada.');
+      setShowModalEditarOrg(false);
+      cargar();
+      setTimeout(() => setExito(''), 3000);
+    } catch {
+      setError('Error al actualizar la organización.');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const abrirModalEditarCausa = (causa) => {
+    setCausaAEditar(causa);
+    setFormEditarCausa({
+      idOrganizacion: causa.idOrganizacion,
+      nombre: causa.nombre,
+      descripcion: causa.descripcion || '',
+      objetivoMonto: causa.objetivoMonto || '',
+      fechaInicio: causa.fechaInicio,
+      fechaFin: causa.fechaFin || '',
+      imagenUrl: causa.imagenUrl || '',
+    });
+    setShowModalEditarCausa(true);
+  };
+
+  const handleEditarCausa = async (e) => {
+    e.preventDefault();
+    setGuardando(true);
+    try {
+      await editarCausa(causaAEditar.idCausa, {
+        ...formEditarCausa,
+        idOrganizacion: Number(formEditarCausa.idOrganizacion),
+        objetivoMonto: formEditarCausa.objetivoMonto || null,
+        fechaFin: formEditarCausa.fechaFin || null,
+        imagenUrl: formEditarCausa.imagenUrl || null,
+      });
+      setExito('Causa actualizada.');
+      setShowModalEditarCausa(false);
+      cargar();
+      setTimeout(() => setExito(''), 3000);
+    } catch {
+      setError('Error al actualizar la causa.');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const handleActivarCausa = async (idCausa) => {
+    setGuardando(true);
+    try {
+      await activarCausa(idCausa);
+      setExito('Causa activada correctamente.');
+      cargar();
+      setTimeout(() => setExito(''), 3000);
+    } catch {
+      setError('Error al activar la causa.');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const handleEliminarCausa = async (idCausa) => {
+    if (!window.confirm('¿Desactivar esta causa social?')) return;
+    setGuardando(true);
+    try {
+      await eliminarCausa(idCausa);
+      setExito('Causa desactivada.');
+      cargar();
+      setTimeout(() => setExito(''), 3000);
+    } catch {
+      setError('Error al desactivar la causa.');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
@@ -318,7 +424,7 @@ const DashboardAdmin = () => {
               <StatCard
                 icon={Heart}
                 titulo="Causas activas"
-                valor={causas.length}
+                valor={causas.filter(c => c.estado === 'ACTIVA').length}
                 variant="pink"
                 cargando={cargando}
               />
@@ -407,6 +513,8 @@ const DashboardAdmin = () => {
                                   bg={
                                     o.estado === 'ACTIVA'
                                       ? 'success'
+                                      : o.estado === 'PENDIENTE'
+                                      ? 'warning'
                                       : 'secondary'
                                   }
                                 >
@@ -416,7 +524,15 @@ const DashboardAdmin = () => {
                               <td className="fw-semibold text-success">
                                 {fmt(totales[o.idOrganizacion])}
                               </td>
-                              <td>
+                              <td className="d-flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline-secondary"
+                                  onClick={() => abrirModalEditarOrg(o)}
+                                  title="Editar"
+                                >
+                                  <Pencil size={14} />
+                                </Button>
                                 {o.estado === 'PENDIENTE' && (
                                   <Button
                                     size="sm"
@@ -437,7 +553,7 @@ const DashboardAdmin = () => {
                   {/* CAUSAS */}
                   <Tab.Pane eventKey="causas">
                     <div className="d-flex justify-content-between mb-3">
-                      <h5 className="fw-bold mb-0">Causas sociales activas</h5>
+                      <h5 className="fw-bold mb-0">Causas sociales</h5>
                       <Button
                         size="sm"
                         onClick={() => setShowModalCausa(true)}
@@ -458,6 +574,7 @@ const DashboardAdmin = () => {
                             <th>Organización</th>
                             <th>Objetivo</th>
                             <th>Estado</th>
+                            <th>Acciones</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -477,11 +594,43 @@ const DashboardAdmin = () => {
                                   bg={
                                     c.estado === 'ACTIVA'
                                       ? 'success'
+                                      : c.estado === 'PENDIENTE'
+                                      ? 'warning'
                                       : 'secondary'
                                   }
                                 >
                                   {c.estado}
                                 </Badge>
+                              </td>
+                              <td className="d-flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline-secondary"
+                                  onClick={() => abrirModalEditarCausa(c)}
+                                  title="Editar"
+                                >
+                                  <Pencil size={14} />
+                                </Button>
+                                {(c.estado === 'PENDIENTE' || c.estado === 'INACTIVA') && (
+                                  <Button
+                                    size="sm"
+                                    variant="success"
+                                    onClick={() => handleActivarCausa(c.idCausa)}
+                                    disabled={guardando}
+                                  >
+                                    Activar
+                                  </Button>
+                                )}
+                                {c.estado === 'ACTIVA' && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline-danger"
+                                    onClick={() => handleEliminarCausa(c.idCausa)}
+                                    disabled={guardando}
+                                  >
+                                    Desactivar
+                                  </Button>
+                                )}
                               </td>
                             </tr>
                           ))}
@@ -790,6 +939,123 @@ const DashboardAdmin = () => {
                 ) : (
                   'Guardar'
                 )}
+              </Button>
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* Modal editar organización */}
+      <Modal show={showModalEditarOrg} onHide={() => setShowModalEditarOrg(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Editar Organización</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleEditarOrg}>
+            <Row className="g-3">
+              {[
+                { campo: 'nombre', label: 'Nombre', tipo: 'text', required: true },
+                { campo: 'email',  label: 'Email',  tipo: 'email', required: true },
+                { campo: 'telefono', label: 'Teléfono', tipo: 'text' },
+                { campo: 'direccion', label: 'Dirección', tipo: 'text' },
+              ].map(({ campo, label, tipo, required }) => (
+                <Col md={6} key={campo}>
+                  <Form.Group>
+                    <Form.Label className="fw-semibold">{label}</Form.Label>
+                    <Form.Control
+                      type={tipo}
+                      value={formEditarOrg[campo]}
+                      onChange={(e) => setFormEditarOrg({ ...formEditarOrg, [campo]: e.target.value })}
+                      required={required}
+                    />
+                  </Form.Group>
+                </Col>
+              ))}
+            </Row>
+            <div className="d-flex justify-content-end gap-2 mt-4">
+              <Button variant="outline-secondary" onClick={() => setShowModalEditarOrg(false)}>Cancelar</Button>
+              <Button type="submit" disabled={guardando} variant="primary">
+                {guardando ? <Spinner size="sm" className="spinner-ticketti" /> : 'Guardar'}
+              </Button>
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* Modal editar causa social */}
+      <Modal show={showModalEditarCausa} onHide={() => setShowModalEditarCausa(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Editar Causa Social</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleEditarCausa}>
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-semibold">Nombre</Form.Label>
+              <Form.Control
+                value={formEditarCausa.nombre}
+                onChange={(e) => setFormEditarCausa({ ...formEditarCausa, nombre: e.target.value })}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-semibold">Descripción</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={2}
+                value={formEditarCausa.descripcion}
+                onChange={(e) => setFormEditarCausa({ ...formEditarCausa, descripcion: e.target.value })}
+              />
+            </Form.Group>
+            <Row className="g-2 mb-3">
+              <Col>
+                <Form.Group>
+                  <Form.Label className="fw-semibold">Objetivo (CLP)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={formEditarCausa.objetivoMonto}
+                    onChange={(e) => setFormEditarCausa({ ...formEditarCausa, objetivoMonto: e.target.value })}
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label className="fw-semibold">Fecha inicio</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={formEditarCausa.fechaInicio}
+                    onChange={(e) => setFormEditarCausa({ ...formEditarCausa, fechaInicio: e.target.value })}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="g-2 mb-3">
+              <Col>
+                <Form.Group>
+                  <Form.Label className="fw-semibold">Fecha fin <span className="text-muted small">(opcional)</span></Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={formEditarCausa.fechaFin}
+                    onChange={(e) => setFormEditarCausa({ ...formEditarCausa, fechaFin: e.target.value })}
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label className="fw-semibold">URL imagen <span className="text-muted small">(opcional)</span></Form.Label>
+                  <Form.Control
+                    type="url"
+                    placeholder="https://..."
+                    value={formEditarCausa.imagenUrl}
+                    onChange={(e) => setFormEditarCausa({ ...formEditarCausa, imagenUrl: e.target.value })}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <div className="d-flex justify-content-end gap-2 mt-2">
+              <Button variant="outline-secondary" onClick={() => setShowModalEditarCausa(false)}>Cancelar</Button>
+              <Button type="submit" disabled={guardando} variant="primary">
+                {guardando ? <Spinner size="sm" className="spinner-ticketti" /> : 'Guardar'}
               </Button>
             </div>
           </Form>

@@ -1,5 +1,4 @@
 import clienteApi from './clienteApi';
-import logger from '../utils/logger';
 
 /**
  * Módulo de API para el microservicio MS-Donaciones (puerto 8004).
@@ -153,6 +152,19 @@ export const crearCausa = async (payload) => {
 };
 
 /**
+ * Actualiza los datos de una causa social (nombre, descripción, objetivo, fechas, imagenUrl).
+ * No cambia la organización ni el estado.
+ *
+ * @param {number|string} idCausa - ID de la causa.
+ * @param {Object} payload - { idOrganizacion, nombre, descripcion, objetivoMonto, fechaInicio, fechaFin, imagenUrl }
+ * @returns {Promise<Object>} Causa actualizada.
+ */
+export const editarCausa = async (idCausa, payload) => {
+  const { data } = await clienteApi.put(`/causas/${idCausa}`, payload);
+  return data;
+};
+
+/**
  * Elimina (desactiva) una causa social.
  *
  * @param {number|string} idCausa - ID de la causa.
@@ -192,34 +204,25 @@ export const getMisDonaciones = async () => {
 };
 
 /**
- * Obtiene TODAS las causas sociales (incluyendo PENDIENTE), para que
- * el admin pueda revisarlas/activarlas igual que con organizaciones.
+ * Obtiene TODAS las causas sociales (incluyendo PENDIENTE e INACTIVA),
+ * para que el admin pueda revisarlas y activarlas.
  *
- * ⚠️ PENDIENTE BACKEND: CausaSocialController hoy solo expone /activas.
- * Cuando exista GET /causas (todas), reemplazar por:
- *   const { data } = await clienteApi.get('/causas');
- *   return data;
- *
- * @returns {Promise<Array>} Por ahora devuelve solo las activas.
+ * @returns {Promise<Array>} Listado completo de causas sociales.
  */
 export const getCausas = async () => {
-  return getCausasActivas();
+  const { data } = await clienteApi.get('/causas/todas');
+  return data;
 };
 
 /**
  * Activa una causa social PENDIENTE.
  *
- * ⚠️ PENDIENTE BACKEND: no existe aún PUT /causas/{id}/activar.
- * Cuando exista, reemplazar por:
- *   const { data } = await clienteApi.put(`/causas/${idCausa}/activar`);
- *   return data;
- *
- * @param {number|string} _idCausa - ID de la causa.
- * @returns {Promise<null>} No hace nada mientras no exista el endpoint.
+ * @param {number|string} idCausa - ID de la causa.
+ * @returns {Promise<Object>} Causa con estado ACTIVA.
  */
-export const activarCausa = async (_idCausa) => {
-  logger.warn('[donacionesApi] activarCausa: endpoint aún no implementado en MS-Donaciones');
-  return null;
+export const activarCausa = async (idCausa) => {
+  const { data } = await clienteApi.put(`/causas/${idCausa}/activar`);
+  return data;
 };
 
 // ─────────────────────────────────────────────
@@ -246,22 +249,17 @@ export const crearOrganizacionActiva = async (datosBasicos, datosBancarios) => {
 };
 
 /**
- * [ADMIN] Crea una causa social "desde cero" y la deja ACTIVA de inmediato.
+ * [ADMIN] Crea una causa social y la activa de inmediato.
  *
- * ⚠️ PENDIENTE VERIFICAR BACKEND: se envía `estado: 'ACTIVA'` en el payload,
- * pero hoy no está confirmado si CausaSocialController.crear() respeta ese
- * campo o si siempre asigna un estado por defecto (ej. PENDIENTE). Si lo
- * ignora, esta causa quedará en el estado que el backend determine y
- * habrá que pedir a Marcelo/equipo MS-Donaciones que:
- *   a) respete `estado` cuando lo envía un ADMINPLATAFORMA, o
- *   b) agregue un endpoint PUT /causas/{id}/activar análogo al de organizaciones.
+ * El backend siempre crea causas en estado PENDIENTE, por lo que se
+ * encadenan dos llamadas: crear (→ PENDIENTE) + activar (→ ACTIVA).
  *
- * @param {Object} payload - { idOrganizacion, nombre, descripcion, objetivoMonto, fechaInicio }
- * @returns {Promise<Object>} Causa creada.
+ * @param {Object} payload - { idOrganizacion, nombre, descripcion, objetivoMonto, fechaInicio, imagenUrl }
+ * @returns {Promise<Object>} Causa creada y ya activada.
  */
 export const crearCausaActiva = async (payload) => {
-  const { data } = await clienteApi.post('/causas', { ...payload, estado: 'ACTIVA' });
-  return data;
+  const nueva = await crearCausa(payload);
+  return activarCausa(nueva.idCausa);
 };
 
 /**
@@ -303,11 +301,12 @@ export default {
   getCausasActivas,
   getCausasPorOrganizacion,
   crearCausa,
+  editarCausa,
   eliminarCausa,
+  activarCausa,
   getTotalPorOrganizacion,
   getMisDonaciones,
   getCausas,
-  activarCausa,
   crearOrganizacionActiva,
   crearCausaActiva,
   solicitarRegistroOrganizacion,
