@@ -37,7 +37,7 @@ describe('usuariosApi', () => {
       const mockUsuario = { id: 1, nombre: 'Test' };
       mocks.get.mockResolvedValue({ data: mockUsuario });
       const result = await usuariosApi.obtenerUsuario(1);
-      expect(mocks.get).toHaveBeenCalledWith('/usuarios/1');
+      expect(mocks.get).toHaveBeenCalledWith('/usuarios/1', {});
       expect(result).toEqual(mockUsuario);
     });
   });

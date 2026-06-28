@@ -29,8 +29,8 @@ export const getOrganizaciones = async () => {
  *
  * @returns {Promise<Array>} Listado de organizaciones activas.
  */
-export const getOrganizacionesActivas = async () => {
-  const { data } = await clienteApi.get('/organizaciones');
+export const getOrganizacionesActivas = async (options = {}) => {
+  const { data } = await clienteApi.get('/organizaciones', options);
   return data;
 };
 
@@ -125,8 +125,8 @@ export const subirDocumentoOrganizacion = async (idOrganizacion, archivo) => {
  *
  * @returns {Promise<Array>} Listado de causas activas.
  */
-export const getCausasActivas = async () => {
-  const { data } = await clienteApi.get('/causas/activas');
+export const getCausasActivas = async (options = {}) => {
+  const { data } = await clienteApi.get('/causas/activas', options);
   return data;
 };
 

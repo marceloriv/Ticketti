@@ -84,14 +84,15 @@ const Inicio = () => {
   /**
    * Carga los eventos desde la API
    */
-  const cargarEventos = useCallback(async () => {
+  const cargarEventos = useCallback(async (signal) => {
     setCargando(true);
     setError(null);
     try {
-      const response = await api.get('/eventos/listarEventos');
+      const response = await api.get('/eventos/listarEventos', { signal });
       const datos = response.data || [];
       setEventos(datos);
     } catch (err) {
+      if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
       logger.error('Error al cargar eventos:', err);
       setError(
         'No se pudieron cargar los eventos. Por favor, intenta más tarde.'
@@ -103,27 +104,32 @@ const Inicio = () => {
   }, []);
 
   useEffect(() => {
-    cargarEventos();
+    const controller = new AbortController();
+    cargarEventos(controller.signal);
+    return () => controller.abort();
   }, [cargarEventos]);
 
   /**
    * Carga las causas sociales y organizaciones
    */
   useEffect(() => {
+    const controller = new AbortController();
     const cargarCausas = async () => {
       try {
         const [causasData, orgsData] = await Promise.all([
-          getCausasActivas(),
-          getOrganizacionesActivas(),
+          getCausasActivas({ signal: controller.signal }),
+          getOrganizacionesActivas({ signal: controller.signal }),
         ]);
         setCausas(causasData);
         setOrganizaciones(orgsData);
-      } catch {
+      } catch (err) {
+        if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
         setCausas([]);
         setOrganizaciones([]);
       }
     };
     cargarCausas();
+    return () => controller.abort();
   }, []);
 
   /**

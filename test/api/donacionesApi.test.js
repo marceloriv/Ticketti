@@ -43,7 +43,7 @@ describe('donacionesApi', () => {
       const mockData = [{ id: 1, nombre: 'Org1', estado: 'ACTIVA' }];
       mocks.get.mockResolvedValue({ data: mockData });
       const result = await donacionesApi.getOrganizacionesActivas();
-      expect(mocks.get).toHaveBeenCalledWith('/organizaciones');
+      expect(mocks.get).toHaveBeenCalledWith('/organizaciones', {});
       expect(result).toEqual(mockData);
     });
   });
@@ -119,7 +119,7 @@ describe('donacionesApi', () => {
       const mockData = [{ id: 1, nombre: 'Causa1' }];
       mocks.get.mockResolvedValue({ data: mockData });
       const result = await donacionesApi.getCausasActivas();
-      expect(mocks.get).toHaveBeenCalledWith('/causas/activas');
+      expect(mocks.get).toHaveBeenCalledWith('/causas/activas', {});
       expect(result).toEqual(mockData);
     });
   });
@@ -155,6 +155,7 @@ describe('donacionesApi', () => {
 
   describe('getTotalPorOrganizacion', () => {
     it('retorna 0 (stub pendiente backend)', async () => {
+      mocks.get.mockResolvedValue({ data: 0 });
       const result = await donacionesApi.getTotalPorOrganizacion(1);
       expect(result).toBe(0);
     });
@@ -172,7 +173,7 @@ describe('donacionesApi', () => {
       const mockData = [{ id: 1 }];
       mocks.get.mockResolvedValue({ data: mockData });
       const result = await donacionesApi.getCausas();
-      expect(mocks.get).toHaveBeenCalledWith('/causas/activas');
+      expect(mocks.get).toHaveBeenCalledWith('/causas/activas', {});
       expect(result).toEqual(mockData);
     });
   });

@@ -28,10 +28,11 @@ export const registrarUsuario = async (datosRegistro) => {
  * Obtiene los detalles completos de un usuario por su ID.
  *
  * @param {number|string} id - ID del usuario.
+ * @param {Object} [options] - Opciones adicionales (ej. { signal: AbortSignal }).
  * @returns {Promise<Object>} Datos del usuario obtenidos.
  */
-export const obtenerUsuario = async (id) => {
-  const response = await clienteApi.get(`/usuarios/${id}`);
+export const obtenerUsuario = async (id, options = {}) => {
+  const response = await clienteApi.get(`/usuarios/${id}`, options);
   return response.data;
 };
 
