@@ -119,6 +119,8 @@ clienteApi.interceptors.response.use(
         case 500:
           logger.error('Error interno del servidor en el backend (500)');
           break;
+        case 503:
+          break;
         default:
           logger.error(
             `Error HTTP no manejado específicamente: ${error.response.status}`

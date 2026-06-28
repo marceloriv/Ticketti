@@ -69,13 +69,43 @@ api.interceptors.request.use(
 );
 
 /**
- * Interceptor de respuestas para manejar errores HTTP
+ * Interceptor de respuestas para manejar errores HTTP + retry en 503
  */
 api.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
+  async (error) => {
+    const config = error.config;
+
+    // Reintentar automáticamente en 503 con exponential backoff (mismos criterios que clienteApi)
+    const metodo = (config?.method || '').toLowerCase();
+    const esIdempotente = metodo === 'get' || metodo === 'put' || metodo === 'delete';
+    const noReintentar = ['/notificaciones/contacto'];
+    const debeReintentar = esIdempotente && !noReintentar.some(endpoint => config.url?.includes(endpoint));
+    if (error.response?.status === 503 && debeReintentar && !config?._retry) {
+      config._retry = true;
+      const maxRetries = 3;
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        if (config.signal?.aborted) break;
+        const delay = 1500 * 1.5 ** attempt;
+        await new Promise(r => setTimeout(r, delay));
+        if (config.signal?.aborted) break;
+        try {
+          return await api(config);
+        } catch (retryError) {
+          if (retryError.name === 'CanceledError' || retryError.code === 'ERR_CANCELED') break;
+          if (retryError.response?.status === 503) {
+            if (attempt === maxRetries - 1) {
+              logger.error(`Servicio no disponible tras ${maxRetries} reintentos (503)`);
+            }
+            continue;
+          }
+          throw retryError;
+        }
+      }
+    }
+
     if (error.response) {
       switch (error.response.status) {
         case 401:
@@ -95,6 +125,8 @@ api.interceptors.response.use(
           break;
         case 500:
           logger.error('Error interno del servidor');
+          break;
+        case 503:
           break;
         default:
           logger.error(`Error HTTP: ${error.response.status}`);

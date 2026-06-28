@@ -91,33 +91,35 @@ const PerfilCliente = () => {
 
   const idUsuario = usuario?.id || localStorage.getItem('idUsuario');
 
-  const cargarNotificaciones = useCallback(async () => {
+  const cargarNotificaciones = useCallback(async (signal) => {
     if (!idUsuario) return;
     setCargando(true);
     setError('');
     try {
-      const res = await api.get(`/notificaciones/historial/${idUsuario}`);
+      const res = await api.get(`/notificaciones/historial/${idUsuario}`, { signal });
       setNotificaciones(res.data || []);
-    } catch {
+    } catch (err) {
+      if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
       setError('No se pudieron cargar las notificaciones.');
     } finally {
       setCargando(false);
     }
   }, [idUsuario]);
 
-  const cargarPerfilCompleto = useCallback(async () => {
+  const cargarPerfilCompleto = useCallback(async (signal) => {
     if (!idUsuario) return;
     setCargandoPerfil(true);
     setErrorPerfil('');
     try {
-      const data = await obtenerUsuario(idUsuario);
+      const data = await obtenerUsuario(idUsuario, { signal });
       setFormData({
         nombre: data.nombre || '',
         correo: data.correo || '',
         telefono: data.telefono || '',
         direccion: data.direccion || '',
       });
-    } catch {
+    } catch (err) {
+      if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
       setErrorPerfil('No se pudieron cargar los datos de perfil.');
     } finally {
       setCargandoPerfil(false);
@@ -125,8 +127,10 @@ const PerfilCliente = () => {
   }, [idUsuario]);
 
   useEffect(() => {
-    cargarNotificaciones();
-    cargarPerfilCompleto();
+    const controller = new AbortController();
+    cargarNotificaciones(controller.signal);
+    cargarPerfilCompleto(controller.signal);
+    return () => controller.abort();
   }, [cargarNotificaciones, cargarPerfilCompleto]);
 
   const handleChange = (e) => {
