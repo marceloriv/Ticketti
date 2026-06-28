@@ -11,6 +11,7 @@ import {
   Card,
   Container,
   Form,
+  Modal,
   Nav,
   Spinner,
   Tab,
@@ -18,6 +19,7 @@ import {
 } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { obtenerUsuario, actualizarUsuario } from '@api/usuariosApi';
+import { solicitarDevolucion, obtenerCarrito } from '@api/carritoApi';
 
 const estadoLabelMap = {
   CREADO: 'Creado',
@@ -431,6 +433,13 @@ function MisComprasTab({ usuarioId }) {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
 
+  const [showDevolucionModal, setShowDevolucionModal] = useState(false);
+  const [carritoSeleccionado, setCarritoSeleccionado] = useState(null);
+  const [razonDevolucion, setRazonDevolucion] = useState('');
+  const [procesandoDevolucion, setProcesandoDevolucion] = useState(false);
+  const [resultadoDevolucion, setResultadoDevolucion] = useState(null);
+  const [errorDevolucion, setErrorDevolucion] = useState('');
+
   const cargarCompras = useCallback(async () => {
     if (!usuarioId) return;
     setCargando(true);
@@ -440,14 +449,13 @@ function MisComprasTab({ usuarioId }) {
         headers: { 'X-Usuario-Id': usuarioId },
       });
       const carritos = res.data?.data || [];
-      // Filtrar solo carritos con estado PAGADO
-      const carritosPagados = carritos.filter(
-        (c) =>
-          (c.estadoCarrito || c.estado || '').toString().toUpperCase() ===
-          'PAGADO'
-      );
-      // Ordenar por fecha de creación (ascendente) para asignar número secuencial
-      const carritosOrdenados = carritosPagados.sort((a, b) => {
+      const carritosPermitidos = carritos.filter((c) => {
+        const estado = (c.estadoCarrito || c.estado || '')
+          .toString()
+          .toUpperCase();
+        return estado === 'PAGADO' || estado === 'REEMBOLSADO';
+      });
+      const carritosOrdenados = carritosPermitidos.sort((a, b) => {
         const fechaA = new Date(a.fechaCreacion || a.createdAt || 0);
         const fechaB = new Date(b.fechaCreacion || b.createdAt || 0);
         return fechaA - fechaB;
@@ -463,6 +471,49 @@ function MisComprasTab({ usuarioId }) {
   useEffect(() => {
     cargarCompras();
   }, [cargarCompras]);
+
+  const handleSolicitarDevolucion = async () => {
+    if (!carritoSeleccionado) return;
+    setProcesandoDevolucion(true);
+    setErrorDevolucion('');
+    try {
+      const id = carritoSeleccionado.idCarrito || carritoSeleccionado.id;
+
+      const carritoActual = await obtenerCarrito(id);
+      const estadoActual = (carritoActual?.estadoCarrito || carritoActual?.estado || '')
+        .toString()
+        .toUpperCase();
+      if (estadoActual !== 'PAGADO') {
+        setErrorDevolucion(
+          'Esta compra ya no está en estado pagado. Actualiza el historial para ver el estado actual.'
+        );
+        cargarCompras();
+        return;
+      }
+
+      const resultado = await solicitarDevolucion(id, {
+        razon: razonDevolucion,
+      });
+      setResultadoDevolucion(resultado);
+      cargarCompras();
+    } catch (err) {
+      setErrorDevolucion(
+        err.response?.data?.mensaje ||
+          err.message ||
+          'Error al procesar la devolución.'
+      );
+    } finally {
+      setProcesandoDevolucion(false);
+    }
+  };
+
+  const abrirModalDevolucion = (carrito) => {
+    setCarritoSeleccionado(carrito);
+    setRazonDevolucion('');
+    setResultadoDevolucion(null);
+    setErrorDevolucion('');
+    setShowDevolucionModal(true);
+  };
 
   if (cargando)
     return (
@@ -481,7 +532,6 @@ function MisComprasTab({ usuarioId }) {
   if (carritos.length === 0)
     return <Alert variant="info">Todavía no tienes compras registradas.</Alert>;
 
-  // Cada carrito se convierte en una fila con el resumen de ítems
   const formatearItems = (carrito) => {
     const items = carrito.items || carrito.detalles || [];
     if (items.length === 0) return '—';
@@ -555,20 +605,128 @@ function MisComprasTab({ usuarioId }) {
                   </Badge>
                 </td>
                 <td>
-                  <Button
-                    as={Link}
-                    to={`/carrito/${idCarrito}`}
-                    variant="outline-primary"
-                    size="sm"
-                  >
-                    Ver detalle
-                  </Button>
+                  {estado === 'PAGADO' ? (
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      onClick={() => abrirModalDevolucion(carrito)}
+                    >
+                      Solicitar devolución
+                    </Button>
+                  ) : estado === 'REEMBOLSADO' ? (
+                    <Badge bg="info">Reembolsado</Badge>
+                  ) : (
+                    <Button
+                      as={Link}
+                      to={`/carrito/${idCarrito}`}
+                      variant="outline-primary"
+                      size="sm"
+                    >
+                      Ver detalle
+                    </Button>
+                  )}
                 </td>
               </tr>
             );
           })}
         </tbody>
       </Table>
+
+      {/* Modal de solicitud de devolución */}
+      <Modal
+        show={showDevolucionModal}
+        onHide={() => setShowDevolucionModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Solicitar devolución</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {resultadoDevolucion ? (
+            <div>
+              <Alert variant="success">
+                Devolución procesada exitosamente
+              </Alert>
+              <p className="mb-1">
+                <strong>Monto total:</strong>{' '}
+                {formatearMoneda(resultadoDevolucion.montoTotal)}
+              </p>
+              <p className="mb-1">
+                <strong>Monto reembolsado (85%):</strong>{' '}
+                {formatearMoneda(resultadoDevolucion.montoDevolucion)}
+              </p>
+              <p className="mb-1">
+                <strong>Donación no reembolsable (10%):</strong>{' '}
+                {formatearMoneda(
+                  resultadoDevolucion.montoDonacionNoReembolsable
+                )}
+              </p>
+              <p className="text-muted small mb-0 mt-2">
+                {resultadoDevolucion.mensaje}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <p>
+                ¿Estás seguro de que deseas solicitar la devolución de esta
+                compra?
+              </p>
+              <p className="text-muted small">
+                Se reembolsará el 85% del monto pagado. El 10% donado no es
+                reembolsable.
+              </p>
+              {errorDevolucion && (
+                <Alert variant="danger">{errorDevolucion}</Alert>
+              )}
+              <Form.Group>
+                <Form.Label>Motivo de la devolución (opcional)</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  maxLength={500}
+                  value={razonDevolucion}
+                  onChange={(e) => setRazonDevolucion(e.target.value)}
+                  placeholder="Describe el motivo de tu devolución..."
+                />
+              </Form.Group>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          {resultadoDevolucion ? (
+            <Button
+              variant="primary"
+              onClick={() => setShowDevolucionModal(false)}
+            >
+              Cerrar
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="secondary"
+                onClick={() => setShowDevolucionModal(false)}
+                disabled={procesandoDevolucion}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleSolicitarDevolucion}
+                disabled={procesandoDevolucion}
+              >
+                {procesandoDevolucion ? (
+                  <>
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    Procesando...
+                  </>
+                ) : (
+                  'Confirmar devolución'
+                )}
+              </Button>
+            </>
+          )}
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

@@ -76,24 +76,18 @@ clienteApi.interceptors.response.use(
   async (error) => {
     const config = error.config;
 
-    // Reintentar automáticamente en 503 (servicio no disponible) con exponential backoff
-    // Solo para métodos idempotentes (GET/PUT/DELETE). AbortController cancela si el componente se desmonta.
+    // Reintentar automáticamente en 503 (servicio no disponible) con exponential backoff solo para métodos seguros/idempotentes
     const metodo = (config?.method || '').toLowerCase();
     const esIdempotente = metodo === 'get' || metodo === 'put' || metodo === 'delete';
-    const noReintentar = ['/notificaciones/contacto'];
-    const debeReintentar = esIdempotente && !noReintentar.some(endpoint => config.url?.includes(endpoint));
-    if (error.response?.status === 503 && debeReintentar && !config?._retry) {
+    if (error.response?.status === 503 && esIdempotente && !config?._retry) {
       config._retry = true;
-      const maxRetries = 3;
+      const maxRetries = 5;
       for (let attempt = 0; attempt < maxRetries; attempt++) {
-        if (config.signal?.aborted) break;
-        const delay = 1500 * 1.5 ** attempt;
+        const delay = 2000 * 1.5 ** attempt;
         await new Promise(r => setTimeout(r, delay));
-        if (config.signal?.aborted) break;
         try {
           return await clienteApi(config);
         } catch (retryError) {
-          if (retryError.name === 'CanceledError' || retryError.code === 'ERR_CANCELED') break;
           if (retryError.response?.status === 503) {
             if (attempt === maxRetries - 1) {
               logger.error(`Servicio no disponible tras ${maxRetries} reintentos (503)`);

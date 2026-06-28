@@ -1,7 +1,12 @@
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
+import DashAdminUsuarios from '@/components/admin/DashAdminUsuarios';
 import { Building2, Heart, Plus, ShoppingBag, TrendingUp } from 'lucide-react';
+import { listarEventos } from '@api/eventosApi';
+import { obtenerEstadisticasEventos } from '@api/carritoApi';
+import { listarUsuarios } from '@api/usuariosApi';
 import { useCallback, useEffect, useState } from 'react';
+
 import {
   Alert,
   Badge,
@@ -30,6 +35,7 @@ const STAT_VARIANTS = {
   brand: 'dashboard-stat-icon-brand',
   pink: 'dashboard-stat-icon-pink',
   success: 'dashboard-stat-icon-success',
+  warning: 'dashboard-stat-icon-warning',
 };
 
 // Tarjeta de estadística reutilizable
@@ -79,6 +85,8 @@ const DashboardAdmin = () => {
   const [guardando, setGuardando] = useState(false);
   const [exito, setExito] = useState('');
   const [error, setError] = useState('');
+  const [ventasStats, setVentasStats] = useState([]);
+  const [cargandoVentas, setCargandoVentas] = useState(false);
 
   // Formulario "Nueva Organización" (admin crea desde cero -> queda ACTIVA)
   const [formOrg, setFormOrg] = useState({
@@ -139,6 +147,35 @@ const DashboardAdmin = () => {
         })
       );
       setTotales(tots);
+
+      // Cargar ventas globales
+      setCargandoVentas(true);
+      try {
+        const [eventos, usuarios] = await Promise.all([
+          listarEventos(),
+          listarUsuarios(),
+        ]);
+        const userMap = Object.fromEntries(
+          usuarios.map(u => [u.id, u.nombre])
+        );
+        const eventoIds = eventos.map(e => e.id);
+        if (eventoIds.length > 0) {
+          const stats = await obtenerEstadisticasEventos(eventoIds);
+          const conNombres = stats.map(s => {
+            const evento = eventos.find(e => e.id === s.eventoId);
+            return {
+              ...s,
+              nombre: evento?.nombre || 'Desconocido',
+              organizador: userMap[evento?.organizadorId] || '—',
+            };
+          });
+          setVentasStats(conNombres);
+        }
+      } catch {
+        // Silencioso — el retry 503 del interceptor ya se encarga
+      } finally {
+        setCargandoVentas(false);
+      }
     } catch {
       setError('Error cargando datos.');
     } finally {
@@ -296,20 +333,13 @@ const DashboardAdmin = () => {
               />
             </Col>
             <Col xs={6} lg={3}>
-              {/* Placeholder ventas — MSCarrito */}
-              <Card className="border-0 shadow-sm h-100">
-                <Card.Body className="d-flex align-items-center gap-3 p-4">
-                  <div className="dashboard-stat-icon dashboard-stat-icon-warning">
-                    <ShoppingBag size={24} />
-                  </div>
-                  <div>
-                    <p className="text-muted small mb-1">Total ventas</p>
-                    <p className="text-muted small mb-0 fst-italic">
-                      Pendiente MSCarrito
-                    </p>
-                  </div>
-                </Card.Body>
-              </Card>
+              <StatCard
+                icon={ShoppingBag}
+                titulo="Total ventas"
+                valor={fmt(ventasStats.reduce((sum, s) => sum + Number(s.ingresos || 0), 0))}
+                variant="warning"
+                cargando={cargandoVentas}
+              />
             </Col>
           </Row>
 
@@ -460,20 +490,50 @@ const DashboardAdmin = () => {
                     )}
                   </Tab.Pane>
 
-                  {/* VENTAS — placeholder MSCarrito */}
+                  {/* VENTAS */}
                   <Tab.Pane eventKey="ventas">
-                    <Placeholder
-                      ms="MSCarrito"
-                      descripcion="Historial de ventas y pagos — implementar con endpoint de MSCarrito"
-                    />
+                    {cargandoVentas ? (
+                      <div className="text-center py-4"><Spinner className="spinner-ticketti" /></div>
+                    ) : ventasStats.length === 0 ? (
+                      <p className="text-muted text-center py-4">No hay ventas registradas.</p>
+                    ) : (
+                      <Table hover responsive size="sm">
+                        <thead className="table-light">
+                          <tr>
+                            <th>Evento</th>
+                            <th>Organizador</th>
+                            <th>Vendidas</th>
+                            <th>Reembolsadas</th>
+                            <th>Ingresos</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {ventasStats.map(s => (
+                            <tr key={s.eventoId}>
+                              <td className="fw-semibold">{s.nombre}</td>
+                              <td>{s.organizador}</td>
+                              <td>{s.entradasVendidas}</td>
+                              <td>{s.entradasReembolsadas || 0}</td>
+                              <td className="fw-semibold text-success">{fmt(s.ingresos)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot className="table-light fw-bold">
+                          <tr>
+                            <td>Total</td>
+                            <td></td>
+                            <td>{ventasStats.reduce((a, s) => a + Number(s.entradasVendidas || 0), 0)}</td>
+                            <td>{ventasStats.reduce((a, s) => a + Number(s.entradasReembolsadas || 0), 0)}</td>
+                            <td className="text-success">{fmt(ventasStats.reduce((a, s) => a + Number(s.ingresos || 0), 0))}</td>
+                          </tr>
+                        </tfoot>
+                      </Table>
+                    )}
                   </Tab.Pane>
 
                   {/* USUARIOS — placeholder MSUsuarios */}
                   <Tab.Pane eventKey="usuarios">
-                    <Placeholder
-                      ms="MSUsuarios"
-                      descripcion="Gestión de usuarios y roles — implementar con endpoint de MSUsuarios (Ingrid)"
-                    />
+                    <DashAdminUsuarios />
                   </Tab.Pane>
                 </Tab.Content>
               </Card.Body>

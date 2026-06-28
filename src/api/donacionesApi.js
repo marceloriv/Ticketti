@@ -172,15 +172,13 @@ export const eliminarCausa = async (idCausa) => {
 /**
  * Obtiene el monto total donado a una organización.
  *
- * ⚠️ PENDIENTE BACKEND: no existe aún GET /donaciones/total/{idOrganizacion}.
- * Cuando exista, reemplazar por:
- *   const { data } = await clienteApi.get(`/donaciones/total/${idOrganizacion}`);
- *   return data.total;
- *
- * @param {number|string} _idOrganizacion - ID de la organización.
- * @returns {Promise<number>} Monto acumulado (0 mientras no exista el endpoint).
+ * @param {number|string} idOrganizacion - ID de la organización.
+ * @returns {Promise<number>} Monto acumulado en donaciones aprobadas.
  */
-export const getTotalPorOrganizacion = async (_idOrganizacion) => 0;
+export const getTotalPorOrganizacion = async (idOrganizacion) => {
+  const { data } = await clienteApi.get(`/donaciones/total/organizacion/${idOrganizacion}`);
+  return data;
+};
 
 /**
  * Obtiene el historial de donaciones del usuario autenticado.

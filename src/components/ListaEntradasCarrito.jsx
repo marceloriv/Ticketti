@@ -56,8 +56,8 @@ const ItemEntradaCarrito = ({
     }
   }, [eventoId, item]);
 
-  const eventoNombre = item.eventoNombre ?? eventInfo?.nombre ?? `Evento #${eventoId}`;
-  const imagenUrl = item.imagenUrl ?? eventInfo?.imagenUrl ?? 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=300';
+  const eventoNombre = item.eventoNombre || eventInfo?.nombre || `Evento #${eventoId}`;
+  const imagenUrl = item.imagenUrl || eventInfo?.imagenUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=300';
   const genero = eventInfo?.genero ?? 'CONCIERTO';
   const fecha = eventInfo?.fecha
     ? new Date(eventInfo.fecha).toLocaleDateString('es-CL', {

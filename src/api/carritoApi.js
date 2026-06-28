@@ -138,6 +138,34 @@ export const procesarPagoManual = async (carritoId) => {
   return response.data?.data;
 };
 
+/**
+ * Solicita la devolución de una compra pagada. Reembolsa el 85% del subtotal;
+ * el 10% donado no es reembolsable.
+ *
+ * @param {number|string} carritoId - ID del carrito a devolver.
+ * @param {Object} [options] - Opciones adicionales.
+ * @param {string} [options.razon] - Motivo de la devolución (máx. 500 caracteres).
+ * @returns {Promise<Object>} Datos de la devolución procesada.
+ */
+export const solicitarDevolucion = async (carritoId, { razon = '' } = {}) => {
+  const response = await clienteApi.post(`/Carrito/devoluciones/${carritoId}`, {
+    pedidoId: carritoId,
+    razon,
+  });
+  return response.data?.data;
+};
+
+/**
+ * Obtiene estadisticas de ventas (entradas vendidas e ingresos) para una lista de eventos.
+ *
+ * @param {Array<number|string>} eventoIds - IDs de los eventos a consultar.
+ * @returns {Promise<Array>} Estadisticas por evento.
+ */
+export const obtenerEstadisticasEventos = async (eventoIds) => {
+  const response = await clienteApi.post('/Carrito/estadisticas', { eventoIds });
+  return response.data?.data || [];
+};
+
 export default {
   crearCarrito,
   obtenerCarrito,
@@ -149,4 +177,6 @@ export default {
   renovarReserva,
   listarCarritos,
   procesarPagoManual,
+  solicitarDevolucion,
+  obtenerEstadisticasEventos,
 };
