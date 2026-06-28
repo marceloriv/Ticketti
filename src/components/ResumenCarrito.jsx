@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle, Heart } from 'lucide-react';
+import { ArrowRight, CheckCircle, Heart, Clock, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Form } from 'react-bootstrap';
 import { getCausasActivas } from '@api/donacionesApi';
@@ -32,14 +32,91 @@ const ESTADO_CARRITO_VARIANT = {
 };
 
 /**
+ * Componente que muestra la cuenta regresiva de expiración de la reserva.
+ */
+const CountdownTimer = ({ expiracionStr, onExpirado, onRenovar, puedeRenovar, loading }) => {
+  const [segundosRestantes, setSegundosRestantes] = useState(0);
+
+  useEffect(() => {
+    if (!expiracionStr) return;
+
+    const calcularTiempo = () => {
+      const expDate = new Date(expiracionStr);
+      const ahora = new Date();
+      const diff = Math.max(0, Math.floor((expDate.getTime() - ahora.getTime()) / 1000));
+      setSegundosRestantes(diff);
+
+      if (diff <= 0 && onExpirado) {
+        onExpirado();
+      }
+    };
+
+    calcularTiempo();
+    const interval = setInterval(calcularTiempo, 1000);
+
+    return () => clearInterval(interval);
+  }, [expiracionStr, onExpirado]);
+
+  if (segundosRestantes <= 0) {
+    return (
+      <Alert variant="danger" className="py-2 px-3 mb-3 small d-flex align-items-center gap-2 rounded-3 shadow-sm">
+        <AlertCircle size={16} />
+        <span>La reserva de tus entradas ha expirado.</span>
+      </Alert>
+    );
+  }
+
+  const minutos = Math.floor(segundosRestantes / 60);
+  const segundos = segundosRestantes % 60;
+  const formateado = `${minutos}:${segundos.toString().padStart(2, '0')}`;
+
+  return (
+    <div className="resumen-carrito-timer border border-warning bg-warning-subtle text-warning-emphasis p-3 rounded-3 mb-3 d-flex align-items-center justify-content-between shadow-sm">
+      <div className="d-flex align-items-center gap-2">
+        <Clock size={20} className="text-warning-emphasis" />
+        <div>
+          <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>Reserva expira en</small>
+          <span className="fs-5 fw-bold font-monospace">{formateado}</span>
+        </div>
+      </div>
+      {puedeRenovar && onRenovar && (
+        <Button 
+          variant="warning" 
+          size="sm" 
+          onClick={onRenovar} 
+          disabled={loading}
+          className="fw-semibold px-2 py-1 small"
+          style={{ fontSize: '0.8rem' }}
+        >
+          {loading ? '...' : 'Renovar'}
+        </Button>
+      )}
+    </div>
+  );
+};
+
+/**
  * Componente que muestra el panel con el desglose final y el checkout del carrito de compras.
  * La donación del 10% es OBLIGATORIA — no es opcional. Se calcula sobre el subtotal.
  */
-const ResumenCarrito = ({ resumen, onCheckout, loading, isGuest = false, esCarritoPagado = false }) => {
+const ResumenCarrito = ({ 
+  resumen, 
+  onCheckout, 
+  loading, 
+  isGuest = false, 
+  esCarritoPagado = false,
+  onRenovar,
+  puedeRenovar
+}) => {
   const [causaSocialId, setCausaSocialId] = useState('');
   const [error, setError] = useState('');
   const [causas, setCausas] = useState([]);
   const [cargandoCausas, setCargandoCausas] = useState(false);
+  const [reservaExpirada, setReservaExpirada] = useState(false);
+
+  useEffect(() => {
+    setReservaExpirada(false);
+  }, [resumen]);
 
   useEffect(() => {
     const cargarCausas = async () => {
@@ -84,8 +161,8 @@ const ResumenCarrito = ({ resumen, onCheckout, loading, isGuest = false, esCarri
   const esReservado = estadoCarrito === 'RESERVADO';
   const yaPagado = estadoCarrito === 'PAGADO';
   const pagoPendiente = estadoPago === 'PENDIENTE';
-  // Puede pagar si no está pagado, tiene items, no está cargando, y si está reservado el pago debe estar pendiente
-  const puedePagar = !yaPagado && cantidadTotal > 0 && !loading && (!esReservado || pagoPendiente);
+  // Puede pagar si no está pagado, tiene items, no está cargando, y si está reservado el pago debe estar pendiente y la reserva no debe haber expirado
+  const puedePagar = !yaPagado && cantidadTotal > 0 && !loading && (!esReservado || (pagoPendiente && !reservaExpirada));
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -132,6 +209,16 @@ const ResumenCarrito = ({ resumen, onCheckout, loading, isGuest = false, esCarri
             </Badge>
           )}
         </div>
+      )}
+
+      {esReservado && resumen?.fechaExpiracionReserva && (
+        <CountdownTimer
+          expiracionStr={resumen.fechaExpiracionReserva}
+          onExpirado={() => setReservaExpirada(true)}
+          onRenovar={onRenovar}
+          puedeRenovar={puedeRenovar}
+          loading={loading}
+        />
       )}
 
       {/* Breakdown de precios */}

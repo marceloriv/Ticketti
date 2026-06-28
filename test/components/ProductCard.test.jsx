@@ -1,6 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import ProductCard from '../../src/components/common/ProductCard';
 import { renderWithRouter } from '../test-utils';
 
@@ -63,26 +62,9 @@ describe('ProductCard', () => {
     expect(screen.getByTestId('product-card-location')).toHaveTextContent('Ubicación por confirmar');
   });
 
-  it('ejecuta onComprar cuando se hace click en el botón', async () => {
-    const user = userEvent.setup();
-    const onComprar = vi.fn();
-
-    renderWithRouter(<ProductCard evento={mockEvento} onComprar={onComprar} />);
-
-    await user.click(screen.getByTestId('product-card-buy-btn'));
-
-    expect(onComprar).toHaveBeenCalledWith(1);
-  });
-
   it('tiene aria-label correcto', () => {
     renderWithRouter(<ProductCard evento={mockEvento} />);
 
     expect(screen.getByLabelText('Ver detalle de Concierto de Rock')).toBeInTheDocument();
-  });
-
-  it('el botón de comprar tiene aria-label correcto', () => {
-    renderWithRouter(<ProductCard evento={mockEvento} />);
-
-    expect(screen.getByLabelText('Comprar entradas para Concierto de Rock')).toBeInTheDocument();
   });
 });

@@ -126,8 +126,13 @@ const DetalleEvento = () => {
     logger.log('[DetalleEvento] Añadiendo entradas al carrito');
     setErrorCarrito('');
 
-    if (cantidad < 1 || cantidad > 4) {
-      setErrorCarrito('Debes seleccionar entre 1 y 4 entradas');
+    const maxStock = Math.min(4, evento?.stock || 0);
+    if (cantidad < 1 || cantidad > maxStock) {
+      if (cantidad > maxStock) {
+        setErrorCarrito(`Solo quedan ${evento?.stock} entradas disponibles (límite de 4 por compra).`);
+      } else {
+        setErrorCarrito('Debes seleccionar entre 1 y 4 entradas');
+      }
       return;
     }
 
@@ -399,12 +404,17 @@ const DetalleEvento = () => {
             <Form.Control
               type="number"
               min={1}
-              max={4}
+              max={Math.min(4, evento?.stock || 0)}
               value={cantidad}
               onChange={(e) => {
                 const val = Number(e.target.value);
-                if (!Number.isNaN(val) && val >= 1 && val <= 4) {
-                  setCantidad(val);
+                const maxStock = Math.min(4, evento?.stock || 0);
+                setCantidad(val);
+                if (val > maxStock) {
+                  setErrorCarrito(`Solo puedes seleccionar hasta ${maxStock} entradas.`);
+                } else if (val < 1) {
+                  setErrorCarrito('Debes seleccionar al menos 1 entrada.');
+                } else {
                   setErrorCarrito('');
                 }
               }}
