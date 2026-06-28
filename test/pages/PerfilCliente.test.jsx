@@ -68,7 +68,7 @@ describe('PerfilCliente', () => {
   it('carga los datos del perfil al montar', async () => {
     renderWithAuthAndRouter(<PerfilCliente />);
     await waitFor(() => {
-      expect(obtenerUsuario).toHaveBeenCalledWith(1);
+      expect(obtenerUsuario).toHaveBeenCalledWith(1, expect.objectContaining({ signal: expect.any(AbortSignal) }));
     });
   });
 

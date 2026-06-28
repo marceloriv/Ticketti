@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+
+vi.mock('@api/donacionesApi', () => ({
+  getCausasActivas: vi.fn(),
+  default: { getCausasActivas: vi.fn() },
+}));
+
+import { getCausasActivas } from '@api/donacionesApi';
 import ResumenCarrito from '../../src/components/ResumenCarrito';
 
 const resumenConItems = {
@@ -28,6 +35,7 @@ const resumenPagado = {
 describe('ResumenCarrito', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    getCausasActivas.mockResolvedValue([{ idCausa: '1', nombre: 'UNICEF' }]);
   });
 
   it('renderiza título "Resumen de Compra"', () => {
@@ -57,9 +65,9 @@ describe('ResumenCarrito', () => {
     expect(screen.getByText('Gratis')).toBeInTheDocument();
   });
 
-  it('muestra selector de causa social para usuario autenticado', () => {
+  it('muestra selector de causa social para usuario autenticado', async () => {
     render(<ResumenCarrito resumen={resumenConItems} onCheckout={vi.fn()} />);
-    expect(screen.getByText('UNICEF')).toBeInTheDocument();
+    expect(await screen.findByText('UNICEF')).toBeInTheDocument();
   });
 
   it('no muestra selector de causa para invitado', () => {
@@ -80,7 +88,10 @@ describe('ResumenCarrito', () => {
   it('ejecuta onCheckout con causaSocialId al enviar', async () => {
     const onCheckout = vi.fn();
     render(<ResumenCarrito resumen={resumenConItems} onCheckout={onCheckout} />);
-    await userEvent.setup().click(screen.getByText('Proceder al Pago Seguro'));
+    const user = userEvent.setup();
+    expect(await screen.findByText('UNICEF')).toBeInTheDocument();
+    await user.selectOptions(screen.getByRole('combobox'), '1');
+    await user.click(screen.getByText('Proceder al Pago Seguro'));
     expect(onCheckout).toHaveBeenCalledWith('1');
   });
 
