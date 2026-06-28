@@ -295,6 +295,8 @@ const PaginaCarrito = () => {
                       ? handleGuestCheckout
                       : handleCheckout
                   }
+                  onRenovar={!isGuest ? handleRenovarReserva : undefined}
+                  puedeRenovar={!isGuest && resumen?.puedeRenovarReserva}
                   loading={loading}
                   isGuest={isGuest}
                   esCarritoPagado={esCarritoPagado}

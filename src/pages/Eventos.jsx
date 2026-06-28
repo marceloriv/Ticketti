@@ -2,10 +2,7 @@ import api from '@api/api';
 import ProductCard from '@components/common/ProductCard';
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
-import { useAuth } from '@hooks/useAuth';
 import logger from '@utils/logger';
-import { useCarrito } from '@hooks/useCarrito';
-import { useCarritoGuest } from '@hooks/useCarritoGuest';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Col, Container, Row, Spinner } from 'react-bootstrap';
 import { useSearchParams } from 'react-router-dom';
@@ -40,17 +37,12 @@ const CATEGORIAS = [
 ];
 
 const Eventos = () => {
-  const { establecerCarritoId, isAuthenticated } = useAuth();
   const [eventos, setEventos] = useState([]);
   const [eventosFiltrados, setEventosFiltrados] = useState([]);
   const [categoriaActiva, setCategoriaActiva] = useState('todo');
   const [busqueda, setBusqueda] = useState('');
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
-
-  const [carritoId, setCarritoId] = useState(null);
-  const { inicializarCarrito, agregarEntrada } = useCarrito(carritoId);
-  const { agregarEntrada: guestAgregarEntrada } = useCarritoGuest();
 
   const [searchParams] = useSearchParams();
 
@@ -104,22 +96,6 @@ const Eventos = () => {
     setEventosFiltrados(filtrados);
   }, [categoriaActiva, busqueda, eventos]);
 
-  const handleAddToCart = async (evento) => {
-    try {
-      if (isAuthenticated) {
-        const { carritoId: newCarritoId } = await inicializarCarrito();
-        if (!newCarritoId) throw new Error('No se pudo obtener el carrito');
-        setCarritoId(newCarritoId);
-        establecerCarritoId(newCarritoId);
-        await agregarEntrada({ eventoId: evento.id, tipoEntrada: 'General', cantidad: 1, precioUnitario: evento.precioEntrada || 0 }, newCarritoId);
-      } else {
-        guestAgregarEntrada({ eventoId: evento.id, eventoNombre: evento.nombre, imagenUrl: evento.imagenUrl, tipoEntrada: 'General', cantidad: 1, precioUnitario: evento.precioEntrada || 0 });
-      }
-    } catch (err) {
-      logger.error('Error agregando al carrito', err);
-    }
-  };
-
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
@@ -146,7 +122,6 @@ const Eventos = () => {
                   <Col key={evento.id}>
                     <ProductCard
                       evento={{ id: evento.id, imagen: evento.imagenUrl || '/img/mascota1.png', titulo: evento.nombre || 'Evento sin nombre', fecha: evento.fecha, ubicacion: evento.recinto?.ubicacion || 'Ubicación por confirmar', precio: evento.precioEntrada || 0 }}
-                      onComprar={() => handleAddToCart(evento)}
                     />
                   </Col>
                 ))}

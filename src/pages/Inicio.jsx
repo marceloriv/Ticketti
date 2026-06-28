@@ -6,11 +6,8 @@ import CategoryCard from '@components/common/CategoryCard';
 import { useNavigate } from 'react-router-dom';
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
-import { useAuth } from '@hooks/useAuth';
-import { useCarrito } from '@hooks/useCarrito';
-import { useCarritoGuest } from '@hooks/useCarritoGuest';
-import logger from '@utils/logger';
 import { Building2, Heart, Search } from 'lucide-react';
+import logger from '@utils/logger';
 import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -65,7 +62,6 @@ const HERO_SLIDES = [
 
 const Inicio = () => {
   const navigate = useNavigate();
-  const { establecerCarritoId, isAuthenticated } = useAuth();
   const [eventos, setEventos] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [cargando, setCargando] = useState(true);
@@ -73,13 +69,6 @@ const Inicio = () => {
   //Causas y organizaciones
   const [causas, setCausas] = useState([]);
   const [organizaciones, setOrganizaciones] = useState([]);
-
-  // Carrito
-  const [carritoId, setCarritoId] = useState(null);
-  const { inicializarCarrito, agregarEntrada } = useCarrito(carritoId);
-  const { agregarEntrada: guestAgregarEntrada } = useCarritoGuest();
-  const [message, setMessage] = useState('');
-  const [addingToCart, setAddingToCart] = useState(false);
 
   /**
    * Carga los eventos desde la API
@@ -132,70 +121,6 @@ const Inicio = () => {
     return () => controller.abort();
   }, []);
 
-  /**
-   * Maneja el proceso de agregar una entrada al carrito desde la página de inicio
-   * Para usuarios invitados, usa localStorage
-   * Para usuarios autenticados, usa el backend
-   *
-   * @param {Object} evento - Objeto con los datos del evento
-   * @returns {Promise<void>} Promesa que se resuelve cuando se agrega la entrada
-   */
-  const handleAddToCart = async (evento) => {
-    if (addingToCart) return;
-    setAddingToCart(true);
-    try {
-      if (isAuthenticated) {
-        // Usuario autenticado: intentar usar backend con fallback a carrito de invitado
-        try {
-          const { carritoId: newCarritoId } = await inicializarCarrito();
-          if (!newCarritoId) throw new Error('No se pudo obtener el carrito');
-          setCarritoId(newCarritoId);
-          establecerCarritoId(newCarritoId);
-          await agregarEntrada(
-            {
-              eventoId: evento.id,
-              tipoEntrada: 'General',
-              cantidad: 1,
-              precioUnitario: evento.precioEntrada || 0,
-            },
-            newCarritoId
-          );
-        } catch (backendError) {
-          // Fallback: usar carrito de invitado si el backend falla
-          logger.warn(
-            'Backend falló, usando carrito de invitado como fallback:',
-            backendError
-          );
-          guestAgregarEntrada({
-            eventoId: evento.id,
-            eventoNombre: evento.nombre,
-            imagenUrl: evento.imagenUrl,
-            tipoEntrada: 'General',
-            cantidad: 1,
-            precioUnitario: evento.precioEntrada || 0,
-          });
-        }
-      } else {
-        // Usuario invitado: usar localStorage
-        guestAgregarEntrada({
-          eventoId: evento.id,
-          eventoNombre: evento.nombre,
-          imagenUrl: evento.imagenUrl,
-          tipoEntrada: 'General',
-          cantidad: 1,
-          precioUnitario: evento.precioEntrada || 0,
-        });
-      }
-      setMessage(`Entrada agregada al carrito: ${evento.nombre}`);
-      setTimeout(() => setMessage(''), 3000);
-    } catch (err) {
-      setMessage('Error al agregar al carrito: ' + err.message);
-      setTimeout(() => setMessage(''), 3000);
-    } finally {
-      setAddingToCart(false);
-    }
-  };
-
   // Nota: el filtrado principal ahora se maneja en la página /eventos.
 
   const getCategoryImage = (id) => {
@@ -215,11 +140,6 @@ const Inicio = () => {
     <div className="d-flex flex-column min-vh-100">
       <Header />
       <main className="grow">
-        {message && (
-          <Alert variant={message.startsWith('Error') ? 'danger' : 'success'}>
-            {message}
-          </Alert>
-        )}
         {/* HERO - Eventos */}
         <section id="hero" className="position-relative">
           <CommonCarousel slides={HERO_SLIDES} />
@@ -301,7 +221,6 @@ const Inicio = () => {
                         ubicacion: evento.recinto?.ubicacion || 'Ubicación por confirmar',
                         precio: evento.precioEntrada || 0,
                       }}
-                      onComprar={() => handleAddToCart(evento)}
                     />
                   </Col>
                 ))}

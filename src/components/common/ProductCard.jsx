@@ -7,14 +7,13 @@
  *  - CSS hover por clase inyectada en <head> sin re-inyectar.
  *  - Fallback de imagen ante error de carga (onError → placeholder).
  *  - data-testid en cada elemento relevante para pruebas automatizadas.
- *  - Si no se pasa `onComprar`, el botón navega directamente al detalle del evento.
  *  - Semántica mejorada: <article> con role="button", tabIndex y aria-label.
  *  - Propiedades con valores por defecto seguros.
  *  - Click en cualquier parte de la tarjeta navega al detalle del evento.
  */
-import { Calendar, MapPin, Ticket } from 'lucide-react';
+import { Calendar, MapPin } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
-import { Button, Card } from 'react-bootstrap';
+import { Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 const IMG_PLACEHOLDER = '/img/mascota1.png';
 
@@ -49,7 +48,6 @@ const formatDate = (dateString) => {
 // ── Componente ──────────────────────────────────────────────────────────
 const ProductCard = ({
   evento,
-  onComprar,
   imagenPlaceholder = IMG_PLACEHOLDER,
 }) => {
   const navigate = useNavigate();
@@ -72,18 +70,6 @@ const ProductCard = ({
   const handleCardClick = useCallback(() => {
     if (id != null) navigate(`/evento/${id}`);
   }, [id, navigate]);
-
-  const handleComprar = useCallback(
-    (e) => {
-      e?.stopPropagation();
-      if (onComprar) {
-        onComprar(id);
-      } else if (id != null) {
-        navigate(`/evento/${id}`);
-      }
-    },
-    [id, navigate, onComprar]
-  );
 
   return (
     <Card
@@ -139,7 +125,7 @@ const ProductCard = ({
           </small>
         </div>
 
-        {/* Pie: precio + botón */}
+        {/* Pie: precio */}
         <div className="mt-auto d-flex justify-content-between align-items-center">
           <span
             className="fw-bold fs-5 product-card__price"
@@ -147,18 +133,6 @@ const ProductCard = ({
           >
             {formatPrice(precio)}
           </span>
-
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleComprar}
-            className="d-flex align-items-center gap-2 product-card__buy btn-ticketti"
-            data-testid="product-card-buy-btn"
-            aria-label={`Comprar entradas para ${titulo}`}
-          >
-            <Ticket size={16} aria-hidden="true" />
-            Comprar
-          </Button>
         </div>
       </Card.Body>
     </Card>
