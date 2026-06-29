@@ -878,3 +878,14 @@ opciones
   font-size: 0.86rem;
   line-height: 1.45;
 }
+
+/* Filtros Sidebar (página Eventos) */
+.filtros-sidebar {
+  position: sticky;
+  top: 20px;
+}
+
+.filtro-checkbox label {
+  cursor: pointer;
+  font-size: 0.9rem;
+}
