@@ -309,67 +309,6 @@
   height: 250px;
 }
 
-.nosotros-hero-ticketti {
-  background: linear-gradient(135deg, var(--ticketti-primary), #6f88c4);
-  color: #fff;
-}
-
-.nosotros-hero-ticketti__overlay {
-  top: 0;
-  left: 0;
-  background: radial-gradient(
-    circle at 20% 50%,
-    rgba(255, 255, 255, 0.1) 0%,
-    transparent 50%
-  );
-  z-index: 0;
-}
-
-.nosotros-hero-ticketti__content {
-  z-index: 1;
-}
-
-.nosotros-frame-ticketti {
-  top: -20px;
-  left: -20px;
-  right: -20px;
-  bottom: -20px;
-  border: 2px dashed var(--ticketti-primary);
-  z-index: -1;
-  opacity: 0.3;
-}
-
-.nosotros-divider-ticketti {
-  width: 60px;
-  height: 3px;
-  background: var(--ticketti-primary);
-  margin: 1rem auto;
-  border-radius: 2px;
-}
-
-.nosotros-icon-ticketti {
-  width: 70px;
-  height: 70px;
-  background: var(--ticketti-primary);
-  color: #000;
-}
-
-.nosotros-icon-ticketti--alt {
-  background: #6f88c4;
-  color: #fff;
-}
-
-.nosotros-emoji-ticketti {
-  font-size: 1.5rem;
-}
-
-.nosotros-value-icon-ticketti {
-  width: 70px;
-  height: 70px;
-  background: var(--ticketti-primary);
-  font-size: 2rem;
-}
-
 .pagina-carrito-ticketti {
   min-height: 100vh;
 }
