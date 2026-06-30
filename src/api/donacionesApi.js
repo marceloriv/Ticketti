@@ -107,13 +107,15 @@ export const subirDocumentoOrganizacion = async (idOrganizacion, archivo) => {
   const formData = new FormData();
   formData.append('archivo', archivo);
 
-  // No fijar Content-Type a mano: axios necesita generar el boundary del
-  // multipart automáticamente al detectar un FormData. Si se fuerza el
-  // header aquí, se pierde el boundary y el backend no puede parsear el
-  // archivo (org.springframework.web.multipart.MultipartException).
+  // clienteApi fija Content-Type: application/json por defecto. Si no se
+  // anula aquí, axios ve ese Content-Type explícito y convierte el FormData
+  // a JSON (formDataToJSON), descartando el archivo en vez de generar un
+  // multipart con boundary. 'undefined' borra el header por defecto solo
+  // en esta petición para que axios autodetecte el FormData correctamente.
   const { data } = await clienteApi.post(
     `/organizaciones/${idOrganizacion}/documento`,
-    formData
+    formData,
+    { headers: { 'Content-Type': undefined } }
   );
   return data;
 };
@@ -180,13 +182,15 @@ export const subirDocumentoCausa = async (idCausa, archivo, nombreOrganizador) =
   formData.append('archivo', archivo);
   formData.append('nombreOrganizador', nombreOrganizador);
 
-  // No fijar Content-Type a mano: axios necesita generar el boundary del
-  // multipart automáticamente al detectar un FormData. Si se fuerza el
-  // header aquí, se pierde el boundary y el backend no puede parsear el
-  // archivo (org.springframework.web.multipart.MultipartException).
+  // clienteApi fija Content-Type: application/json por defecto. Si no se
+  // anula aquí, axios ve ese Content-Type explícito y convierte el FormData
+  // a JSON (formDataToJSON), descartando el archivo en vez de generar un
+  // multipart con boundary. 'undefined' borra el header por defecto solo
+  // en esta petición para que axios autodetecte el FormData correctamente.
   const { data } = await clienteApi.post(
     `/causas/${idCausa}/documento`,
-    formData
+    formData,
+    { headers: { 'Content-Type': undefined } }
   );
   return data;
 };
