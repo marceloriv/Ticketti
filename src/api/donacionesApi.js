@@ -181,16 +181,15 @@ export const getTotalPorOrganizacion = async (idOrganizacion) => {
 };
 
 /**
- * Obtiene el historial de donaciones del usuario autenticado.
+ * Obtiene el historial de donaciones del usuario autenticado
+ * (idUsuario extraído del JWT en el backend).
  *
- * ⚠️ PENDIENTE BACKEND: no existe aún GET /donaciones/me.
- * Cuando exista, reemplazar por:
- *   const { data } = await clienteApi.get('/donaciones/me');
- *   return data;
- *
- * @returns {Promise<Array>} Listado vacío mientras no exista el endpoint.
+ * @returns {Promise<Array>} Listado de donaciones del usuario.
  */
-export const getMisDonaciones = async () => [];
+export const getMisDonaciones = async (options = {}) => {
+  const { data } = await clienteApi.get('/donaciones/me', options);
+  return data;
+};
 
 /**
  * Obtiene TODAS las causas sociales (incluyendo PENDIENTE), para que

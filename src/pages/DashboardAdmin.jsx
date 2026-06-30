@@ -1,6 +1,6 @@
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
-import DashAdminUsuarios from '@/components/admin/DashAdminUsuarios';
+import DashAdminUsuarios from '@/components/Admin/DashAdminUsuarios';
 import { Building2, Heart, Plus, ShoppingBag, TrendingUp } from 'lucide-react';
 import { listarEventos } from '@api/eventosApi';
 import { obtenerEstadisticasEventos } from '@api/carritoApi';
@@ -24,7 +24,7 @@ import {
 } from 'react-bootstrap';
 import {
   getOrganizaciones,
-  getCausasActivas,
+  getCausas,
   getTotalPorOrganizacion,
   crearOrganizacionActiva,
   crearCausaActiva,
@@ -129,7 +129,7 @@ const DashboardAdmin = () => {
     try {
       const [orgs, causasData] = await Promise.all([
         getOrganizaciones(),
-        getCausasActivas(),
+        getCausas(),
       ]);
       setOrganizaciones(orgs);
       setCausas(causasData);
@@ -437,7 +437,7 @@ const DashboardAdmin = () => {
                   {/* CAUSAS */}
                   <Tab.Pane eventKey="causas">
                     <div className="d-flex justify-content-between mb-3">
-                      <h5 className="fw-bold mb-0">Causas sociales activas</h5>
+                      <h5 className="fw-bold mb-0">Causas sociales</h5>
                       <Button
                         size="sm"
                         onClick={() => setShowModalCausa(true)}

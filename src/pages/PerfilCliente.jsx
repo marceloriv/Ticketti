@@ -20,6 +20,7 @@ import {
 import { Link } from 'react-router-dom';
 import { obtenerUsuario, actualizarUsuario } from '@api/usuariosApi';
 import { solicitarDevolucion, obtenerCarrito } from '@api/carritoApi';
+import { getMisDonaciones } from '@api/donacionesApi';
 
 const estadoLabelMap = {
   CREADO: 'Creado',
@@ -69,6 +70,18 @@ const ESTADO_VARIANT = {
   PENDIENTE: 'warning',
   FALLIDO: 'danger',
   CANCELADO: 'secondary',
+};
+
+const estadoDonacionLabelMap = {
+  PENDIENTE: 'Pendiente',
+  APROBADA: 'Aprobada',
+  RECHAZADA: 'Rechazada',
+};
+
+const estadoDonacionVariantMap = {
+  PENDIENTE: 'warning',
+  APROBADA: 'success',
+  RECHAZADA: 'danger',
 };
 
 const PerfilCliente = () => {
@@ -310,18 +323,9 @@ const PerfilCliente = () => {
                     <MisComprasTab usuarioId={usuario?.id} />
                   </Tab.Pane>
 
-                  {/* ── DONACIONES ── pendiente MSDonaciones */}
+                  {/* ── MIS DONACIONES — conectado a ms-donaciones ── */}
                   <Tab.Pane eventKey="donaciones">
-                    <Alert variant="info" className="text-center py-4">
-                      <Heart size={24} className="mb-2 text-ticketti" />
-                      <p className="mb-1 fw-semibold">
-                        Historial de donaciones próximamente
-                      </p>
-                      <p className="text-muted small mb-0">
-                        MSDonaciones — GET
-                        /api/donaciones/usuario/&#123;id&#125;
-                      </p>
-                    </Alert>
+                    <MisDonacionesTab />
                   </Tab.Pane>
 
                   {/* ── PERFIL ── */}
@@ -727,6 +731,90 @@ function MisComprasTab({ usuarioId }) {
           )}
         </Modal.Footer>
       </Modal>
+    </div>
+  );
+}
+
+// Componente separado para Mis Donaciones — conectado a GET /donaciones/me
+function MisDonacionesTab() {
+  const [donaciones, setDonaciones] = useState([]);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState('');
+
+  const cargarDonaciones = useCallback(async (signal) => {
+    setCargando(true);
+    setError('');
+    try {
+      const data = await getMisDonaciones({ signal });
+      setDonaciones(data || []);
+    } catch (err) {
+      if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
+      setError('No se pudieron cargar las donaciones.');
+    } finally {
+      setCargando(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    cargarDonaciones(controller.signal);
+    return () => controller.abort();
+  }, [cargarDonaciones]);
+
+  return (
+    <div>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h5 className="fw-bold mb-0">Historial de donaciones</h5>
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          onClick={() => cargarDonaciones()}
+          className="d-flex align-items-center gap-1"
+        >
+          <RefreshCw size={14} /> Actualizar
+        </Button>
+      </div>
+
+      {error && <Alert variant="danger">{error}</Alert>}
+
+      {cargando ? (
+        <div className="text-center py-4">
+          <Spinner className="spinner-ticketti" />
+        </div>
+      ) : donaciones.length === 0 ? (
+        <Alert variant="info">Todavía no tienes donaciones registradas.</Alert>
+      ) : (
+        <Table hover responsive size="sm">
+          <thead className="table-light">
+            <tr>
+              <th>Causa</th>
+              <th>Organización</th>
+              <th>Monto</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {donaciones.map((d) => (
+              <tr key={d.idDonacion}>
+                <td>{d.nombreCausa || '—'}</td>
+                <td className="text-muted small">
+                  {d.nombreOrganizacion || '—'}
+                </td>
+                <td className="fw-semibold">{formatearMoneda(d.monto)}</td>
+                <td className="text-muted small">
+                  {formatearFecha(d.fecha)}
+                </td>
+                <td>
+                  <Badge bg={estadoDonacionVariantMap[d.estado] || 'secondary'}>
+                    {estadoDonacionLabelMap[d.estado] || d.estado}
+                  </Badge>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
     </div>
   );
 }
