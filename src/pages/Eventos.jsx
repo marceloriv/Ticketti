@@ -5,7 +5,7 @@ import Header from '@components/layout/Header';
 import logger from '@utils/logger';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Col, Container, Row, Form, Button, Offcanvas, Accordion } from 'react-bootstrap';
-import { Search, SlidersHorizontal, Tickets } from 'lucide-react';
+import { Search, SlidersHorizontal, Tickets, X } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import '@styles/components/Eventos.css';
 
@@ -48,6 +48,11 @@ const RANGOS_POR_CATEGORIA = {
   ],
 };
 
+const formatCLP = (val) => {
+  if (val === '' || val == null) return '';
+  return Number(val).toLocaleString('es-CL');
+};
+
 const SkeletonCard = () => (
   <div className="eventos-skeleton">
     <div className="eventos-skeleton__media" />
@@ -57,6 +62,159 @@ const SkeletonCard = () => (
       <div className="eventos-skeleton__line" />
     </div>
   </div>
+);
+
+const ContenidoFiltros = ({
+  totalFiltrosActivos,
+  limpiarFiltros,
+  acordeonPorDefecto,
+  generosSeleccionados,
+  toggleGenero,
+  rangoRapido,
+  aplicarRangoRapido,
+  precioMin,
+  precioMax,
+  precioActivo,
+  leftPct,
+  widthPct,
+  precioMinGlobal,
+  precioMaxGlobal,
+  handleMinChange,
+  handleMaxChange,
+  handlePriceBlur,
+  limpiarPrecioWidget,
+}) => (
+  <>
+    <div className="eventos-sidebar__header">
+      <h6 className="eventos-sidebar__title">Filtros</h6>
+      {totalFiltrosActivos > 0 && (
+        <button className="eventos-sidebar__clear" onClick={limpiarFiltros}>
+          Limpiar ({totalFiltrosActivos})
+        </button>
+      )}
+    </div>
+
+    <hr className="eventos-sidebar__divider" />
+
+    <Accordion defaultActiveKey={acordeonPorDefecto} alwaysOpen flush>
+      {GENEROS_POR_CATEGORIA.map((cat) => (
+        <Accordion.Item key={cat.id} eventKey={cat.id}>
+          <Accordion.Header>{cat.nombre}</Accordion.Header>
+          <Accordion.Body>
+            {cat.generos.map((genero) => (
+              <Form.Check
+                key={genero}
+                type="checkbox"
+                id={`genero-${genero}`}
+                label={genero}
+                checked={generosSeleccionados.includes(genero)}
+                onChange={() => toggleGenero(genero)}
+                className="eventos-check"
+              />
+            ))}
+
+            {RANGOS_POR_CATEGORIA[cat.id] && (
+              <>
+                <p className="eventos-price-label">Precio</p>
+                {RANGOS_POR_CATEGORIA[cat.id].map((rango) => (
+                  <Form.Check
+                    key={rango.key}
+                    type="radio"
+                    id={`rango-${rango.key}`}
+                    name="rango-precio"
+                    label={rango.label}
+                    checked={rangoRapido === rango.key}
+                    onChange={() => aplicarRangoRapido(rango.min, rango.max, rango.key)}
+                    className="eventos-check"
+                  />
+                ))}
+              </>
+            )}
+          </Accordion.Body>
+        </Accordion.Item>
+      ))}
+    </Accordion>
+
+    <hr className="eventos-sidebar__divider" />
+
+    <div className="eventos-price-widget">
+      <div className="eventos-price-widget__header">
+        <p className="eventos-price-widget__label">Precio personalizado</p>
+        <button
+          className={`eventos-price-widget__clear${precioActivo ? ' eventos-price-widget__clear--visible' : ''}`}
+          onClick={limpiarPrecioWidget}
+        >
+          Limpiar
+        </button>
+      </div>
+
+      <div className="eventos-price-widget__inputs">
+        <div className="eventos-price-widget__input-group">
+          <span className="eventos-price-widget__currency">CLP</span>
+          <Form.Control
+            type="text"
+            inputMode="numeric"
+            placeholder="Mínimo"
+            value={precioMin}
+            onChange={(e) => handleMinChange(e.target.value)}
+            onBlur={handlePriceBlur}
+          />
+        </div>
+        <div className="eventos-price-widget__input-group">
+          <span className="eventos-price-widget__currency">CLP</span>
+          <Form.Control
+            type="text"
+            inputMode="numeric"
+            placeholder="Máximo"
+            value={precioMax}
+            onChange={(e) => handleMaxChange(e.target.value)}
+            onBlur={handlePriceBlur}
+          />
+        </div>
+      </div>
+
+      <div className="eventos-price-widget__range">
+        <div
+          className="eventos-price-widget__range-fill"
+          style={{ left: `${leftPct}%`, width: `${Math.max(widthPct, 0)}%` }}
+        />
+        {precioMin !== '' && (
+          <div
+            className="eventos-price-widget__range-dot"
+            style={{ left: `${leftPct}%` }}
+          />
+        )}
+        {precioMax !== '' && (
+          <div
+            className="eventos-price-widget__range-dot"
+            style={{ left: `${leftPct + Math.max(widthPct, 0)}%` }}
+          />
+        )}
+      </div>
+
+      <div className="eventos-price-widget__range-labels">
+        <span>{formatCLP(precioMinGlobal)}</span>
+        <span>{formatCLP(precioMaxGlobal)}</span>
+      </div>
+
+      {precioActivo && (
+        <div className="eventos-price-widget__chip">
+          <span>
+            {precioMin !== '' ? `$${formatCLP(precioMin)}` : '$0'}
+            {' — '}
+            {precioMax !== '' ? `$${formatCLP(precioMax)}` : `$${formatCLP(precioMaxGlobal)}`}
+          </span>
+          <button
+            className="eventos-price-widget__chip-remove"
+            onClick={limpiarPrecioWidget}
+            aria-label="Limpiar precio"
+          >
+            <X size={10} strokeWidth={3} />
+          </button>
+        </div>
+      )}
+    </div>
+  </>
 );
 
 const Eventos = () => {
@@ -72,6 +230,39 @@ const Eventos = () => {
   const [precioMax, setPrecioMax] = useState('');
   const [rangoRapido, setRangoRapido] = useState(null);
   const [mostrarFiltrosMobile, setMostrarFiltrosMobile] = useState(false);
+
+  const preciosValidos = eventos
+    .map((e) => e.precioEntrada)
+    .filter((p) => p != null && p > 0);
+  const precioMinGlobal = preciosValidos.length > 0 ? Math.min(...preciosValidos) : 0;
+  const precioMaxGlobal = preciosValidos.length > 0 ? Math.max(...preciosValidos) : 100000;
+
+  const rangoGlobal = precioMaxGlobal - precioMinGlobal || 1;
+
+  const minVal = precioMin !== '' ? Number(precioMin) : precioMinGlobal;
+  const maxVal = precioMax !== '' ? Number(precioMax) : precioMaxGlobal;
+  const leftPct = Math.max(0, ((minVal - precioMinGlobal) / rangoGlobal) * 100);
+  const widthPct = Math.min(100 - leftPct, ((maxVal - minVal) / rangoGlobal) * 100);
+
+  const precioActivo = precioMin !== '' || precioMax !== '';
+
+  const handleMinChange = (value) => {
+    setPrecioMin(value.replace(/\D/g, ''));
+    setRangoRapido(null);
+  };
+
+  const handleMaxChange = (value) => {
+    setPrecioMax(value.replace(/\D/g, ''));
+    setRangoRapido(null);
+  };
+
+  const handlePriceBlur = () => {
+    if (precioMin !== '' && precioMax !== '' && Number(precioMin) > Number(precioMax)) {
+      const temp = precioMin;
+      setPrecioMin(precioMax);
+      setPrecioMax(temp);
+    }
+  };
 
   const [searchParams] = useSearchParams();
 
@@ -161,86 +352,6 @@ const Eventos = () => {
 
   const acordeonPorDefecto = categoriaActiva !== 'todo' ? categoriaActiva : null;
 
-  const ContenidoFiltros = () => (
-    <>
-      <div className="eventos-sidebar__header">
-        <h6 className="eventos-sidebar__title">Filtros</h6>
-        {totalFiltrosActivos > 0 && (
-          <button className="eventos-sidebar__clear" onClick={limpiarFiltros}>
-            Limpiar ({totalFiltrosActivos})
-          </button>
-        )}
-      </div>
-
-      <hr className="eventos-sidebar__divider" />
-
-      <Accordion defaultActiveKey={acordeonPorDefecto} alwaysOpen flush>
-        {GENEROS_POR_CATEGORIA.map((cat) => (
-          <Accordion.Item key={cat.id} eventKey={cat.id}>
-            <Accordion.Header>{cat.nombre}</Accordion.Header>
-            <Accordion.Body>
-              {cat.generos.map((genero) => (
-                <Form.Check
-                  key={genero}
-                  type="checkbox"
-                  id={`genero-${genero}`}
-                  label={genero}
-                  checked={generosSeleccionados.includes(genero)}
-                  onChange={() => toggleGenero(genero)}
-                  className="eventos-check"
-                />
-              ))}
-
-              {RANGOS_POR_CATEGORIA[cat.id] && (
-                <>
-                  <p className="eventos-price-label">Precio</p>
-                  {RANGOS_POR_CATEGORIA[cat.id].map((rango) => (
-                    <Form.Check
-                      key={rango.key}
-                      type="radio"
-                      id={`rango-${rango.key}`}
-                      name="rango-precio"
-                      label={rango.label}
-                      checked={rangoRapido === rango.key}
-                      onChange={() => aplicarRangoRapido(rango.min, rango.max, rango.key)}
-                      className="eventos-check"
-                    />
-                  ))}
-                </>
-              )}
-            </Accordion.Body>
-          </Accordion.Item>
-        ))}
-      </Accordion>
-
-      <hr className="eventos-sidebar__divider" />
-
-      <div className="eventos-price-manual">
-        <p className="eventos-price-manual__label">Precio personalizado</p>
-        <Row className="g-2">
-          <Col xs={6}>
-            <Form.Control
-              type="number"
-              placeholder="$ Min"
-              size="sm"
-              value={precioMin}
-              onChange={(e) => { setPrecioMin(e.target.value); setRangoRapido(null); }}
-            />
-          </Col>
-          <Col xs={6}>
-            <Form.Control
-              type="number"
-              placeholder="$ Max"
-              size="sm"
-              value={precioMax}
-              onChange={(e) => { setPrecioMax(e.target.value); setRangoRapido(null); }}
-            />
-          </Col>
-        </Row>
-      </div>
-    </>
-  );
-
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
@@ -284,7 +395,26 @@ const Eventos = () => {
             <Row>
               <Col lg={3} className="d-none d-lg-block">
                 <div className="eventos-sidebar p-0">
-                  <ContenidoFiltros />
+                  <ContenidoFiltros
+                    totalFiltrosActivos={totalFiltrosActivos}
+                    limpiarFiltros={limpiarFiltros}
+                    acordeonPorDefecto={acordeonPorDefecto}
+                    generosSeleccionados={generosSeleccionados}
+                    toggleGenero={toggleGenero}
+                    rangoRapido={rangoRapido}
+                    aplicarRangoRapido={aplicarRangoRapido}
+                    precioMin={precioMin}
+                    precioMax={precioMax}
+                    precioActivo={precioActivo}
+                    leftPct={leftPct}
+                    widthPct={widthPct}
+                    precioMinGlobal={precioMinGlobal}
+                    precioMaxGlobal={precioMaxGlobal}
+                    handleMinChange={handleMinChange}
+                    handleMaxChange={handleMaxChange}
+                    handlePriceBlur={handlePriceBlur}
+                    limpiarPrecioWidget={() => { setPrecioMin(''); setPrecioMax(''); setRangoRapido(null); }}
+                  />
                 </div>
               </Col>
 
@@ -360,7 +490,26 @@ const Eventos = () => {
           <Offcanvas.Title>Filtros</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body className="p-0">
-          <ContenidoFiltros />
+          <ContenidoFiltros
+            totalFiltrosActivos={totalFiltrosActivos}
+            limpiarFiltros={limpiarFiltros}
+            acordeonPorDefecto={acordeonPorDefecto}
+            generosSeleccionados={generosSeleccionados}
+            toggleGenero={toggleGenero}
+            rangoRapido={rangoRapido}
+            aplicarRangoRapido={aplicarRangoRapido}
+            precioMin={precioMin}
+            precioMax={precioMax}
+            precioActivo={precioActivo}
+            leftPct={leftPct}
+            widthPct={widthPct}
+            precioMinGlobal={precioMinGlobal}
+            precioMaxGlobal={precioMaxGlobal}
+            handleMinChange={handleMinChange}
+            handleMaxChange={handleMaxChange}
+            handlePriceBlur={handlePriceBlur}
+            limpiarPrecioWidget={() => { setPrecioMin(''); setPrecioMax(''); setRangoRapido(null); }}
+          />
           <div className="p-3">
             <button className="eventos-offcanvas__apply" onClick={() => setMostrarFiltrosMobile(false)}>
               Aplicar filtros

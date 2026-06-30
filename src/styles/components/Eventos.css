@@ -260,33 +260,205 @@
   margin: 1rem 0 0.6rem;
 }
 
-.eventos-price-manual {
-  padding: 1.25rem;
+/* ── Price Widget ─────────────────────────────── */
+.eventos-price-widget {
+  padding: 1.25rem 1.25rem 1.5rem;
+  background: rgba(15, 27, 61, 0.02);
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-.eventos-price-manual__label {
+.eventos-price-widget__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.eventos-price-widget__label {
   font-family: 'Outfit', sans-serif;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #94a3b8;
-  margin-bottom: 0.6rem;
+  margin: 0;
 }
 
-.eventos-price-manual .form-control {
+.eventos-price-widget__clear {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ticketti-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.eventos-price-widget__clear--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.eventos-price-widget__clear:hover {
+  text-decoration: underline;
+}
+
+.eventos-price-widget__inputs {
+  display: flex;
+  gap: 0.625rem;
+  margin-bottom: 0.5rem;
+}
+
+.eventos-price-widget__input-group {
+  flex: 1;
+  position: relative;
+}
+
+.eventos-price-widget__input-group .form-control {
+  padding-left: 2.4rem;
+  padding-right: 0.5rem;
+  height: 42px;
+  font-size: 0.88rem;
+  font-weight: 600;
   border-radius: 10px;
   border: 1px solid #e2e8f0;
-  padding: 0.55rem 0.75rem;
-  font-size: 0.88rem;
-  background: #f8fafc;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  text-align: right;
+  color: #0f1b3d;
+}
+
+.eventos-price-widget__input-group .form-control:focus {
+  border-color: var(--ticketti-primary);
+  box-shadow: 0 0 0 3px rgba(90, 212, 230, 0.12);
+  background: #ffffff;
+}
+
+.eventos-price-widget__input-group .form-control::placeholder {
+  color: #cbd5e1;
+  font-weight: 400;
+  font-size: 0.82rem;
+}
+
+.eventos-price-widget__input-group .form-control:focus::placeholder {
+  color: #94a3b8;
+}
+
+.eventos-price-widget__currency {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #94a3b8;
+  pointer-events: none;
+  z-index: 5;
+  line-height: 1;
+}
+
+.eventos-price-widget__range {
+  position: relative;
+  height: 5px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  margin: 0.5rem 0 0.35rem;
+}
+
+.eventos-price-widget__range-fill {
+  position: absolute;
+  height: 100%;
+  background: linear-gradient(90deg, var(--ticketti-primary), #6f88c4);
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(90, 212, 230, 0.2);
+  transition: left 0.2s ease, width 0.2s ease;
+}
+
+.eventos-price-widget__range-dot {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  background: #ffffff;
+  border: 2.5px solid var(--ticketti-primary);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: left 0.2s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.eventos-price-widget__range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* Price Chip */
+.eventos-price-widget__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem 0.3rem 0.75rem;
+  background: rgba(90, 212, 230, 0.1);
+  border: 1px solid rgba(90, 212, 230, 0.25);
+  border-radius: 20px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ticketti-primary);
+  animation: chipIn 0.25s ease forwards;
+}
+
+@keyframes chipIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.eventos-price-widget__chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(90, 212, 230, 0.2);
+  color: var(--ticketti-primary);
+  font-size: 10px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.eventos-price-manual .form-control:focus {
-  background: #ffffff;
-  border-color: var(--ticketti-primary);
-  box-shadow: 0 0 0 3px rgba(90, 212, 230, 0.12);
+.eventos-price-widget__chip-remove:hover {
+  background: var(--ticketti-primary);
+  color: #000000;
+  transform: scale(1.1);
+}
+
+/* Mensaje de validación */
+.eventos-price-widget__hint {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 0.35rem;
+  margin-bottom: 0;
+  line-height: 1.3;
 }
 
 /* ── Skeletons ──────────────────────────────────── */
