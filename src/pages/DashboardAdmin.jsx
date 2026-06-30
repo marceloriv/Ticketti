@@ -1,6 +1,6 @@
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
-import DashAdminUsuarios from '@/components/admin/DashAdminUsuarios';
+import DashAdminUsuarios from '@/components/Admin/DashAdminUsuarios';
 import { Building2, Heart, Plus, ShoppingBag, TrendingUp } from 'lucide-react';
 import { listarEventos } from '@api/eventosApi';
 import { obtenerEstadisticasEventos } from '@api/carritoApi';
@@ -24,11 +24,12 @@ import {
 } from 'react-bootstrap';
 import {
   getOrganizaciones,
-  getCausasActivas,
+  getCausas,
   getTotalPorOrganizacion,
   crearOrganizacionActiva,
   crearCausaActiva,
   activarOrganizacion,
+  activarCausa,
 } from '@api/donacionesApi';
 
 const STAT_VARIANTS = {
@@ -129,7 +130,7 @@ const DashboardAdmin = () => {
     try {
       const [orgs, causasData] = await Promise.all([
         getOrganizaciones(),
-        getCausasActivas(),
+        getCausas(),
       ]);
       setOrganizaciones(orgs);
       setCausas(causasData);
@@ -285,6 +286,20 @@ const DashboardAdmin = () => {
     }
   };
 
+  const handleActivarCausa = async (idCausa) => {
+    setGuardando(true);
+    try {
+      await activarCausa(idCausa);
+      setExito('Causa social activada.');
+      cargar();
+      setTimeout(() => setExito(''), 3000);
+    } catch {
+      setError('Error al activar la causa.');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
@@ -318,7 +333,7 @@ const DashboardAdmin = () => {
               <StatCard
                 icon={Heart}
                 titulo="Causas activas"
-                valor={causas.length}
+                valor={causas.filter((c) => c.estado === 'ACTIVA').length}
                 variant="pink"
                 cargando={cargando}
               />
@@ -437,7 +452,7 @@ const DashboardAdmin = () => {
                   {/* CAUSAS */}
                   <Tab.Pane eventKey="causas">
                     <div className="d-flex justify-content-between mb-3">
-                      <h5 className="fw-bold mb-0">Causas sociales activas</h5>
+                      <h5 className="fw-bold mb-0">Causas sociales</h5>
                       <Button
                         size="sm"
                         onClick={() => setShowModalCausa(true)}
@@ -457,7 +472,9 @@ const DashboardAdmin = () => {
                             <th>Causa</th>
                             <th>Organización</th>
                             <th>Objetivo</th>
+                            <th>Documento</th>
                             <th>Estado</th>
+                            <th>Acciones</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -473,6 +490,11 @@ const DashboardAdmin = () => {
                                   : 'Sin límite'}
                               </td>
                               <td>
+                                <Badge bg={c.documentoEnviado ? 'info' : 'secondary'}>
+                                  {c.documentoEnviado ? 'Enviado' : 'Sin enviar'}
+                                </Badge>
+                              </td>
+                              <td>
                                 <Badge
                                   bg={
                                     c.estado === 'ACTIVA'
@@ -482,6 +504,18 @@ const DashboardAdmin = () => {
                                 >
                                   {c.estado}
                                 </Badge>
+                              </td>
+                              <td>
+                                {c.estado === 'PENDIENTE' && (
+                                  <Button
+                                    size="sm"
+                                    variant="success"
+                                    disabled={guardando}
+                                    onClick={() => handleActivarCausa(c.idCausa)}
+                                  >
+                                    Activar
+                                  </Button>
+                                )}
                               </td>
                             </tr>
                           ))}
