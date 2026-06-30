@@ -157,6 +157,17 @@ export const crearCausa = async (payload) => {
 };
 
 /**
+ * Obtiene el detalle de una causa social por su ID.
+ *
+ * @param {number|string} idCausa - ID de la causa.
+ * @returns {Promise<Object>} Datos de la causa.
+ */
+export const getCausaPorId = async (idCausa) => {
+  const { data } = await clienteApi.get(`/causas/${idCausa}`);
+  return data;
+};
+
+/**
  * Elimina (desactiva) una causa social.
  *
  * @param {number|string} idCausa - ID de la causa.
@@ -247,6 +258,20 @@ export const activarCausa = async (idCausa) => {
   return data;
 };
 
+/**
+ * [ADMIN] Asocia (o reasigna) la organización de una causa social que fue
+ * creada sin una (ej. por el organizador). Necesario para que la causa
+ * pueda aparecer en getCausasActivas(), que exige organización.
+ *
+ * @param {number|string} idCausa - ID de la causa.
+ * @param {number|string} idOrganizacion - ID de la organización a asociar.
+ * @returns {Promise<Object>} Causa con la organización ya asociada.
+ */
+export const asociarOrganizacionCausa = async (idCausa, idOrganizacion) => {
+  const { data } = await clienteApi.put(`/causas/${idCausa}/organizacion`, { idOrganizacion });
+  return data;
+};
+
 // ─────────────────────────────────────────────
 // FLUJOS COMPUESTOS (encadenan endpoints existentes)
 // ─────────────────────────────────────────────
@@ -328,12 +353,14 @@ export default {
   getCausasActivas,
   getCausasPorOrganizacion,
   crearCausa,
+  getCausaPorId,
   eliminarCausa,
   subirDocumentoCausa,
   getTotalPorOrganizacion,
   getMisDonaciones,
   getCausas,
   activarCausa,
+  asociarOrganizacionCausa,
   crearOrganizacionActiva,
   crearCausaActiva,
   solicitarRegistroOrganizacion,

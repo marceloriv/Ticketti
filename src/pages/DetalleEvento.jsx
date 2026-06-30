@@ -3,10 +3,11 @@ import Header from '@components/layout/Header';
 import { useAuth } from '@hooks/useAuth';
 import { useCarrito } from '@hooks/useCarrito';
 import { eventosApi } from '@api/index';
+import { getCausaPorId } from '@api/donacionesApi';
 import { ROUTES } from '@utils/routes';
 import logger from '@utils/logger';
 import { jwtDecode } from 'jwt-decode';
-import { AlertCircle, Calendar, MapPin, Ticket, Users } from 'lucide-react';
+import { AlertCircle, Calendar, Heart, MapPin, Ticket, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
   Alert,
@@ -99,6 +100,7 @@ const DetalleEvento = () => {
   const [showModal, setShowModal] = useState(false);
   const [cantidad, setCantidad] = useState(1);
   const [errorCarrito, setErrorCarrito] = useState('');
+  const [causaSocial, setCausaSocial] = useState(null);
 
   // Cargar información del evento desde el microservicio
   useEffect(() => {
@@ -116,6 +118,28 @@ const DetalleEvento = () => {
     };
     cargarEvento();
   }, [id]);
+
+  // Si el evento tiene una causa social vinculada, mostrarla solo si ya
+  // está lista para recibir donaciones (ACTIVA y con organización asociada,
+  // igual que el filtro de getCausasActivas()).
+  useEffect(() => {
+    if (!evento?.causaSocialId) {
+      setCausaSocial(null);
+      return;
+    }
+    getCausaPorId(evento.causaSocialId)
+      .then((causa) => {
+        if (causa.estado === 'ACTIVA' && causa.nombreOrganizacion) {
+          setCausaSocial(causa);
+        } else {
+          setCausaSocial(null);
+        }
+      })
+      .catch((err) => {
+        logger.warn('[DetalleEvento] No se pudo cargar la causa social:', err);
+        setCausaSocial(null);
+      });
+  }, [evento?.causaSocialId]);
 
   /**
    * Maneja el proceso de añadir entradas al carrito de compras.
@@ -331,6 +355,23 @@ const DetalleEvento = () => {
                       </span>
                     </div>
                   </div>
+
+                  {causaSocial && (
+                    <div className="detalle-evento-info-card d-flex align-items-center gap-3 p-3 mb-2 rounded-3">
+                      <Heart
+                        size={20}
+                        className="detalle-evento-info-icono text-primary" aria-hidden="true"
+                      />
+                      <div>
+                        <small className="text-muted d-block">
+                          Este evento dona a
+                        </small>
+                        <span className="fw-semibold">
+                          {causaSocial.nombre} ({causaSocial.nombreOrganizacion})
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="detalle-evento-precio-card p-4 rounded-4 shadow-sm">
@@ -422,7 +463,9 @@ const DetalleEvento = () => {
             />
           </Form.Group>
           <p className="small text-muted mb-0">
-            * Ayudas a financiar proyectos benéficos con el 10% de tu pago.
+            {causaSocial
+              ? `* El 10% de tu pago se dona a ${causaSocial.nombre}.`
+              : '* Ayudas a financiar proyectos benéficos con el 10% de tu pago.'}
           </p>
           {errorCarrito && (
             <Alert

@@ -30,6 +30,7 @@ import {
   crearCausaActiva,
   activarOrganizacion,
   activarCausa,
+  asociarOrganizacionCausa,
 } from '@api/donacionesApi';
 
 const STAT_VARIANTS = {
@@ -300,6 +301,21 @@ const DashboardAdmin = () => {
     }
   };
 
+  const handleAsociarOrganizacionCausa = async (idCausa, idOrganizacion) => {
+    if (!idOrganizacion) return;
+    setGuardando(true);
+    try {
+      await asociarOrganizacionCausa(idCausa, idOrganizacion);
+      setExito('Organización asociada a la causa.');
+      cargar();
+      setTimeout(() => setExito(''), 3000);
+    } catch {
+      setError('Error al asociar la organización a la causa.');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
@@ -482,7 +498,23 @@ const DashboardAdmin = () => {
                             <tr key={c.idCausa}>
                               <td className="fw-semibold">{c.nombre}</td>
                               <td className="text-muted small">
-                                {c.nombreOrganizacion || '—'}
+                                {c.nombreOrganizacion || (
+                                  <Form.Select
+                                    size="sm"
+                                    defaultValue=""
+                                    disabled={guardando}
+                                    onChange={(e) =>
+                                      handleAsociarOrganizacionCausa(c.idCausa, e.target.value)
+                                    }
+                                  >
+                                    <option value="">Asociar organización...</option>
+                                    {organizaciones.map((o) => (
+                                      <option key={o.idOrganizacion} value={o.idOrganizacion}>
+                                        {o.nombre}
+                                      </option>
+                                    ))}
+                                  </Form.Select>
+                                )}
                               </td>
                               <td className="text-muted small">
                                 {c.objetivoMonto

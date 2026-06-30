@@ -1,7 +1,9 @@
 import { ArrowRight, CheckCircle, Heart, Clock, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Form } from 'react-bootstrap';
-import { getCausasActivas } from '@api/donacionesApi';
+import { getCausasActivas, getCausaPorId } from '@api/donacionesApi';
+import { eventosApi } from '@api/index';
+import logger from '@utils/logger';
 import '../styles/components/ResumenCarrito.css';
 
 /**
@@ -113,6 +115,8 @@ const ResumenCarrito = ({
   const [causas, setCausas] = useState([]);
   const [cargandoCausas, setCargandoCausas] = useState(false);
   const [reservaExpirada, setReservaExpirada] = useState(false);
+  const [causaDelEvento, setCausaDelEvento] = useState(null);
+  const [mostrarSelectorManual, setMostrarSelectorManual] = useState(false);
 
   useEffect(() => {
     setReservaExpirada(false);
@@ -143,6 +147,45 @@ const ResumenCarrito = ({
   }, [resumen?.causaSocialId]);
 
   const items = resumen?.items || [];
+
+  // Si todos los items del carrito son del mismo evento, y ese evento tiene
+  // una causa social ya lista para donaciones (ACTIVA + con organización),
+  // se usa esa causa directamente en vez de pedirle al comprador que elija
+  // una del listado genérico. Un carrito con items de varios eventos
+  // distintos no tiene una causa "del carrito" obvia, así que cae al
+  // selector manual de siempre.
+  useEffect(() => {
+    setCausaDelEvento(null);
+    setMostrarSelectorManual(false);
+
+    if (isGuest || resumen?.causaSocialId) return;
+
+    const eventoIds = [...new Set(items.map((item) => item.eventoId))];
+    if (eventoIds.length !== 1) return;
+
+    let cancelado = false;
+    (async () => {
+      try {
+        const evento = await eventosApi.buscarEvento(eventoIds[0]);
+        if (!evento?.causaSocialId) return;
+
+        const causa = await getCausaPorId(evento.causaSocialId);
+        if (cancelado) return;
+
+        if (causa.estado === 'ACTIVA' && causa.nombreOrganizacion) {
+          setCausaDelEvento(causa);
+          setCausaSocialId(String(causa.idCausa));
+        }
+      } catch (err) {
+        logger.warn('[ResumenCarrito] No se pudo resolver la causa del evento:', err);
+      }
+    })();
+
+    return () => {
+      cancelado = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items.map((item) => item.eventoId).join(','), isGuest, resumen?.causaSocialId]);
   const subtotal = resumen?.subtotal || 0;
 
   // La donación siempre es el 10% del subtotal — es obligatoria en toda compra
@@ -252,12 +295,35 @@ const ResumenCarrito = ({
               </span>
             </div>
             <p className="resumen-carrito-donacion-descripcion">
-              Cada compra incluye una donación del 10% para apoyar causas
-              sociales. Selecciona a quién deseas destinar tu aporte:
+              {causaDelEvento && !mostrarSelectorManual
+                ? 'Tu compra es de un solo evento, así que la donación va directo a su causa vinculada:'
+                : 'Cada compra incluye una donación del 10% para apoyar causas sociales. Selecciona a quién deseas destinar tu aporte:'}
             </p>
           </div>
 
-          {!isGuest && (
+          {!isGuest && causaDelEvento && !mostrarSelectorManual && (
+            <div className="resumen-carrito-causa-vinculada d-flex align-items-center justify-content-between gap-2 p-2 rounded-3 border">
+              <span className="fw-semibold small">
+                {causaDelEvento.nombre} ({causaDelEvento.nombreOrganizacion})
+              </span>
+              {!esReservado && !esCarritoPagado && (
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="p-0 small"
+                  disabled={loading}
+                  onClick={() => {
+                    setMostrarSelectorManual(true);
+                    setCausaSocialId('');
+                  }}
+                >
+                  Elegir otra causa
+                </Button>
+              )}
+            </div>
+          )}
+
+          {!isGuest && (!causaDelEvento || mostrarSelectorManual) && (
             <Form.Select
               value={causaSocialId}
               onChange={(e) => setCausaSocialId(e.target.value)}
