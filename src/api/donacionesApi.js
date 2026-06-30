@@ -107,10 +107,13 @@ export const subirDocumentoOrganizacion = async (idOrganizacion, archivo) => {
   const formData = new FormData();
   formData.append('archivo', archivo);
 
+  // No fijar Content-Type a mano: axios necesita generar el boundary del
+  // multipart automáticamente al detectar un FormData. Si se fuerza el
+  // header aquí, se pierde el boundary y el backend no puede parsear el
+  // archivo (org.springframework.web.multipart.MultipartException).
   const { data } = await clienteApi.post(
     `/organizaciones/${idOrganizacion}/documento`,
-    formData,
-    { headers: { 'Content-Type': 'multipart/form-data' } }
+    formData
   );
   return data;
 };
@@ -177,10 +180,13 @@ export const subirDocumentoCausa = async (idCausa, archivo, nombreOrganizador) =
   formData.append('archivo', archivo);
   formData.append('nombreOrganizador', nombreOrganizador);
 
+  // No fijar Content-Type a mano: axios necesita generar el boundary del
+  // multipart automáticamente al detectar un FormData. Si se fuerza el
+  // header aquí, se pierde el boundary y el backend no puede parsear el
+  // archivo (org.springframework.web.multipart.MultipartException).
   const { data } = await clienteApi.post(
     `/causas/${idCausa}/documento`,
-    formData,
-    { headers: { 'Content-Type': 'multipart/form-data' } }
+    formData
   );
   return data;
 };
