@@ -4,9 +4,10 @@ import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
 import logger from '@utils/logger';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Col, Container, Row, Spinner, Form, Button, Offcanvas, Accordion } from 'react-bootstrap';
-import { SlidersHorizontal } from 'lucide-react';
+import { Alert, Col, Container, Row, Form, Button, Offcanvas, Accordion } from 'react-bootstrap';
+import { Search, SlidersHorizontal, Tickets } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
+import '@styles/components/Eventos.css';
 
 const CATEGORIAS = [
   { id: 'todo', nombre: 'Todo', generos: [] },
@@ -29,7 +30,6 @@ const CATEGORIAS = [
 
 const GENEROS_POR_CATEGORIA = CATEGORIAS.filter((c) => c.id !== 'todo');
 
-// Rangos rápidos sugeridos por categoría, según los precios típicos de cada una
 const RANGOS_POR_CATEGORIA = {
   cinemovil: [
     { key: 'cm1', label: 'Hasta $10.000', min: 0, max: 10000 },
@@ -47,6 +47,17 @@ const RANGOS_POR_CATEGORIA = {
     { key: 'cc4', label: '$300.000 - $600.000', min: 300000, max: 600000 },
   ],
 };
+
+const SkeletonCard = () => (
+  <div className="eventos-skeleton">
+    <div className="eventos-skeleton__media" />
+    <div className="eventos-skeleton__body">
+      <div className="eventos-skeleton__line eventos-skeleton__line--short" />
+      <div className="eventos-skeleton__line eventos-skeleton__line--medium" />
+      <div className="eventos-skeleton__line" />
+    </div>
+  </div>
+);
 
 const Eventos = () => {
   const [eventos, setEventos] = useState([]);
@@ -89,6 +100,8 @@ const Eventos = () => {
   useEffect(() => {
     const cat = searchParams.get('categoria');
     if (cat) setCategoriaActiva(cat);
+    const search = searchParams.get('search');
+    if (search) setBusqueda(search);
   }, [searchParams]);
 
   useEffect(() => {
@@ -146,28 +159,26 @@ const Eventos = () => {
   const totalFiltrosActivos =
     generosSeleccionados.length + (precioMin ? 1 : 0) + (precioMax ? 1 : 0);
 
-  // Determina qué acordeón viene expandido por defecto según la categoría de origen
   const acordeonPorDefecto = categoriaActiva !== 'todo' ? categoriaActiva : null;
 
-  // --- Sidebar reutilizado en desktop y mobile ---
   const ContenidoFiltros = () => (
     <>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h6 className="fw-bold mb-0 text-uppercase">Filtros</h6>
+      <div className="eventos-sidebar__header">
+        <h6 className="eventos-sidebar__title">Filtros</h6>
         {totalFiltrosActivos > 0 && (
-          <Button variant="link" size="sm" className="p-0 text-decoration-none" onClick={limpiarFiltros}>
-            Limpiar
-          </Button>
+          <button className="eventos-sidebar__clear" onClick={limpiarFiltros}>
+            Limpiar ({totalFiltrosActivos})
+          </button>
         )}
       </div>
 
-      <hr />
+      <hr className="eventos-sidebar__divider" />
 
       <Accordion defaultActiveKey={acordeonPorDefecto} alwaysOpen flush>
         {GENEROS_POR_CATEGORIA.map((cat) => (
           <Accordion.Item key={cat.id} eventKey={cat.id}>
             <Accordion.Header>{cat.nombre}</Accordion.Header>
-            <Accordion.Body className="pt-2">
+            <Accordion.Body>
               {cat.generos.map((genero) => (
                 <Form.Check
                   key={genero}
@@ -176,14 +187,13 @@ const Eventos = () => {
                   label={genero}
                   checked={generosSeleccionados.includes(genero)}
                   onChange={() => toggleGenero(genero)}
-                  className="mb-2 filtro-checkbox"
+                  className="eventos-check"
                 />
               ))}
 
-              {/* Rangos rápidos específicos de esta categoría */}
               {RANGOS_POR_CATEGORIA[cat.id] && (
                 <>
-                  <p className="fw-semibold small text-uppercase text-muted mt-3 mb-2">Precio</p>
+                  <p className="eventos-price-label">Precio</p>
                   {RANGOS_POR_CATEGORIA[cat.id].map((rango) => (
                     <Form.Check
                       key={rango.key}
@@ -193,7 +203,7 @@ const Eventos = () => {
                       label={rango.label}
                       checked={rangoRapido === rango.key}
                       onChange={() => aplicarRangoRapido(rango.min, rango.max, rango.key)}
-                      className="mb-2 filtro-checkbox"
+                      className="eventos-check"
                     />
                   ))}
                 </>
@@ -203,11 +213,10 @@ const Eventos = () => {
         ))}
       </Accordion>
 
-      <hr />
+      <hr className="eventos-sidebar__divider" />
 
-      {/* Precio manual, siempre visible independiente de la categoría */}
-      <div className="mb-3">
-        <p className="fw-semibold small text-uppercase text-muted mb-2">Precio personalizado</p>
+      <div className="eventos-price-manual">
+        <p className="eventos-price-manual__label">Precio personalizado</p>
         <Row className="g-2">
           <Col xs={6}>
             <Form.Control
@@ -236,45 +245,90 @@ const Eventos = () => {
     <div className="d-flex flex-column min-vh-100">
       <Header />
       <main className="grow">
+        <section className="eventos-hero text-center">
+          <div className="eventos-hero__pattern" />
+          <Container>
+            <h1 className="eventos-hero__title">Eventos</h1>
+            <p className="eventos-hero__subtitle">
+              Descubre conciertos, festivales culturales y cine móvil. Encuentra tu próxima experiencia inolvidable.
+            </p>
+            <div className="eventos-hero__search">
+              <div className="input-group">
+                <span className="input-group-text">
+                  <Search size={18} />
+                </span>
+                <Form.Control
+                  type="text"
+                  placeholder="Buscar eventos por nombre o ubicación..."
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                />
+              </div>
+            </div>
+          </Container>
+        </section>
+
         <section className="py-5">
           <Container>
-            <h2 className="text-center mb-4 fw-bold">Eventos</h2>
-
             <div className="d-lg-none mb-3">
               <Button
-                variant="outline-dark"
-                className="d-flex align-items-center gap-2"
+                className="eventos-mobile-filter-btn d-flex align-items-center gap-2"
                 onClick={() => setMostrarFiltrosMobile(true)}
               >
-                <SlidersHorizontal size={18} />
+                <SlidersHorizontal size={16} />
                 Filtrar
-                {totalFiltrosActivos > 0 && <span className="badge bg-dark">{totalFiltrosActivos}</span>}
+                {totalFiltrosActivos > 0 && <span className="badge">{totalFiltrosActivos}</span>}
               </Button>
             </div>
 
             <Row>
               <Col lg={3} className="d-none d-lg-block">
-                <div className="filtros-sidebar p-3 border rounded">
+                <div className="eventos-sidebar p-0">
                   <ContenidoFiltros />
                 </div>
               </Col>
 
               <Col lg={9}>
-                {cargando && (
-                  <div className="text-center py-5">
-                    <Spinner animation="border" className="spinner-ticketti" />
+                {!cargando && !error && (
+                  <div className="eventos-stats">
+                    <span className="eventos-stats__count">
+                      <strong>{eventosFiltrados.length}</strong>{' '}
+                      {eventosFiltrados.length === 1 ? 'evento encontrado' : 'eventos encontrados'}
+                    </span>
                   </div>
                 )}
+
+                {cargando && (
+                  <Row xs={1} sm={2} xl={3} className="g-4">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <Col key={i}>
+                        <SkeletonCard />
+                      </Col>
+                    ))}
+                  </Row>
+                )}
+
                 {error && <Alert variant="danger" className="text-center">{error}</Alert>}
 
                 {!cargando && !error && eventosFiltrados.length === 0 && (
-                  <Alert variant="info" className="text-center">No se encontraron eventos.</Alert>
+                  <div className="eventos-empty">
+                    <div className="eventos-empty__icon">
+                      <Tickets size={32} />
+                    </div>
+                    <h3 className="eventos-empty__title">No se encontraron eventos</h3>
+                    <p className="eventos-empty__text">
+                      Intenta ajustar los filtros o cambiar tu búsqueda para descubrir más eventos.
+                    </p>
+                    <Button className="btn-ticketti" onClick={() => { limpiarFiltros(); setBusqueda(''); }}>
+                      Limpiar filtros
+                    </Button>
+                  </div>
                 )}
 
                 {!cargando && !error && eventosFiltrados.length > 0 && (
                   <Row xs={1} sm={2} xl={3} className="g-4">
                     {eventosFiltrados.map((evento) => (
-                      <Col key={evento.id}>
+                      <Col key={evento.id} className="eventos-card-wrapper">
                         <ProductCard
                           evento={{
                             id: evento.id,
@@ -296,15 +350,22 @@ const Eventos = () => {
       </main>
       <Footer />
 
-      <Offcanvas show={mostrarFiltrosMobile} onHide={() => setMostrarFiltrosMobile(false)} placement="start">
+      <Offcanvas
+        show={mostrarFiltrosMobile}
+        onHide={() => setMostrarFiltrosMobile(false)}
+        placement="start"
+        className="eventos-offcanvas"
+      >
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Filtros</Offcanvas.Title>
         </Offcanvas.Header>
-        <Offcanvas.Body>
+        <Offcanvas.Body className="p-0">
           <ContenidoFiltros />
-          <Button className="w-100 mt-3 btn-ticketti" onClick={() => setMostrarFiltrosMobile(false)}>
-            Aplicar filtros
-          </Button>
+          <div className="p-3">
+            <button className="eventos-offcanvas__apply" onClick={() => setMostrarFiltrosMobile(false)}>
+              Aplicar filtros
+            </button>
+          </div>
         </Offcanvas.Body>
       </Offcanvas>
     </div>
