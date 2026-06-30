@@ -6,7 +6,7 @@ import CategoryCard from '@components/common/CategoryCard';
 import { useNavigate } from 'react-router-dom';
 import Footer from '@components/layout/Footer';
 import Header from '@components/layout/Header';
-import { Building2, Heart, Search } from 'lucide-react';
+import { Building2, Heart } from 'lucide-react';
 import logger from '@utils/logger';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -14,8 +14,6 @@ import {
   Button,
   Col,
   Container,
-  Form,
-  InputGroup,
   Row,
   Spinner,
 } from 'react-bootstrap';
@@ -63,7 +61,6 @@ const HERO_SLIDES = [
 const Inicio = () => {
   const navigate = useNavigate();
   const [eventos, setEventos] = useState([]);
-  const [busqueda, setBusqueda] = useState('');
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   //Causas y organizaciones
@@ -143,34 +140,6 @@ const Inicio = () => {
         {/* HERO - Eventos */}
         <section id="hero" className="position-relative">
           <CommonCarousel slides={HERO_SLIDES} />
-        </section>
-
-        {/* BUSCADOR - EVENTOS */}
-        <section id="buscador" className="py-4 bg-light">
-          <Container>
-            <Row className="justify-content-center">
-              <Col md={8} lg={6}>
-                <InputGroup className="mb-3">
-                  <InputGroup.Text className="inicio-search-icon">
-                    <Search size={18} />
-                  </InputGroup.Text>
-                  <Form.Control
-                    type="text"
-                    placeholder="Buscar eventos por nombre, género o ubicación..."
-                    value={busqueda}
-                    onChange={(e) => setBusqueda(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        navigate(`/eventos?search=${encodeURIComponent(busqueda)}`);
-                      }
-                    }}
-                    className="inicio-search-input"
-                  />
-                </InputGroup>
-              </Col>
-            </Row>
-          </Container>
         </section>
 
         {/* CATEGORÍAS - CARDS */}

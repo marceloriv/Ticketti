@@ -33,3 +33,7 @@ dist-ssr
 
 # Test Coverage
 coverage
+# local
+.agents
+.vscode
+skills-lock.json
