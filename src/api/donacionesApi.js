@@ -1,5 +1,4 @@
 import clienteApi from './clienteApi';
-import logger from '../utils/logger';
 
 /**
  * Módulo de API para el microservicio MS-Donaciones (puerto 8004).
@@ -162,6 +161,30 @@ export const eliminarCausa = async (idCausa) => {
   await clienteApi.delete(`/causas/${idCausa}`);
 };
 
+/**
+ * [ORGANIZADOR] Sube el documento de respaldo (PDF) de una causa social
+ * recién creada, para validación. No se persiste en disco: el backend lo
+ * reenvía por correo al equipo Ticketti, que lo revisa y luego activa la
+ * causa con activarCausa().
+ *
+ * @param {number|string} idCausa - ID de la causa.
+ * @param {File} archivo - Archivo PDF de respaldo.
+ * @param {string} nombreOrganizador - Nombre de quien sube el documento.
+ * @returns {Promise<Object>} Causa actualizada (documentoEnviado: true).
+ */
+export const subirDocumentoCausa = async (idCausa, archivo, nombreOrganizador) => {
+  const formData = new FormData();
+  formData.append('archivo', archivo);
+  formData.append('nombreOrganizador', nombreOrganizador);
+
+  const { data } = await clienteApi.post(
+    `/causas/${idCausa}/documento`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  );
+  return data;
+};
+
 // ─────────────────────────────────────────────
 // PENDIENTES — endpoints que aún NO existen en MS-Donaciones
 // Se dejan como stubs documentados para que el frontend ya esté
@@ -195,31 +218,23 @@ export const getMisDonaciones = async (options = {}) => {
  * Obtiene TODAS las causas sociales (incluyendo PENDIENTE), para que
  * el admin pueda revisarlas/activarlas igual que con organizaciones.
  *
- * ⚠️ PENDIENTE BACKEND: CausaSocialController hoy solo expone /activas.
- * Cuando exista GET /causas (todas), reemplazar por:
- *   const { data } = await clienteApi.get('/causas');
- *   return data;
- *
- * @returns {Promise<Array>} Por ahora devuelve solo las activas.
+ * @returns {Promise<Array>} Listado completo de causas.
  */
 export const getCausas = async () => {
-  return getCausasActivas();
+  const { data } = await clienteApi.get('/causas/todas');
+  return data;
 };
 
 /**
- * Activa una causa social PENDIENTE.
+ * [ADMIN] Activa una causa social PENDIENTE, tras revisar (por correo)
+ * el documento de respaldo enviado por el organizador.
  *
- * ⚠️ PENDIENTE BACKEND: no existe aún PUT /causas/{id}/activar.
- * Cuando exista, reemplazar por:
- *   const { data } = await clienteApi.put(`/causas/${idCausa}/activar`);
- *   return data;
- *
- * @param {number|string} _idCausa - ID de la causa.
- * @returns {Promise<null>} No hace nada mientras no exista el endpoint.
+ * @param {number|string} idCausa - ID de la causa.
+ * @returns {Promise<Object>} Causa con estado ACTIVA.
  */
-export const activarCausa = async (_idCausa) => {
-  logger.warn('[donacionesApi] activarCausa: endpoint aún no implementado en MS-Donaciones');
-  return null;
+export const activarCausa = async (idCausa) => {
+  const { data } = await clienteApi.put(`/causas/${idCausa}/activar`);
+  return data;
 };
 
 // ─────────────────────────────────────────────
@@ -247,21 +262,21 @@ export const crearOrganizacionActiva = async (datosBasicos, datosBancarios) => {
 
 /**
  * [ADMIN] Crea una causa social "desde cero" y la deja ACTIVA de inmediato.
+ * Como el admin la crea y revisa por su cuenta, no pasa por el flujo de
+ * documento de respaldo del organizador (CausaSocialController.crear()
+ * siempre la deja PENDIENTE; aquí se activa a continuación sin exigir
+ * documento, igual que crearOrganizacionActiva con organizaciones).
  *
- * ⚠️ PENDIENTE VERIFICAR BACKEND: se envía `estado: 'ACTIVA'` en el payload,
- * pero hoy no está confirmado si CausaSocialController.crear() respeta ese
- * campo o si siempre asigna un estado por defecto (ej. PENDIENTE). Si lo
- * ignora, esta causa quedará en el estado que el backend determine y
- * habrá que pedir a Marcelo/equipo MS-Donaciones que:
- *   a) respete `estado` cuando lo envía un ADMINPLATAFORMA, o
- *   b) agregue un endpoint PUT /causas/{id}/activar análogo al de organizaciones.
+ * Encadena dos endpoints que YA EXISTEN en MS-Donaciones:
+ *   1. POST /causas               -> crea (queda PENDIENTE)
+ *   2. PUT  /causas/{id}/activar  -> pasa a ACTIVA
  *
  * @param {Object} payload - { idOrganizacion, nombre, descripcion, objetivoMonto, fechaInicio }
- * @returns {Promise<Object>} Causa creada.
+ * @returns {Promise<Object>} Causa creada y ya activada.
  */
 export const crearCausaActiva = async (payload) => {
-  const { data } = await clienteApi.post('/causas', { ...payload, estado: 'ACTIVA' });
-  return data;
+  const nueva = await crearCausa(payload);
+  return activarCausa(nueva.idCausa);
 };
 
 /**
@@ -304,6 +319,7 @@ export default {
   getCausasPorOrganizacion,
   crearCausa,
   eliminarCausa,
+  subirDocumentoCausa,
   getTotalPorOrganizacion,
   getMisDonaciones,
   getCausas,

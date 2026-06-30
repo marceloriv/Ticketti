@@ -29,6 +29,7 @@ import {
   crearOrganizacionActiva,
   crearCausaActiva,
   activarOrganizacion,
+  activarCausa,
 } from '@api/donacionesApi';
 
 const STAT_VARIANTS = {
@@ -285,6 +286,20 @@ const DashboardAdmin = () => {
     }
   };
 
+  const handleActivarCausa = async (idCausa) => {
+    setGuardando(true);
+    try {
+      await activarCausa(idCausa);
+      setExito('Causa social activada.');
+      cargar();
+      setTimeout(() => setExito(''), 3000);
+    } catch {
+      setError('Error al activar la causa.');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
@@ -318,7 +333,7 @@ const DashboardAdmin = () => {
               <StatCard
                 icon={Heart}
                 titulo="Causas activas"
-                valor={causas.length}
+                valor={causas.filter((c) => c.estado === 'ACTIVA').length}
                 variant="pink"
                 cargando={cargando}
               />
@@ -457,7 +472,9 @@ const DashboardAdmin = () => {
                             <th>Causa</th>
                             <th>Organización</th>
                             <th>Objetivo</th>
+                            <th>Documento</th>
                             <th>Estado</th>
+                            <th>Acciones</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -473,6 +490,11 @@ const DashboardAdmin = () => {
                                   : 'Sin límite'}
                               </td>
                               <td>
+                                <Badge bg={c.documentoEnviado ? 'info' : 'secondary'}>
+                                  {c.documentoEnviado ? 'Enviado' : 'Sin enviar'}
+                                </Badge>
+                              </td>
+                              <td>
                                 <Badge
                                   bg={
                                     c.estado === 'ACTIVA'
@@ -482,6 +504,18 @@ const DashboardAdmin = () => {
                                 >
                                   {c.estado}
                                 </Badge>
+                              </td>
+                              <td>
+                                {c.estado === 'PENDIENTE' && (
+                                  <Button
+                                    size="sm"
+                                    variant="success"
+                                    disabled={guardando}
+                                    onClick={() => handleActivarCausa(c.idCausa)}
+                                  >
+                                    Activar
+                                  </Button>
+                                )}
                               </td>
                             </tr>
                           ))}

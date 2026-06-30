@@ -10,6 +10,7 @@ import {
 } from 'react-bootstrap';
 import api from '@services/api';
 import { obtenerEstadisticasEventos } from '@api/carritoApi';
+import { crearCausa, subirDocumentoCausa } from '@api/donacionesApi';
 
 const GENEROS = [
   'ROCK', 'JAZZ', 'POP', 'KPOP', 'METAL', 'RAP', 'RNB', 'INDIE', 'REGGAETON',
@@ -47,11 +48,18 @@ const DashboardOrganizador = () => {
     recinto: { nombre: '', ubicacion: '' },
     imagenUrl: '',
     causaSocialId: null,
-    causaSocialNombre: '',
-    organizacionNombre: '',
   });
 
-  const [archivoPdf, setArchivoPdf] = useState(null);
+  // Causa social: usar una existente, o crear una nueva (sin organización
+  // todavía — se asocia después, ver CausaSocialRequestDTO en ms-donaciones).
+  const [creandoCausaNueva, setCreandoCausaNueva] = useState(false);
+  const [nuevaCausa, setNuevaCausa] = useState({
+    nombre: '', fechaInicio: '', descripcion: '', objetivoMonto: '',
+  });
+  // Documento de respaldo (PDF) de la causa nueva: requerido para que el
+  // admin pueda validarla y activarla (ver CausaSocialService.enviarDocumento).
+  const [documentoCausa, setDocumentoCausa] = useState(null);
+
   const [archivoImagen, setArchivoImagen] = useState(null);
   const [causasActivas, setCausasActivas] = useState([]);
   const [cargandoCausas, setCargandoCausas] = useState(false);
@@ -101,24 +109,9 @@ const DashboardOrganizador = () => {
     cargarEstadisticas();
   }, [misEventos]);
 
-  // Actualizar nombre de causa y organización cuando se selecciona una causa activa
-  useEffect(() => {
-    if (!form.causaSocialId) return;
-
-    const causaSeleccionada = causasActivas.find(c => c.idCausa === parseInt(form.causaSocialId, 10));
-    if (!causaSeleccionada) return;
-
-    const causaSocialNombre = causaSeleccionada.nombre || '';
-    const organizacionNombre = causaSeleccionada.organizacion?.nombre || '';
-
-    if (form.causaSocialNombre !== causaSocialNombre || form.organizacionNombre !== organizacionNombre) {
-      setForm(prev => ({
-        ...prev,
-        causaSocialNombre,
-        organizacionNombre,
-      }));
-    }
-  }, [form.causaSocialId, causasActivas]);
+  const causaSeleccionada = causasActivas.find(
+    c => c.idCausa === parseInt(form.causaSocialId, 10)
+  );
 
   const cargarCausasActivas = async () => {
     setCargandoCausas(true);
@@ -131,6 +124,12 @@ const DashboardOrganizador = () => {
     } finally {
       setCargandoCausas(false);
     }
+  };
+
+  const handleNuevaCausaChange = (e) => {
+    const { name, value } = e.target;
+    setNuevaCausa(prev => ({ ...prev, [name]: value }));
+    setErrores(prev => ({ ...prev, [`causa_${name}`]: undefined }));
   };
 
   const handleChange = (e) => {
@@ -204,6 +203,21 @@ const DashboardOrganizador = () => {
       nuevosErrores.precioEntrada = 'Precio de entrada debe ser mayor que cero.';
     }
 
+    // Todo evento debe tener una causa social: existente o recién creada.
+    if (creandoCausaNueva) {
+      if (!nuevaCausa.nombre.trim()) {
+        nuevosErrores.causa_nombre = 'Nombre de la causa es obligatorio.';
+      }
+      if (!nuevaCausa.fechaInicio) {
+        nuevosErrores.causa_fechaInicio = 'Fecha de inicio de la causa es obligatoria.';
+      }
+      if (!documentoCausa) {
+        nuevosErrores.causa_documento = 'Sube el documento (PDF) que respalda la causa, para validación del equipo Ticketti.';
+      }
+    } else if (!form.causaSocialId) {
+      nuevosErrores.causaSocialId = 'Selecciona una causa social, o crea una nueva.';
+    }
+
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
   };
@@ -215,8 +229,11 @@ const DashboardOrganizador = () => {
     setForm(prev => ({ ...prev, imagenUrl: `/img/${archivo.name}` }));
   };
 
-  const handlePdf = (e) => {
-    setArchivoPdf(e.target.files[0]);
+  const handleDocumentoCausa = (e) => {
+    const archivo = e.target.files[0];
+    if (!archivo) return;
+    setDocumentoCausa(archivo);
+    setErrores(prev => ({ ...prev, causa_documento: undefined }));
   };
 
   const handleSubmit = async () => {
@@ -229,6 +246,24 @@ const DashboardOrganizador = () => {
         setCargando(false);
         estaCreando.current = false;
         return;
+      }
+
+      // Si el organizador eligió crear una causa nueva, se crea primero
+      // (sin organización todavía) y se usa el id resultante en el evento.
+      let causaSocialId = form.causaSocialId ? parseInt(form.causaSocialId, 10) : null;
+      if (creandoCausaNueva) {
+        const causaCreada = await crearCausa({
+          nombre: nuevaCausa.nombre,
+          descripcion: nuevaCausa.descripcion || undefined,
+          objetivoMonto: nuevaCausa.objetivoMonto ? parseFloat(nuevaCausa.objetivoMonto) : undefined,
+          fechaInicio: nuevaCausa.fechaInicio,
+        });
+        causaSocialId = causaCreada.idCausa;
+        await subirDocumentoCausa(
+          causaCreada.idCausa,
+          documentoCausa,
+          usuario?.nombre || usuario?.correo || 'Organizador'
+        );
       }
 
       const fechaIso = new Date(form.fecha);
@@ -246,7 +281,7 @@ const DashboardOrganizador = () => {
           ubicacion: form.recinto.ubicacion,
         },
         imagenUrl: form.imagenUrl,
-        causaSocialId: form.causaSocialId ? parseInt(form.causaSocialId, 10) : null,
+        causaSocialId,
       };
 
       await api.post('/eventos/crear', payload);
@@ -260,9 +295,11 @@ const DashboardOrganizador = () => {
           nombre: '', descripcion: '', fecha: '', genero: '',
           estado: 'PUBLICADO', aforo: '', stock: '', precioEntrada: '',
           recinto: { nombre: '', ubicacion: '' }, imagenUrl: '',
-          causaSocialId: null, causaSocialNombre: '', organizacionNombre: '',
+          causaSocialId: null,
         });
-        setArchivoPdf(null);
+        setCreandoCausaNueva(false);
+        setNuevaCausa({ nombre: '', fechaInicio: '', descripcion: '', objetivoMonto: '' });
+        setDocumentoCausa(null);
         setArchivoImagen(null);
         estaCreando.current = false;
       }, 1500);
@@ -614,59 +651,145 @@ const DashboardOrganizador = () => {
             </Col>
             <Col md={6}>
               <Form.Group>
-                <Form.Label>Causa Social (.pdf)</Form.Label>
-                <Form.Control type="file" accept=".pdf" onChange={handlePdf} />
-                {archivoPdf && (
-                  <p className="text-muted small mt-2">📄 {archivoPdf.name}</p>
-                )}
-              </Form.Group>
-            </Col>
-            <Col md={12}>
-              <hr />
-              <p className="fw-semibold mb-3">Causa Social (Opcional)</p>
-              <p className="text-muted small mb-2">Si no selecciona una causa, adminplataforma podrá agregarla posteriormente.</p>
-            </Col>
-            <Col md={12}>
-              <Form.Group>
                 <Form.Label>Seleccionar Causa Social</Form.Label>
                 <Form.Select
                   name="causaSocialId"
                   value={form.causaSocialId || ''}
-                  onChange={(e) => setForm(prev => ({ ...prev, causaSocialId: e.target.value ? e.target.value : null }))}
-                  disabled={cargandoCausas}
+                  onChange={(e) => setForm(prev => ({ ...prev, causaSocialId: e.target.value || null }))}
+                  disabled={cargandoCausas || creandoCausaNueva}
+                  isInvalid={!!errores.causaSocialId}
                 >
-                  <option value="">-- Sin causa social --</option>
+                  <option value="">-- Selecciona una causa --</option>
                   {causasActivas.map(causa => (
                     <option key={causa.idCausa} value={causa.idCausa}>
-                      {causa.nombre} ({causa.organizacion?.nombre || 'Sin organización'})
+                      {causa.nombre} ({causa.nombreOrganizacion || 'Sin organización'})
                     </option>
                   ))}
                 </Form.Select>
-                {cargandoCausas && <p className="text-muted small mt-2">Cargando causas...</p>}
+                <Form.Control.Feedback type="invalid">
+                  {errores.causaSocialId}
+                </Form.Control.Feedback>
+                {cargandoCausas && <p className="text-muted small mt-2 mb-0">Cargando causas...</p>}
+                {causaSeleccionada?.nombreOrganizacion && (
+                  <p className="text-muted small mt-2 mb-0">
+                    Organización: {causaSeleccionada.nombreOrganizacion}
+                  </p>
+                )}
               </Form.Group>
             </Col>
-            <Col md={6}>
-              <Form.Group>
-                <Form.Label>Nombre causa social</Form.Label>
-                <Form.Control
-                  name="causaSocialNombre"
-                  value={form.causaSocialNombre}
-                  onChange={handleChange}
-                  placeholder="Se rellenará al seleccionar o escribir manualmente"
-                />
-              </Form.Group>
+
+            <Col md={12}>
+              <hr />
+              <Form.Check
+                type="switch"
+                id="switch-causa-nueva"
+                label="No encuentro la causa que busco: crear una causa social nueva"
+                checked={creandoCausaNueva}
+                onChange={(e) => {
+                  setCreandoCausaNueva(e.target.checked);
+                  if (e.target.checked) {
+                    setForm(prev => ({ ...prev, causaSocialId: null }));
+                  } else {
+                    setDocumentoCausa(null);
+                  }
+                  setErrores(prev => ({
+                    ...prev,
+                    causaSocialId: undefined,
+                    causa_nombre: undefined,
+                    causa_fechaInicio: undefined,
+                    causa_documento: undefined,
+                  }));
+                }}
+                className="mb-3"
+              />
+              {creandoCausaNueva && (
+                <p className="text-muted small mb-3">
+                  La causa se crea sin organización asociada — adminplataforma podrá vincularla más adelante.
+                  Quedará en estado <strong>PENDIENTE</strong> hasta que el equipo Ticketti valide el documento
+                  de respaldo y la active.
+                </p>
+              )}
             </Col>
-            <Col md={6}>
-              <Form.Group>
-                <Form.Label>Nombre organización</Form.Label>
-                <Form.Control
-                  name="organizacionNombre"
-                  value={form.organizacionNombre}
-                  onChange={handleChange}
-                  placeholder="Se rellenará al seleccionar o escribir manualmente"
-                />
-              </Form.Group>
-            </Col>
+
+            {creandoCausaNueva && (
+              <>
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Nombre de la causa</Form.Label>
+                    <Form.Control
+                      name="nombre"
+                      value={nuevaCausa.nombre}
+                      onChange={handleNuevaCausaChange}
+                      placeholder="Ej: Reforestación Patagonia"
+                      isInvalid={!!errores.causa_nombre}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errores.causa_nombre}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Fecha de inicio</Form.Label>
+                    <Form.Control
+                      type="date"
+                      name="fechaInicio"
+                      value={nuevaCausa.fechaInicio}
+                      onChange={handleNuevaCausaChange}
+                      isInvalid={!!errores.causa_fechaInicio}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errores.causa_fechaInicio}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+                <Col md={8}>
+                  <Form.Group>
+                    <Form.Label>Descripción (opcional)</Form.Label>
+                    <Form.Control
+                      name="descripcion"
+                      value={nuevaCausa.descripcion}
+                      onChange={handleNuevaCausaChange}
+                      placeholder="Breve descripción de la causa"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group>
+                    <Form.Label>Meta de recaudación (opcional)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="objetivoMonto"
+                      value={nuevaCausa.objetivoMonto}
+                      onChange={handleNuevaCausaChange}
+                      min="0"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={12}>
+                  <Form.Group>
+                    <Form.Label>Documento de respaldo (PDF)</Form.Label>
+                    <Form.Control
+                      type="file"
+                      accept="application/pdf"
+                      onChange={handleDocumentoCausa}
+                      isInvalid={!!errores.causa_documento}
+                    />
+                    <Form.Text className="text-muted">
+                      El equipo Ticketti lo revisará por correo antes de activar la causa.
+                    </Form.Text>
+                    <Form.Control.Feedback type="invalid">
+                      {errores.causa_documento}
+                    </Form.Control.Feedback>
+                    {documentoCausa && (
+                      <p className="text-success small mt-2 mb-0">
+                        Archivo seleccionado: {documentoCausa.name}
+                      </p>
+                    )}
+                  </Form.Group>
+                </Col>
+              </>
+            )}
           </Row>
         </Modal.Body>
         <Modal.Footer>
