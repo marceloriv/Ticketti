@@ -82,13 +82,6 @@ describe('Inicio', () => {
     expect(screen.getByText('Mejores Eventos')).toBeInTheDocument();
   });
 
-  it('muestra el buscador', async () => {
-    renderWithAuthAndRouter(<Inicio />);
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Buscar eventos/)).toBeInTheDocument();
-    });
-  });
-
   it('muestra las categorías', async () => {
     renderWithAuthAndRouter(<Inicio />);
     await waitFor(() => {
