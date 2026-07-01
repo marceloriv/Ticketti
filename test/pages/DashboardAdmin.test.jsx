@@ -4,11 +4,29 @@ import { renderWithRouter } from '../test-utils';
 
 vi.mock('../../src/api/donacionesApi', () => ({
   getOrganizaciones: vi.fn(),
-  getCausasActivas: vi.fn(),
+  getCausas: vi.fn(),
   getTotalPorOrganizacion: vi.fn(),
   crearOrganizacionActiva: vi.fn(),
   crearCausaActiva: vi.fn(),
   activarOrganizacion: vi.fn(),
+}));
+
+vi.mock('../../src/api/eventosApi', () => ({
+  listarEventos: vi.fn(),
+}));
+
+vi.mock('../../src/api/carritoApi', () => ({
+  obtenerEstadisticasEventos: vi.fn(),
+}));
+
+vi.mock('../../src/api/usuariosApi', () => ({
+  listarUsuarios: vi.fn(),
+  actualizarUsuario: vi.fn(),
+  eliminarUsuario: vi.fn(),
+}));
+
+vi.mock('../../src/components/Admin/DashAdminUsuarios', () => ({
+  default: () => <div data-testid="admin-usuarios" />,
 }));
 
 vi.mock('../../src/components/layout/Header', () => ({
@@ -26,16 +44,22 @@ vi.mock('../../src/utils/logger', () => ({
 import DashboardAdmin from '../../src/pages/DashboardAdmin';
 import {
   getOrganizaciones,
-  getCausasActivas,
+  getCausas,
   getTotalPorOrganizacion,
 } from '../../src/api/donacionesApi';
+import { listarEventos } from '../../src/api/eventosApi';
+import { listarUsuarios } from '../../src/api/usuariosApi';
+import { obtenerEstadisticasEventos } from '../../src/api/carritoApi';
 
 describe('DashboardAdmin', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     getOrganizaciones.mockResolvedValue([]);
-    getCausasActivas.mockResolvedValue([]);
+    getCausas.mockResolvedValue([]);
     getTotalPorOrganizacion.mockResolvedValue(0);
+    listarEventos.mockResolvedValue([]);
+    listarUsuarios.mockResolvedValue([]);
+    obtenerEstadisticasEventos.mockResolvedValue([]);
   });
 
   it('renderiza el dashboard de admin', async () => {
@@ -54,11 +78,11 @@ describe('DashboardAdmin', () => {
     });
   });
 
-  it('carga causas activas al montar', async () => {
-    getCausasActivas.mockResolvedValue([{ idCausa: 1, nombre: 'Causa1' }]);
+  it('carga causas al montar', async () => {
+    getCausas.mockResolvedValue([{ idCausa: 1, nombre: 'Causa1' }]);
     renderWithRouter(<DashboardAdmin />);
     await waitFor(() => {
-      expect(getCausasActivas).toHaveBeenCalled();
+      expect(getCausas).toHaveBeenCalled();
     });
   });
 
@@ -93,7 +117,7 @@ describe('DashboardAdmin', () => {
   });
 
   it('muestra causas sociales en la tabla', async () => {
-    getCausasActivas.mockResolvedValue([{ idCausa: 1, nombre: 'Causa Educación' }]);
+    getCausas.mockResolvedValue([{ idCausa: 1, nombre: 'Causa Educación' }]);
     renderWithRouter(<DashboardAdmin />);
     await waitFor(() => {
       expect(screen.getByText('Causa Educación')).toBeInTheDocument();

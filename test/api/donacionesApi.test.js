@@ -25,7 +25,7 @@ import * as donacionesApi from '../../src/api/donacionesApi';
 
 describe('donacionesApi', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   describe('getOrganizaciones', () => {
@@ -109,7 +109,7 @@ describe('donacionesApi', () => {
       const [url, formData, config] = mocks.post.mock.calls[0];
       expect(url).toBe('/organizaciones/5/documento');
       expect(formData).toBeInstanceOf(FormData);
-      expect(config.headers['Content-Type']).toBe('multipart/form-data');
+      expect(config.headers['Content-Type']).toBeUndefined();
       expect(result).toEqual(mockData);
     });
   });
@@ -163,26 +163,29 @@ describe('donacionesApi', () => {
 
   describe('getMisDonaciones', () => {
     it('retorna array vacío (stub pendiente backend)', async () => {
+      mocks.get.mockResolvedValue({ data: [] });
       const result = await donacionesApi.getMisDonaciones();
       expect(result).toEqual([]);
     });
   });
 
   describe('getCausas', () => {
-    it('delega a getCausasActivas', async () => {
+    it('obtiene todas las causas (admin)', async () => {
       const mockData = [{ id: 1 }];
       mocks.get.mockResolvedValue({ data: mockData });
       const result = await donacionesApi.getCausas();
-      expect(mocks.get).toHaveBeenCalledWith('/causas/activas', {});
+      expect(mocks.get).toHaveBeenCalledWith('/causas/todas');
       expect(result).toEqual(mockData);
     });
   });
 
   describe('activarCausa', () => {
-    it('retorna null y llama logger.warn (stub pendiente)', async () => {
+    it('activa una causa social existente', async () => {
+      const mockData = { idCausa: 5, estado: 'ACTIVA' };
+      mocks.put.mockResolvedValue({ data: mockData });
       const result = await donacionesApi.activarCausa(5);
-      expect(result).toBeNull();
-      expect(mocks.loggerWarn).toHaveBeenCalled();
+      expect(mocks.put).toHaveBeenCalledWith('/causas/5/activar');
+      expect(result).toEqual(mockData);
     });
   });
 
@@ -207,13 +210,14 @@ describe('donacionesApi', () => {
   });
 
   describe('crearCausaActiva', () => {
-    it('crea causa con estado ACTIVA', async () => {
+    it('crea causa y la activa encadenando llamadas', async () => {
       const payload = { nombre: 'Causa1', idOrganizacion: 1 };
-      const mockData = { id: 20, ...payload, estado: 'ACTIVA' };
-      mocks.post.mockResolvedValue({ data: mockData });
+      mocks.post.mockResolvedValue({ data: { idCausa: 20, ...payload } });
+      mocks.put.mockResolvedValue({ data: { idCausa: 20, ...payload, estado: 'ACTIVA' } });
       const result = await donacionesApi.crearCausaActiva(payload);
-      expect(mocks.post).toHaveBeenCalledWith('/causas', { ...payload, estado: 'ACTIVA' });
-      expect(result).toEqual(mockData);
+      expect(mocks.post).toHaveBeenCalledWith('/causas', payload);
+      expect(mocks.put).toHaveBeenCalledWith('/causas/20/activar');
+      expect(result).toEqual({ idCausa: 20, ...payload, estado: 'ACTIVA' });
     });
   });
 

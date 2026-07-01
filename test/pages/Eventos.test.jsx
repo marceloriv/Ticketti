@@ -56,10 +56,10 @@ describe('Eventos', () => {
     expect(screen.getByTestId('footer')).toBeInTheDocument();
   });
 
-  it('muestra spinner mientras carga', () => {
+  it('muestra skeleton cards mientras carga', () => {
     api.get.mockReturnValue(new Promise(() => {}));
     renderWithAuthAndRouter(<Eventos />);
-    expect(document.querySelector('.spinner-ticketti')).toBeInTheDocument();
+    expect(document.querySelector('.eventos-skeleton')).toBeInTheDocument();
   });
 
   it('carga y muestra eventos', async () => {
